@@ -1,4 +1,4 @@
 Autotrack for analytics.js
 ==========================
 
-Automatic and enhanced tracking for common user interactions.
+Automatic + enhanced `analytics.js` tracking for common user interactions.

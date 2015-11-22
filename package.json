@@ -1,0 +1,38 @@
+{
+  "name": "autotrack",
+  "version": "0.1.0",
+  "description": "Automatic + enhanced analytics.js tracking for common user interactions",
+  "main": "index.js",
+  "scripts": {
+    "test": "wdio"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/philipwalton/autotrack.git"
+  },
+  "keywords": [
+    "analytics",
+    "analyticsjs",
+    "auto",
+    "google"
+  ],
+  "author": {
+    "name": "Philip Walton",
+    "email": "philip@philipwalton.com",
+    "url": "http://philipwalton.com"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/philipwalton/autotrack/issues"
+  },
+  "homepage": "https://github.com/philipwalton/autotrack#readme",
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "delegate": "^3.0.0",
+    "mocha": "^2.3.4",
+    "uglify-js": "^2.6.1"
+  },
+  "dependencies": {
+    "webdriverio": "^3.2.6"
+  }
+}
