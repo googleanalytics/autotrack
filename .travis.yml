@@ -7,3 +7,4 @@ env:
   global:
     - SAUCE_USERNAME=philipwalton-ga
     - SAUCE_ACCESS_KEY=a5b9cee1-fdeb-47b0-bf8b-96c09727a933
+    - TEST_TIMEOUT=60000
