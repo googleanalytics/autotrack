@@ -6,7 +6,7 @@ var test = require('selenium-webdriver/testing');
 var webdriver = require('selenium-webdriver');
 
 
-const WAIT_TIMEOUT = 60000;
+const WAIT_TIMEOUT = 20000;
 
 
 const BASE_URL = 'http://localhost:4040';
@@ -35,6 +35,7 @@ test.describe('The home page', function() {
       'version': process.env._VERSION,
       'name': 'analytics.js autotrack tests',
       'build': process.env.TRAVIS_BUILD_NUMBER,
+      'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER
       // 'tags': tags
     });
 
