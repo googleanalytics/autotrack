@@ -4,7 +4,7 @@
   "description": "Automatic + enhanced analytics.js tracking for common user interactions",
   "main": "index.js",
   "scripts": {
-    "test": "wdio"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
@@ -27,12 +27,22 @@
   },
   "homepage": "https://github.com/philipwalton/autotrack#readme",
   "devDependencies": {
+    "babel-core": "^5.6.15",
+    "babelify": "^6.1.2",
     "browserify": "^12.0.1",
+    "connect": "^3.4.0",
     "delegate": "^3.0.0",
+    "gulp": "^3.9.0",
+    "gulp-if": "^2.0.0",
+    "gulp-mocha": "^2.2.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.1",
+    "gulp-util": "^3.0.7",
     "mocha": "^2.3.4",
-    "uglify-js": "^2.6.1"
-  },
-  "dependencies": {
-    "webdriverio": "^3.2.6"
+    "serve-static": "^1.10.0",
+    "shelljs": "^0.5.3",
+    "uglify-js": "^2.6.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0"
   }
 }
