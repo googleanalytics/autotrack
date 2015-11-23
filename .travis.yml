@@ -11,3 +11,34 @@ env:
     - SAUCE_USERNAME=philipwalton-ga
     - SAUCE_ACCESS_KEY=a5b9cee1-fdeb-47b0-bf8b-96c09727a933
     - TEST_TIMEOUT=60000
+
+  # https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
+  matrix:
+    - _BROWSER: "chrome"
+      _PLATFORM: "Windows 10"
+      _ENV: "desktop"
+    - _BROWSER: "firefox"
+      _PLATFORM: "Windows 8.1"
+      _ENV: "desktop"
+    - _BROWSER: "MicrosoftEdge"
+      _PLATFORM: "Windows 10"
+      _ENV: "desktop"
+    - _BROWSER: "internet explorer"
+      _PLATFORM: "Windows 8.1"
+      _VERSION: "11"
+      _ENV: "desktop"
+    - _BROWSER: "internet explorer"
+      _PLATFORM: "Windows 8"
+      _VERSION: "10"
+      _ENV: "desktop"
+    - _BROWSER: "safari"
+      _PLATFORM: "OS X 10.8"
+      _VERSION: "6.0"
+      _ENV: "desktop"
+    - _BROWSER: "safari"
+      _PLATFORM: "OS X 10.11"
+      _ENV: "desktop"
+    - _BROWSER: "safari"
+      _PLATFORM: "OS X 10.8"
+      _VERSION: "6.0"
+      _ENV: "desktop"
