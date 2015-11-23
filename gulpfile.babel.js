@@ -56,5 +56,5 @@ gulp.task('test', ['serve', 'javascript'], function() {
 
 
 gulp.task('serve', function(done) {
-  server = connect().use(serveStatic('./')).listen(4040, done);
+  server = connect().use(serveStatic('./test')).listen(4040, done);
 });

@@ -83,7 +83,7 @@ test.describe('The home page', function() {
 
   test.it('does something', function() {
 
-    driver.get('http://localhost:4040/test.html');
+    driver.get('http://localhost:4040');
     driver.wait(until.titleIs('analytics.js autotrack test'), WAIT_TIMEOUT);
 
   });
