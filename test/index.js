@@ -22,18 +22,20 @@ test.describe('The home page', function() {
 
   test.before(function() {
 
+    // var tags = [
+    //   process.env._ENV || 'desktop',
+    //   process.env._BROWSER,
+    //   process.env._PLATFORM,
+    //   process.env._VERSION
+    // ];
+
     var builder = new webdriver.Builder().withCapabilities({
       'browserName': process.env._BROWSER || 'firefox',
       'platform': process.env._PLATFORM,
       'version': process.env._VERSION,
       'name': 'analytics.js autotrack tests',
       'build': process.env.TRAVIS_BUILD_NUMBER,
-      'tags': [
-        process.env._ENV || 'desktop',
-        process.env._BROWSER,
-        process.env._PLATFORM,
-        process.env._VERSION
-      ]
+      // 'tags': tags
     });
 
     if (process.env.CI) {
