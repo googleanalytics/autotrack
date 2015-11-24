@@ -4,7 +4,7 @@
   "description": "Automatic + enhanced analytics.js tracking for common user interactions",
   "main": "index.js",
   "scripts": {
-    "test": "gulp test"
+    "test": "wdio"
   },
   "repository": {
     "type": "git",
@@ -45,6 +45,7 @@
     "shelljs": "^0.5.3",
     "uglify-js": "^2.6.1",
     "vinyl-buffer": "^1.0.0",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-source-stream": "^1.1.0",
+    "webdriverio": "^3.2.6"
   }
 }
