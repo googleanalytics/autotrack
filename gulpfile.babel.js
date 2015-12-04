@@ -8,6 +8,7 @@ import gulp from 'gulp';
 import gulpIf from 'gulp-if';
 import gutil from 'gulp-util';
 import mocha from 'gulp-mocha';
+import rename from 'gulp-rename';
 import shell from 'shelljs';
 import serveStatic from 'serve-static';
 import source from 'vinyl-source-stream';
@@ -40,6 +41,7 @@ gulp.task('javascript', function() {
       .pipe(buffer())
       .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(gulpIf(isProd(), uglify()))
+      .pipe(rename((path) => path.basename = 'autotrack'))
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('./dist'));
 });
