@@ -23,24 +23,27 @@ function isProd() {
 }
 
 
-function streamError(err) {
-  gutil.beep();
-  gutil.log(err instanceof gutil.PluginError ? err.toString() : err.stack);
-}
+gulp.task('javascript', function(done) {
+  browserify('./', {
+    debug: true,
+    detectGlobals: false,
+    standalone: 'ga.autotrack'
+  })
+  .transform(babelify)
+  .bundle()
 
+  // TODO(philipwalton): Add real error handling.
+  // This temporary hack fixes an issue with tasks not restarting in
+  // watch mode after a syntax error is fixed.
+  .on('error', (err) => { gutil.beep(); done(err); })
+  .on('end', done)
 
-gulp.task('javascript', function() {
-  let opts = {debug: true, detectGlobals: false, standalone: 'ga.autotrack'};
-  return browserify('./', opts)
-      .transform(babelify)
-      .bundle()
-      .on('error', streamError)
-      .pipe(source('./autotrack.js'))
-      .pipe(buffer())
-      .pipe(sourcemaps.init({loadMaps: true}))
-      .pipe(gulpIf(isProd(), uglify()))
-      .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest('./dist'));
+  .pipe(source('./autotrack.js'))
+  .pipe(buffer())
+  .pipe(sourcemaps.init({loadMaps: true}))
+  .pipe(gulpIf(isProd(), uglify()))
+  .pipe(sourcemaps.write('./'))
+  .pipe(gulp.dest('./dist'));
 });
 
 
