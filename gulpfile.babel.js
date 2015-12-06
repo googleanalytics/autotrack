@@ -1,5 +1,3 @@
-// import babelify from 'babelify';
-
 import babelify from 'babelify';
 import browserify from 'browserify';
 import buffer from 'vinyl-buffer';
@@ -48,12 +46,10 @@ gulp.task('javascript', function(done) {
 
 
 gulp.task('test', ['serve', 'javascript'], function() {
-  var stream = gulp.src('test/**/*.js', {read: false})
+  let stream = gulp.src('test/**/*.js', {read: false})
       .pipe(mocha({timeout: process.env.TEST_TIMEOUT || 10 * 1000}));
 
-  stream.on('end', function() {
-    server.close();
-  });
+  stream.on('end', () => server.close())
 });
 
 
@@ -65,4 +61,3 @@ gulp.task('serve', ['javascript'], function(done) {
 gulp.task('watch', ['serve'], function() {
   gulp.watch('./lib/**/*.js', ['javascript']);
 });
-
