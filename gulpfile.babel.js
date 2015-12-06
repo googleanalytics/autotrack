@@ -8,7 +8,6 @@ import gulp from 'gulp';
 import gulpIf from 'gulp-if';
 import gutil from 'gulp-util';
 import mocha from 'gulp-mocha';
-import rename from 'gulp-rename';
 import shell from 'shelljs';
 import serveStatic from 'serve-static';
 import source from 'vinyl-source-stream';
@@ -31,17 +30,15 @@ function streamError(err) {
 
 
 gulp.task('javascript', function() {
-  let entry = './index.js';
   let opts = {debug: true, detectGlobals: false, standalone: 'ga.autotrack'};
-  return browserify(entry, opts)
+  return browserify('./', opts)
       .transform(babelify)
       .bundle()
       .on('error', streamError)
-      .pipe(source(entry))
+      .pipe(source('./autotrack.js'))
       .pipe(buffer())
       .pipe(sourcemaps.init({loadMaps: true}))
       .pipe(gulpIf(isProd(), uglify()))
-      .pipe(rename((path) => path.basename = 'autotrack'))
       .pipe(sourcemaps.write('./'))
       .pipe(gulp.dest('./dist'));
 });
@@ -57,6 +54,12 @@ gulp.task('test', ['serve', 'javascript'], function() {
 });
 
 
-gulp.task('serve', function(done) {
-  server = connect().use(serveStatic('./test')).listen(4040, done);
+gulp.task('serve', ['javascript'], function(done) {
+  server = connect().use(serveStatic('./')).listen(4040, done);
 });
+
+
+gulp.task('watch', ['serve'], function() {
+  gulp.watch('./lib/**/*.js', ['javascript']);
+});
+
