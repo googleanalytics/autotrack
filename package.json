@@ -4,6 +4,7 @@
   "description": "Automatic + enhanced analytics.js tracking for common user interactions",
   "main": "lib/index.js",
   "scripts": {
+    "start": "gulp watch",
     "test": "wdio"
   },
   "repository": {
