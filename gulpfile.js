@@ -1,19 +1,18 @@
-import babelify from 'babelify';
-import browserify from 'browserify';
-import buffer from 'vinyl-buffer';
-import connect from 'connect';
-import gulp from 'gulp';
-import gulpIf from 'gulp-if';
-import gutil from 'gulp-util';
-import mocha from 'gulp-mocha';
-import shell from 'shelljs';
-import serveStatic from 'serve-static';
-import source from 'vinyl-source-stream';
-import sourcemaps from 'gulp-sourcemaps';
-import uglify from 'gulp-uglify';
+var browserify = require('browserify');
+var buffer = require('vinyl-buffer');
+var connect = require('connect');
+var gulp = require('gulp');
+var gulpIf = require('gulp-if');
+var gutil = require('gulp-util');
+var mocha = require('gulp-mocha');
+var shell = require('shelljs');
+var serveStatic = require('serve-static');
+var source = require('vinyl-source-stream');
+var sourcemaps = require('gulp-sourcemaps');
+var uglify = require('gulp-uglify');
 
 
-let server;
+var server;
 
 
 function isProd() {
@@ -27,13 +26,12 @@ gulp.task('javascript', function(done) {
     detectGlobals: false,
     standalone: 'ga.autotrack'
   })
-  .transform(babelify)
   .bundle()
 
   // TODO(philipwalton): Add real error handling.
   // This temporary hack fixes an issue with tasks not restarting in
   // watch mode after a syntax error is fixed.
-  .on('error', (err) => { gutil.beep(); done(err); })
+  .on('error', function(err) { gutil.beep(); done(err); })
   .on('end', done)
 
   .pipe(source('./autotrack.js'))
@@ -46,10 +44,10 @@ gulp.task('javascript', function(done) {
 
 
 gulp.task('test', ['serve', 'javascript'], function() {
-  let stream = gulp.src('test/**/*.js', {read: false})
+  var stream = gulp.src('test/**/*.js', {read: false})
       .pipe(mocha({timeout: process.env.TEST_TIMEOUT || 10 * 1000}));
 
-  stream.on('end', () => server.close())
+  stream.on('end', server.close.bind(server));
 });
 
 
