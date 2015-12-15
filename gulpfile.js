@@ -5,11 +5,14 @@ var gulp = require('gulp');
 var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
 var mocha = require('gulp-mocha');
+var seleniumServerJar = require('selenium-server-standalone-jar');
 var shell = require('shelljs');
 var serveStatic = require('serve-static');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
+var spawn = require('child_process').spawn;
 var uglify = require('gulp-uglify');
+var webdriver = require('gulp-webdriver');
 
 
 var server;
@@ -43,16 +46,29 @@ gulp.task('javascript', function(done) {
 });
 
 
-gulp.task('test', ['serve', 'javascript'], function() {
-  var stream = gulp.src('test/**/*.js', {read: false})
-      .pipe(mocha({timeout: process.env.TEST_TIMEOUT || 10 * 1000}));
-
-  stream.on('end', server.close.bind(server));
+gulp.task('test', ['javascript', 'serve', 'selenium-server'], function() {
+  function stopServers() {
+    server.close();
+    seleniumServer.kill();
+  }
+  return gulp.src('./wdio.conf.js')
+      .pipe(webdriver())
+      .on('end', stopServers);
 });
 
 
 gulp.task('serve', ['javascript'], function(done) {
   server = connect().use(serveStatic('./')).listen(8080, done);
+});
+
+
+gulp.task('selenium-server', function(done) {
+  seleniumServer = spawn('java',  ['-jar', seleniumServerJar.path]);
+  seleniumServer.stderr.on('data', function(data) {
+    if (data.indexOf('Selenium Server is up and running') > -1) {
+      done();
+    }
+  });
 });
 
 

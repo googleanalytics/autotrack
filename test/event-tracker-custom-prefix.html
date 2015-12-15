@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<body>
+  <script>
+  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+
+  ga('create', 'UA-XXXXX-Y', 'auto');
+
+  var hitData = [];
+  ga('set', 'sendHitTask', function(model) {
+    hitData.push({
+      eventCategory: model.get('eventCategory'),
+      eventAction: model.get('eventAction'),
+      eventLabel: model.get('eventLabel'),
+      eventValue: model.get('eventValue')
+    });
+  });
+
+  ga('require', 'autotrack', {
+    attributePrefix: ''
+  });
+
+  </script>
+
+  <button
+    id="event-button-custom-prefix"
+    event-category="foo"
+    event-action="bar"
+    event-label="qux"
+    event-value="42">
+    Click
+  </button>
+
+  <script async src='//www.google-analytics.com/analytics.js'></script>
+  <script aysnc src="/dist/autotrack.js"></script>
+
+</body>
+</html>
