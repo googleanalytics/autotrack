@@ -1,7 +1,10 @@
 var assert = require('assert');
 
 
-describe('Custom media tracking', function() {
+var CHANGE_TIMEOUT = 1000;
+
+
+describe('Media query tracking', function() {
 
   beforeEach(function() {
     return browser
@@ -24,7 +27,7 @@ describe('Custom media tracking', function() {
     var result = (yield browser
         .url('/test/media-query-tracker.html')
         .setViewportSize({width:400, height:400})
-        .pause(50)
+        .pause(CHANGE_TIMEOUT)
         .execute(getPageData))
         .value;
 
@@ -54,7 +57,7 @@ describe('Custom media tracking', function() {
     var result = (yield browser
         .url('/test/media-query-tracker-change-timeout.html')
         .setViewportSize({width:400, height:400})
-        .pause(500)
+        .pause(CHANGE_TIMEOUT)
         .execute(getPageData))
         .value;
 
@@ -62,7 +65,10 @@ describe('Custom media tracking', function() {
     assert.notEqual(result.dimensions.dimension2, 'sm');
     assert.equal(result.hitData.length, 0);
 
-    result = (yield browser.pause(500).execute(getPageData)).value;
+    result = (yield browser
+        .pause(CHANGE_TIMEOUT * 2)
+        .execute(getPageData))
+        .value;
 
     assert.equal(result.dimensions.dimension1, 'sm');
     assert.equal(result.dimensions.dimension2, 'sm');
@@ -73,7 +79,7 @@ describe('Custom media tracking', function() {
     var result = (yield browser
         .url('/test/media-query-tracker-change-template.html')
         .setViewportSize({width:400, height:400})
-        .pause(100)
+        .pause(CHANGE_TIMEOUT)
         .execute(getPageData))
         .value;
 
