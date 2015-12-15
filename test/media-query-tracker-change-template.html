@@ -1,0 +1,53 @@
+<!doctype html>
+<html>
+<body>
+  <script>
+  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+
+  ga('create', 'UA-XXXXX-Y', 'auto');
+
+  var hitData = [];
+  ga('set', 'sendHitTask', function(model) {
+    hitData.push({
+      dimension1: model.get('dimension1'),
+      dimension2: model.get('dimension2'),
+      eventCategory: model.get('eventCategory'),
+      eventAction: model.get('eventAction'),
+      eventLabel: model.get('eventLabel')
+    });
+  });
+
+  ga('require', 'autotrack', {
+    mediaQueryDefinitions: [
+      {
+        name: 'Width',
+        dimensionIndex: 1,
+        items: [
+          {name: 'sm', media: 'all'},
+          {name: 'md', media: '(min-width: 480px)'},
+          {name: 'lg', media: '(min-width: 640px)'}
+        ]
+      },
+      {
+        name: 'Height',
+        dimensionIndex: 2,
+        items: [
+          {name: 'sm', media: 'all'},
+          {name: 'md', media: '(min-height: 480px)'},
+          {name: 'lg', media: '(min-height: 640px)'}
+        ]
+      }
+    ],
+    mediaQueryChangeTimeout: 100,
+    mediaQueryChangeTemplate: function(oldValue, newValue) {
+      return oldValue + ':' + newValue;
+    }
+  });
+
+  </script>
+
+  <script async src='//www.google-analytics.com/analytics.js'></script>
+  <script aysnc src="/dist/autotrack.js"></script>
+
+</body>
+</html>
