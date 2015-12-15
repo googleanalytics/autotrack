@@ -4,44 +4,48 @@ var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 
 // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
 var capabilities = [{browserName: 'firefox'}];
-// if (isSauceLabs) {
-//   capabilities = capabilities.concat([
-//     {
-//       browserName: 'chrome'
-//     },
-//     {
-//       browserName: 'MicrosoftEdge',
-//       platform: 'Windows 10'
-//     },
-//     {
-//       browserName: 'internet explorer',
-//       platform: 'Windows 8.1',
-//       version: '11'
-//     },
-//     {
-//       browserName: 'internet explorer',
-//       platform: 'Windows 8',
-//       version: '10'
-//     },
-//     {
-//       browserName: 'safari',
-//       platform: 'OS X 10.11'
-//     },
-//     {
-//       browserName: 'safari',
-//       platform: 'OS X 10.8',
-//       version: '6'
-//     }
-//   ]);
-// }
-
 if (isSauceLabs) {
-  capabilities = [{
-    'browserName': 'firefox',
-    'name': 'analytics.js autotrack tests',
-    'build': process.env.TRAVIS_BUILD_NUMBER,
-    'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER
-  }]
+  capabilities = capabilities.concat([
+    {
+      browserName: 'chrome'
+    },
+    // {
+    //   browserName: 'MicrosoftEdge',
+    //   platform: 'Windows 10'
+    // },
+    // {
+    //   browserName: 'internet explorer',
+    //   platform: 'Windows 8.1',
+    //   version: '11.0'
+    // },
+    // {
+    //   browserName: 'internet explorer',
+    //   platform: 'Windows 8',
+    //   version: '10.0'
+    // },
+    // {
+    //   browserName: 'internet explorer',
+    //   platform: 'Windows 7',
+    //   version: '9.0'
+    // },
+    {
+      browserName: 'safari',
+      platform: 'OS X 10.11'
+    },
+    // {
+    //   browserName: 'safari',
+    //   platform: 'OS X 10.8',
+    //   version: '6'
+    // }
+  ]);
+
+  capabilities.forEach(function(cap) {
+    cap['name'] = 'analytics.js autotrack tests - ' + cap.browserName +
+                  ' - ' + (cap.version || 'latest');
+
+    cap['build'] = process.env.TRAVIS_BUILD_NUMBER;
+    cap['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
+  });
 }
 
 exports.config = {
