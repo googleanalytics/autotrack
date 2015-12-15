@@ -35,6 +35,14 @@ var capabilities = [{browserName: 'firefox'}];
 //   ]);
 // }
 
+if (isSauceLabs) {
+  capabilities = [{
+    'browserName': 'firefox',
+    'name': 'analytics.js autotrack tests',
+    'build': process.env.TRAVIS_BUILD_NUMBER,
+    'tunnel-identifier': process.env.TRAVIS_JOB_NUMBER
+  }]
+}
 
 exports.config = {
 
@@ -90,7 +98,7 @@ exports.config = {
   baseUrl: 'http://localhost:8080',
   //
   // Default timeout for all waitForXXX commands.
-  waitforTimeout: 10000,
+  waitforTimeout: 60000,
   //
   // Initialize the browser instance with a WebdriverIO plugin. The object should have the
   // plugin name as key and the desired plugin options as property. Make sure you have
