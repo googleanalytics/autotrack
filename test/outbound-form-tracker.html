@@ -1,0 +1,65 @@
+<!doctype html>
+<html>
+<body>
+  <script>
+  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+
+  ga('create', 'UA-XXXXX-Y', 'auto');
+
+  var hitData = [];
+  ga('set', 'sendHitTask', function(model) {
+    hitData.push({
+      eventCategory: model.get('eventCategory'),
+      eventAction: model.get('eventAction'),
+      eventLabel: model.get('eventLabel'),
+      eventValue: model.get('eventValue')
+    });
+  });
+
+  ga('require', 'autotrack');
+
+  </script>
+
+  <form method="post" action="http://example.com/?id=1">
+    <input id="control-1" type="submit">
+  </form>
+
+  <form>
+    <input id="control-2" type="submit">
+  </form>
+
+  <form method="post" action="http://example.com/id=BAD">
+    <input id="control-3" type="submit" formaction="http://example.com/?id=3">
+  </form>
+
+  <form method="post" action="http://example.com/id=BAD">
+    <button id="control-4" formaction="http://example.com/?id=4">Submit</button>
+  </form>
+
+  <form method="post" action="http://example.com/?id=6">
+    <button
+      id="control-5"
+      type="button"
+      formaction="http://example.com/id=BAD">Submit</button>
+    <button id="control-6">Submit</button>
+  </form>
+
+  <form method="post" action="http://example.com/id=BAD">
+    <input id="control-7">
+    <input type="submit" formaction="http://example.com/?id=7">
+    <input type="submit" formaction="http://example.com/id=BAD">
+  </form>
+
+  <script>
+  document.addEventListener('submit', function(event) {
+    if (window.__stopFormSubmits__) {
+      event.preventDefault();
+    }
+  });
+  </script>
+
+  <script async src='//www.google-analytics.com/analytics.js'></script>
+  <script aysnc src="/dist/autotrack.js"></script>
+
+</body>
+</html>
