@@ -49,7 +49,7 @@ gulp.task('javascript', function(done) {
 gulp.task('test', ['javascript', 'serve', 'selenium-server'], function() {
   function stopServers() {
     server.close();
-    seleniumServer.kill();
+    if (!process.env.CI) seleniumServer.kill();
   }
   return gulp.src('./wdio.conf.js')
       .pipe(webdriver())
@@ -63,6 +63,9 @@ gulp.task('serve', ['javascript'], function(done) {
 
 
 gulp.task('selenium-server', function(done) {
+  // Don't start the selenium server on CI.
+  if (process.env.CI) return done();
+
   seleniumServer = spawn('java',  ['-jar', seleniumServerJar.path]);
   seleniumServer.stderr.on('data', function(data) {
     if (data.indexOf('Selenium Server is up and running') > -1) {

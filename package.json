@@ -5,7 +5,7 @@
   "main": "lib/plugins/autotrack.js",
   "scripts": {
     "start": "gulp watch",
-    "test": "wdio"
+    "test": "gulp test"
   },
   "repository": {
     "type": "git",
