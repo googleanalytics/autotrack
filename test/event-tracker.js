@@ -3,10 +3,6 @@ var assert = require('assert');
 
 describe('Event tracking', function() {
 
-  beforeEach(function() {
-    return browser.url('/test/event-tracker.html');
-  });
-
   it('should support declarative event binding to DOM elements', function *() {
     var hitData = (yield browser
         .url('/test/event-tracker.html')
