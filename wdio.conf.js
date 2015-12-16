@@ -1,3 +1,6 @@
+var SauceLabs = require('saucelabs');
+
+
 // When running on CI, this will be true
 var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 
@@ -182,8 +185,28 @@ exports.config = {
   //
   // Gets executed after all tests are done. You still have access to all global variables from
   // the test.
-  after: function(failures, pid) {
-    // do something
+  after: function(failures, sessionId) {
+    // When runnign in SauceLabs, update the job with the test status.
+    if (process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY) {
+      var sauceAccount = new SauceLabs({
+        username: process.env.SAUCE_USERNAME,
+        password: process.env.SAUCE_ACCESS_KEY
+      });
+      return new Promise(function(resolve, reject) {
+        var data = {
+          passed: !failures,
+          build: process.env.TRAVIS_BUILD_NUMBER
+        };
+        sauceAccount.updateJob(sessionId, data, function(err, res) {
+          if (err) {
+            reject(err);
+          }
+          else {
+            resolve();
+          }
+        });
+      });
+    }
   },
   //
   // Gets executed after all workers got shut down and the process is about to exit. It is not
