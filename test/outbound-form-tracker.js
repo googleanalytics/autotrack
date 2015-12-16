@@ -1,12 +1,16 @@
 var assert = require('assert');
+
+
 var browserCaps;
 
 
 describe('Outbound form tracking', function() {
 
+
   before(function *() {
     browserCaps = (yield browser.session()).value;
   });
+
 
   it('should send events on outbound form submits', function *() {
 
@@ -25,6 +29,7 @@ describe('Outbound form tracking', function() {
     assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
   });
 
+
   it('should not send events on local form submits', function *() {
 
     if (notSupportedInBrowser()) return;
@@ -40,6 +45,7 @@ describe('Outbound form tracking', function() {
     assert(!testData.count);
   });
 
+
   it('should navigate to the proper location on submit', function() {
 
     if (notSupportedInBrowser()) return;
@@ -50,6 +56,7 @@ describe('Outbound form tracking', function() {
         .click('#submit-1')
         .waitUntil(urlMatches('http://google-analytics.com/collect'));
   });
+
 
   it('should stop the event when beacon is not supported and re-emit ' +
       'after the hit succeeds or times out', function* () {
@@ -73,7 +80,7 @@ describe('Outbound form tracking', function() {
         .click('#submit-1')
         .waitUntil(urlMatches('http://google-analytics.com/collect'));
 
-    // TODO(philipwalton): figure out a way to test hitCallback timing out.
+    // TODO(philipwalton): figure out a way to test the hitCallback timing out.
   });
 });
 
@@ -85,6 +92,7 @@ function urlMatches(url) {
     });
   }
 }
+
 
 function stopFormSubmitEvents() {
   window.__stopFormSubmitEvents__ = true;

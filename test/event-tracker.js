@@ -6,9 +6,11 @@ var browserCaps;
 
 describe('Event tracking', function() {
 
+
   before(function *() {
     browserCaps = (yield browser.session()).value;
   });
+
 
   it('should support declarative event binding to DOM elements', function *() {
 
@@ -26,6 +28,7 @@ describe('Event tracking', function() {
     assert.equal(hitData[0].eventValue, '42');
   });
 
+
   it('should support only specifying some of the event fields', function *() {
 
     if (notSupportedInBrowser()) return;
@@ -42,6 +45,7 @@ describe('Event tracking', function() {
     assert.equal(hitData[0].eventValue, undefined);
   });
 
+
   it('should not capture clicks without the category and action fields',
       function *() {
 
@@ -55,6 +59,7 @@ describe('Event tracking', function() {
 
     assert.equal(hitData.count, 0);
   });
+
 
   it('should support customizing the attribute prefix', function *() {
 

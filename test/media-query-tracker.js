@@ -1,17 +1,18 @@
 var assert = require('assert');
 var get = require('lodash/object/get');
 
-var TIMEOUT = 1000;
-
 
 var browserCaps;
+var TIMEOUT = 1000;
 
 
 describe('Media query tracking', function() {
 
+
   before(function *() {
     browserCaps = (yield browser.session()).value;
   });
+
 
   beforeEach(function() {
 
@@ -22,6 +23,7 @@ describe('Media query tracking', function() {
         .url('/test/blank.html')
         .setViewportSize({width:800, height:600}, false);
   });
+
 
   it('should set initial data via custom dimensions', function *() {
 
@@ -55,6 +57,7 @@ describe('Media query tracking', function() {
         ]));
   });
 
+
   it('should wait for the timeout to set or send changes', function *() {
 
     if (notSupportedInBrowser()) return;
@@ -73,6 +76,7 @@ describe('Media query tracking', function() {
 
     assert(timeoutDuration >= TIMEOUT);
   });
+
 
   it('should support customizing the timeout period', function *() {
 
@@ -108,6 +112,7 @@ describe('Media query tracking', function() {
     assert(longTimeoutDuration - shortTimeoutDuration > (TIMEOUT/2));
   });
 
+
   it('should support customizing the change template', function() {
 
     if (notSupportedInBrowser()) return;
@@ -120,7 +125,6 @@ describe('Media query tracking', function() {
           ['hitData[1].eventLabel', 'md:sm']
         ]));
   });
-
 });
 
 
