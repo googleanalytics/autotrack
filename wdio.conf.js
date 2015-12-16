@@ -56,6 +56,11 @@ if (isSauceLabs) {
       browserName: 'internet explorer',
       platform: 'Windows XP',
       version: '8.0'
+    },
+    {
+      browserName: 'opera',
+      platform: 'Linux',
+      version: '12.15'
     }
   ];
 
