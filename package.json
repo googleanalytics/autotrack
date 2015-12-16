@@ -39,6 +39,7 @@
     "gulp-uglify": "^1.5.1",
     "gulp-util": "^3.0.7",
     "gulp-webdriver": "^1.0.2",
+    "lodash": "^3.10.1",
     "mocha": "^2.3.4",
     "saucelabs": "^1.0.1",
     "selenium-server-standalone-jar": "^2.48.2",

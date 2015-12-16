@@ -1,10 +1,16 @@
 var assert = require('assert');
+var browserCaps;
 
 
 describe('Outbound form tracking', function() {
 
+  before(function *() {
+    browserCaps = (yield browser.session()).value;
+  });
 
   it('should send events on outbound form submits', function *() {
+
+    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/outbound-form-tracker.html')
@@ -16,12 +22,14 @@ describe('Outbound form tracking', function() {
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
-    assert.equal(hitData[0].eventLabel, 'http://example.com/');
+    assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
   });
 
   it('should not send events on local form submits', function *() {
 
-    var hitData = (yield browser
+    if (notSupportedInBrowser()) return;
+
+    var testData = (yield browser
         .url('/test/outbound-form-tracker.html')
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
@@ -29,19 +37,24 @@ describe('Outbound form tracking', function() {
         .execute(getPageData))
         .value;
 
-    assert.equal(hitData.length, 0);
+    assert(!testData.count);
   });
 
   it('should navigate to the proper location on submit', function() {
+
+    if (notSupportedInBrowser()) return;
+
     return browser
         .url('/test/outbound-form-tracker.html')
         .execute(stubBeacon)
         .click('#submit-1')
-        .waitUntil(urlIs('http://example.com/'));
+        .waitUntil(urlMatches('http://google-analytics.com/collect'));
   });
 
   it('should stop the event when beacon is not supported and re-emit ' +
       'after the hit succeeds or times out', function* () {
+
+    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/outbound-form-tracker.html')
@@ -53,19 +66,19 @@ describe('Outbound form tracking', function() {
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
-    assert.equal(hitData[0].eventLabel, 'http://example.com/');
+    assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
 
     yield browser
         .url('/test/outbound-form-tracker.html')
         .click('#submit-1')
-        .waitUntil(urlIs('http://example.com/'));
+        .waitUntil(urlMatches('http://google-analytics.com/collect'));
 
     // TODO(philipwalton): figure out a way to test hitCallback timing out.
   });
 });
 
 
-function urlIs(url) {
+function urlMatches(url) {
   return function() {
     return browser.url().then(function(result) {
       return result.value == url;
@@ -99,4 +112,15 @@ function disableFormSubmitMethod() {
 
 function getPageData() {
   return hitData;
+}
+
+
+function isIE8() {
+  return browserCaps.browserName == 'internet explorer' &&
+         browserCaps.version == '8';
+}
+
+
+function notSupportedInBrowser() {
+  return isIE8();
 }

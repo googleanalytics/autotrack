@@ -3,41 +3,58 @@ var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 
 
 // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
-var capabilities = [{browserName: 'firefox'}];
+// var capabilities = [{browserName: 'firefox'}];
+var capabilities = [
+  {browserName: 'chrome'},
+  {browserName: 'firefox'},
+  {browserName: 'safari'},
+];
+
 if (isSauceLabs) {
-  capabilities = capabilities.concat([
+  capabilities = [
     {
-      browserName: 'chrome'
+      browserName: 'chrome',
+      platform: 'linux'
     },
-    // {
-    //   browserName: 'MicrosoftEdge',
-    //   platform: 'Windows 10'
-    // },
-    // {
-    //   browserName: 'internet explorer',
-    //   platform: 'Windows 8.1',
-    //   version: '11.0'
-    // },
-    // {
-    //   browserName: 'internet explorer',
-    //   platform: 'Windows 8',
-    //   version: '10.0'
-    // },
-    // {
-    //   browserName: 'internet explorer',
-    //   platform: 'Windows 7',
-    //   version: '9.0'
-    // },
+    {
+      browserName: 'firefox',
+      platform: 'linux'
+    },
     {
       browserName: 'safari',
-      platform: 'OS X 10.11'
+      platform: 'OS X 10.11',
+      version: '9.0',
     },
-    // {
-    //   browserName: 'safari',
-    //   platform: 'OS X 10.8',
-    //   version: '6'
-    // }
-  ]);
+    {
+      browserName: 'safari',
+      platform: 'OS X 10.8',
+      version: '6'
+    },
+    {
+      browserName: 'MicrosoftEdge',
+      platform: 'Windows 10'
+    },
+    {
+      browserName: 'internet explorer',
+      platform: 'Windows 8.1',
+      version: '11.0'
+    },
+    {
+      browserName: 'internet explorer',
+      platform: 'Windows 8',
+      version: '10.0'
+    },
+    {
+      browserName: 'internet explorer',
+      platform: 'Windows 7',
+      version: '9.0'
+    },
+    {
+      browserName: 'internet explorer',
+      platform: 'Windows XP',
+      version: '8.0'
+    }
+  ];
 
   capabilities.forEach(function(cap) {
     cap['name'] = 'analytics.js autotrack tests - ' + cap.browserName +
@@ -92,7 +109,6 @@ exports.config = {
   //
   // Level of logging verbosity: silent | verbose | command | data | result | error
   logLevel: 'silent',
-
   //
   // Enables colors for log output.
   coloredLogs: true,
