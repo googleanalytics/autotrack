@@ -20,7 +20,7 @@ if (isSauceLabs) {
     },
     {
       browserName: 'firefox',
-      platform: 'linux'
+      platform: 'OS X 10.11'
     },
     {
       browserName: 'safari',
