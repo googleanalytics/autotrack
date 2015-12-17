@@ -1,20 +1,9 @@
 var assert = require('assert');
 
 
-var browserCaps;
-
-
 describe('Outbound form tracking', function() {
 
-
-  before(function *() {
-    browserCaps = (yield browser.session()).value;
-  });
-
-
   it('should send events on outbound form submits', function *() {
-
-    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/outbound-form-tracker.html')
@@ -32,8 +21,6 @@ describe('Outbound form tracking', function() {
 
   it('should not send events on local form submits', function *() {
 
-    if (notSupportedInBrowser()) return;
-
     var testData = (yield browser
         .url('/test/outbound-form-tracker.html')
         .execute(stopFormSubmitEvents)
@@ -48,8 +35,6 @@ describe('Outbound form tracking', function() {
 
   it('should navigate to the proper location on submit', function() {
 
-    if (notSupportedInBrowser()) return;
-
     return browser
         .url('/test/outbound-form-tracker.html')
         .execute(stubBeacon)
@@ -60,8 +45,6 @@ describe('Outbound form tracking', function() {
 
   it('should stop the event when beacon is not supported and re-emit ' +
       'after the hit succeeds or times out', function* () {
-
-    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/outbound-form-tracker.html')
@@ -120,15 +103,4 @@ function disableFormSubmitMethod() {
 
 function getPageData() {
   return hitData;
-}
-
-
-function isIE8() {
-  return browserCaps.browserName == 'internet explorer' &&
-         browserCaps.version == '8';
-}
-
-
-function notSupportedInBrowser() {
-  return isIE8();
 }

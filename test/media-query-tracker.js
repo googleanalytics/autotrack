@@ -8,7 +8,6 @@ var TIMEOUT = 1000;
 
 describe('Media query tracking', function() {
 
-
   before(function *() {
     browserCaps = (yield browser.session()).value;
   });
@@ -151,9 +150,6 @@ function pageDataMatches(expected) {
 }
 
 
-// Some capabilities are not yet implemented, so we can't test against
-// Edge right now. Wait for build 10532 to support "Set Window Size".
-// https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
 function isEdge() {
   return browserCaps.browserName == 'MicrosoftEdge';
 }
@@ -165,12 +161,11 @@ function isIE9() {
 }
 
 
-function isIE8() {
-  return browserCaps.browserName == 'internet explorer' &&
-         browserCaps.version == '8';
-}
-
-
 function notSupportedInBrowser() {
-  return isEdge() || isIE9() || isIE8();
+  // TODO(philipwalton): Some capabilities aren't implemented, so we can't test
+  // against Edge right now. Wait for build 10532 to support setViewportSize
+  // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
+
+  // IE9 doesn't support matchMedia, so it's not tested.
+  return isEdge() || isIE9();
 }

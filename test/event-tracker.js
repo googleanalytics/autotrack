@@ -1,20 +1,9 @@
 var assert = require('assert');
 
 
-var browserCaps;
-
-
 describe('Event tracking', function() {
 
-
-  before(function *() {
-    browserCaps = (yield browser.session()).value;
-  });
-
-
   it('should support declarative event binding to DOM elements', function *() {
-
-    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/event-tracker.html')
@@ -30,8 +19,6 @@ describe('Event tracking', function() {
 
 
   it('should support only specifying some of the event fields', function *() {
-
-    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/event-tracker.html')
@@ -49,8 +36,6 @@ describe('Event tracking', function() {
   it('should not capture clicks without the category and action fields',
       function *() {
 
-    if (notSupportedInBrowser()) return;
-
     var hitData = (yield browser
         .url('/test/event-tracker.html')
         .click('#event-button-missing-fields')
@@ -62,8 +47,6 @@ describe('Event tracking', function() {
 
 
   it('should support customizing the attribute prefix', function *() {
-
-    if (notSupportedInBrowser()) return;
 
     var hitData = (yield browser
         .url('/test/event-tracker-custom-prefix.html')
@@ -82,15 +65,4 @@ describe('Event tracking', function() {
 
 function getPageData() {
   return hitData;
-}
-
-
-function isIE8() {
-  return browserCaps.browserName == 'internet explorer' &&
-         browserCaps.version == '8';
-}
-
-
-function notSupportedInBrowser() {
-  return isIE8();
 }

@@ -6,7 +6,6 @@ var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 
 
 // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
-// var capabilities = [{browserName: 'firefox'}];
 var capabilities = [
   {browserName: 'chrome'},
   {browserName: 'firefox'},
@@ -51,11 +50,6 @@ if (isSauceLabs) {
       browserName: 'internet explorer',
       platform: 'Windows 7',
       version: '9.0'
-    },
-    {
-      browserName: 'internet explorer',
-      platform: 'Windows XP',
-      version: '8.0'
     }
   ];
 
@@ -121,7 +115,7 @@ exports.config = {
   baseUrl: 'http://localhost:8080',
   //
   // Default timeout for all waitForXXX commands.
-  waitforTimeout: 60000,
+  waitforTimeout: process.env.CI ? 60000 : 5000,
   //
   // Initialize the browser instance with a WebdriverIO plugin. The object should have the
   // plugin name as key and the desired plugin options as property. Make sure you have
