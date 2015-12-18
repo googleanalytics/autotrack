@@ -79,10 +79,12 @@ describe('socialTracker', function() {
     var tweetFrame = (yield browser
         .url('/test/social-tracker-widgets.html')
         .waitForVisible('iframe.twitter-share-button')
+        .pause(1000) // Needed for Safari (for some reason).
         .element('iframe.twitter-share-button')).value;
 
     var followFrame = (yield browser
         .waitForVisible('iframe.twitter-follow-button')
+        .pause(1000) // Needed for Safari (for some reason).
         .element('iframe.twitter-follow-button')).value;
 
     yield browser
