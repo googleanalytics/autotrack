@@ -1,0 +1,21 @@
+<!doctype html>
+<html>
+<body>
+
+  <script>
+    // Note(philipwalton):
+    // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
+    var messages = {count: 0};
+    window.addEventListener('message', function(event) {
+      var data = JSON.parse(event.data);
+      if (!data.sessionDurationMessage) return;
+
+      messages[messages.count] = data.sessionDurationMessage;
+      messages.count++;
+    });
+  </script>
+
+  <iframe src="/test/session-duration-tracker-frame.html"></iframe>
+
+</body>
+</html>
