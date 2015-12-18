@@ -19,7 +19,7 @@ describe('Media query tracking', function() {
 
     return browser
         // Loads a blank page to speed up testing.
-        .url('/test/blank.html')
+        .url('/test/media-query-tracker-blank.html')
         .setViewportSize({width:800, height:600}, false);
   });
 
