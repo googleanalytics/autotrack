@@ -33,13 +33,19 @@ describe('Outbound form tracking', function() {
   });
 
 
-  it('should navigate to the proper location on submit', function() {
+  it('should navigate to the proper location on submit', function *() {
 
-    return browser
+    yield browser
         .url('/test/outbound-form-tracker.html')
         .execute(stubBeacon)
         .click('#submit-1')
         .waitUntil(urlMatches('http://google-analytics.com/collect'));
+
+    yield browser
+        .url('/test/outbound-form-tracker.html')
+        .execute(stubBeacon)
+        .click('#submit-2')
+        .waitUntil(urlMatches('/test/blank.html'));
   });
 
 
@@ -68,10 +74,11 @@ describe('Outbound form tracking', function() {
 });
 
 
-function urlMatches(url) {
+function urlMatches(expectedUrl) {
   return function() {
     return browser.url().then(function(result) {
-      return result.value == url;
+      var actualUrl = result.value;
+      return actualUrl.indexOf(expectedUrl) > -1;
     });
   }
 }
