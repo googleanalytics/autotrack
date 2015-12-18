@@ -39,17 +39,17 @@ if (isSauceLabs) {
     {
       browserName: 'internet explorer',
       platform: 'Windows 8.1',
-      version: '11.0'
+      version: '11'
     },
     {
       browserName: 'internet explorer',
       platform: 'Windows 8',
-      version: '10.0'
+      version: '10'
     },
     {
       browserName: 'internet explorer',
       platform: 'Windows 7',
-      version: '9.0'
+      version: '9'
     }
   ];
 
