@@ -70,6 +70,59 @@ describe('urlTracker', function() {
     assert.equal(hitData[4].page, '/test/foo.html');
     assert.equal(hitData[5].page, '/test/url-change-tracker.html');
   });
+
+
+  it('should not capture hash changes', function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var url = (yield browser
+        .url('/test/url-change-tracker.html')
+        .click('#hash')
+        .url())
+        .value;
+
+    assert.equal(url, baseUrl + '/test/url-change-tracker.html#hash');
+
+    var backUrl = (yield browser
+        .back()
+        .url())
+        .value;
+
+    assert.equal(backUrl, baseUrl + '/test/url-change-tracker.html');
+
+    var hitData = (yield browser
+        .execute(getPageData))
+        .value;
+
+    assert.equal(hitData.count, 0);
+  });
+
+  it('should support customizing what is considered a change', function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var fooUrl = (yield browser
+        .url('/test/url-change-tracker-conditional.html')
+        .click('#foo')
+        .url())
+        .value;
+
+    assert.equal(fooUrl, baseUrl + '/test/foo.html');
+
+    var backUrl = (yield browser
+       .back()
+       .url())
+       .value;
+
+    assert.equal(backUrl, baseUrl + '/test/url-change-tracker-conditional.html');
+
+    var hitData = (yield browser
+       .execute(getPageData))
+       .value;
+
+    assert.equal(hitData.count, 0);
+  });
 });
 
 

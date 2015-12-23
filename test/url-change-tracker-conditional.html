@@ -19,7 +19,11 @@
   });
 
 
-  ga('require', 'urlChangeTracker');
+  ga('require', 'urlChangeTracker', {
+    shouldCaptureUrlChange: function(newPath, oldPath) {
+      return false;
+    }
+  });
 
   </script>
 
