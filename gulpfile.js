@@ -46,7 +46,7 @@ gulp.task('javascript', function(done) {
 });
 
 
-gulp.task('test', ['javascript', 'serve', 'selenium-server'], function() {
+gulp.task('test', ['javascript', 'serve', 'selenium'], function() {
   function stopServers() {
     server.close();
     if (!process.env.CI) seleniumServer.kill();
@@ -62,7 +62,7 @@ gulp.task('serve', ['javascript'], function(done) {
 });
 
 
-gulp.task('selenium-server', function(done) {
+gulp.task('selenium', function(done) {
   // Don't start the selenium server on CI.
   if (process.env.CI) return done();
 
