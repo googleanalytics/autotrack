@@ -15,7 +15,8 @@
   ga('set', 'sendHitTask', function(model) {
     hitData[hitData.count] = {
       eventCategory: model.get('eventCategory'),
-      eventAction: model.get('eventAction')
+      eventAction: model.get('eventAction'),
+      nonInteraction: model.get('nonInteraction')
     };
     hitData.count++;
   });
@@ -48,7 +49,8 @@
       var data = JSON.stringify({
         sessionDurationMessage: {
           eventCategory: tracker.get('eventCategory'),
-          eventAction: tracker.get('eventAction')
+          eventAction: tracker.get('eventAction'),
+          nonInteraction: tracker.get('nonInteraction')
         }
       });
       window.parent.postMessage(data, '*');

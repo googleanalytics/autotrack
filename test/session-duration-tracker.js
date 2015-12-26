@@ -21,6 +21,7 @@ describe('sessionDurationTracker', function() {
         .element('iframe')).value;
   });
 
+
   it('should send an event when the page is being unloaded', function() {
 
     if (notSupportedInBrowser()) return;
@@ -34,7 +35,8 @@ describe('sessionDurationTracker', function() {
           ['count', 1],
           ['[0].count', 1],
           ['[0][0].eventCategory', 'Window'],
-          ['[0][0].eventAction', 'unload']
+          ['[0][0].eventAction', 'unload'],
+          ['[0][0].nonInteraction', true]
         ]));
   });
 
@@ -54,7 +56,8 @@ describe('sessionDurationTracker', function() {
           ['[0].url', 'https://www.google-analytics.com/collect'],
           ['[0].async', false],
           ['[1].eventCategory', 'Window'],
-          ['[1].eventAction', 'unload']
+          ['[1].eventAction', 'unload'],
+          ['[1].nonInteraction', true]
         ]));
   });
 
