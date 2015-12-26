@@ -1,7 +1,7 @@
 var assert = require('assert');
 
 
-describe('Event tracking', function() {
+describe('eventTracker', function() {
 
   it('should support declarative event binding to DOM elements', function *() {
 

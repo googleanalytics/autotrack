@@ -6,7 +6,7 @@ var browserCaps;
 var TIMEOUT = 1000;
 
 
-describe('Media query tracking', function() {
+describe('mediaQueryTracker', function() {
 
   before(function *() {
     browserCaps = (yield browser.session()).value;

@@ -1,7 +1,7 @@
 var assert = require('assert');
 
 
-describe('Outbound form tracking', function() {
+describe('outboundFormTracker', function() {
 
   it('should send events on outbound form submits', function *() {
 
