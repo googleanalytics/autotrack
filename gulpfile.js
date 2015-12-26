@@ -24,11 +24,7 @@ function isProd() {
 
 
 gulp.task('javascript', function(done) {
-  browserify('./', {
-    debug: true,
-    detectGlobals: false,
-    standalone: 'ga.autotrack'
-  })
+  browserify('./', {debug: true})
   .bundle()
 
   // TODO(philipwalton): Add real error handling.
