@@ -4,7 +4,6 @@ var connect = require('connect');
 var gulp = require('gulp');
 var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
-var mocha = require('gulp-mocha');
 var seleniumServerJar = require('selenium-server-standalone-jar');
 var shell = require('shelljs');
 var serveStatic = require('serve-static');
