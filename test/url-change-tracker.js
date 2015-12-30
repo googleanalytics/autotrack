@@ -64,11 +64,17 @@ describe('urlTracker', function() {
         .value;
 
     assert.equal(hitData[0].page, '/test/foo.html');
+    assert.equal(hitData[0].title, 'Foo');
     assert.equal(hitData[1].page, '/test/bar.html');
+    assert.equal(hitData[1].title, 'Bar');
     assert.equal(hitData[2].page, '/test/qux.html');
+    assert.equal(hitData[2].title, 'Qux');
     assert.equal(hitData[3].page, '/test/bar.html');
+    assert.equal(hitData[3].title, 'Bar');
     assert.equal(hitData[4].page, '/test/foo.html');
+    assert.equal(hitData[4].title, 'Foo');
     assert.equal(hitData[5].page, '/test/url-change-tracker.html');
+    assert.equal(hitData[5].title, 'Home');
   });
 
 
@@ -115,7 +121,8 @@ describe('urlTracker', function() {
        .url())
        .value;
 
-    assert.equal(backUrl, baseUrl + '/test/url-change-tracker-conditional.html');
+    assert.equal(backUrl, baseUrl +
+                          '/test/url-change-tracker-conditional.html');
 
     var hitData = (yield browser
        .execute(getPageData))

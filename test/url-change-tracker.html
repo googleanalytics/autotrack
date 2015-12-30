@@ -1,5 +1,8 @@
 <!doctype html>
 <html>
+<head>
+  <title>Home</title>
+</head>
 <body>
   <script>
   window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
@@ -13,7 +16,8 @@
   var hitData = {count: 0};
   ga('set', 'sendHitTask', function(model) {
     hitData[hitData.count] = {
-      page: model.get('page')
+      page: model.get('page'),
+      title: model.get('title')
     };
     hitData.count++;
   });
