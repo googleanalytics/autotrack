@@ -17,31 +17,31 @@ The following plugins are included with `autotrack.js`:
     <th align="left">Description</th>
   </tr>
   <tr>
-    <td><a href="#eventTracker"><code>eventTracker</code></a></td>
+    <td><a href="#eventtracker"><code>eventTracker</code></a></td>
     <td>Declarative event tracking</td>
   </tr>
   <tr>
-    <td><a href="#mediaQueryTracker"><code>mediaQueryTracker</code></a></td>
+    <td><a href="#mediaquerytracker"><code>mediaQueryTracker</code></a></td>
     <td>Media query and breakpoint tracking</td>
   </tr>
   <tr>
-    <td><a href="#outboundFormTracker"><code>outboundFormTracker</code></a></td>
+    <td><a href="#outboundformtracker"><code>outboundFormTracker</code></a></td>
     <td>Automatic outbound form tracking</td>
   </tr>
   <tr>
-    <td><a href="#outboundLinkTracker"><code>outboundLinkTracker</code></a></td>
+    <td><a href="#outboundlinktracker"><code>outboundLinkTracker</code></a></td>
     <td>Automatic outbound link tracking</td>
   </tr>
   <tr>
-    <td><a href="#sessionDurationTracker"><code>sessionDurationTracker</code></a></td>
+    <td><a href="#sessiondurationtracker"><code>sessionDurationTracker</code></a></td>
     <td>Enhanced session duration tracking</td>
   </tr>
   <tr>
-    <td><a href="#socialTracker"><code>socialTracker</code></a></td>
+    <td><a href="#socialtracker"><code>socialTracker</code></a></td>
     <td>Automatic and enhanced declarative social tracking</td>
   </tr>
   <tr>
-    <td><a href="#urlChangeTracker"><code>urlChangeTracker</code></a></td>
+    <td><a href="#urlchangetracker"><code>urlChangeTracker</code></a></td>
     <td>Automatic URL change tracking for single page applications</td>
   </tr>
 </table>
@@ -105,7 +105,7 @@ ga('require', 'sessionDurationTracker');
 ga('send', 'pageview');
 ```
 
-Note that the `autotrack` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom builds) section below.
+Note that the `autotrack` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
 
 ## Plugins
 
@@ -115,7 +115,7 @@ The `eventTracker` plugin adds declarative event tracking for click events on an
 
 #### Options
 
-* [`attributePrefix`](#attributePrefix)
+* [`attributePrefix`](#attributeprefix)
 
 #### Example
 
@@ -129,7 +129,7 @@ The following element would send an event hit to Google Analytics with the categ
 
 The `mediaQueryTracker` plugin allows you to track what media query is currently active as well as how often the matching media query changes.
 
-You can tell the `mediaQueryTracker` plugin what media query data to look for via the [`mediaQueryDefinitions`](#mediaQueryDefinitions) configuration option.
+You can tell the `mediaQueryTracker` plugin what media query data to look for via the [`mediaQueryDefinitions`](#mediaquerydefinitions) configuration option.
 
 Note, Google Analytics does not have built in fields for media query data, but you can set up one or more [custom dimensions](https://support.google.com/analytics/answer/2709828) to capture this data. You must set up your custom dimensions in Google Analytics before you can use this plugin, as each of the `mediaQueryDefinitions` objects requires a `dimensionIndex` value, which is specific to your individual setup.
 
@@ -137,7 +137,7 @@ To create a custom dimension, refer to the support article: [Create and edit cus
 
 #### Options
 
-* [`mediaQueryDefinitions`](#mediaQueryDefinitions)
+* [`mediaQueryDefinitions`](#mediaquerydefinitions)
 
 #### Example
 
@@ -176,7 +176,7 @@ ga('require', 'autotrack', {
 });
 ```
 
-See the [`mediaQueryDefinitions`](#mediaQueryDefinitions) option documentation for more details.
+See the [`mediaQueryDefinitions`](#mediaquerydefinitions) option documentation for more details.
 
 ### `outboundFormTracker`
 
@@ -235,7 +235,7 @@ The plugin does not support tracking hash changes as most Google Analytics imple
 
 #### Options
 
-* [`shouldTrackUrlChange`](#shouldTrackUrlChange)
+* [`shouldTrackUrlChange`](#shouldtrackurlchange)
 
 
 ## Configuration options
