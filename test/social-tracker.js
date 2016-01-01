@@ -27,22 +27,7 @@ describe('socialTracker', function() {
   });
 
 
-  it('should support only specifying some of the social fields', function *() {
-
-    var hitData = (yield browser
-        .url('/test/social-tracker.html')
-        .waitUntil(pageIsLoaded())
-        .click('#social-button-some-fields')
-        .execute(getPageData))
-        .value;
-
-    assert.equal(hitData[0].socialNetwork, 'Twitter');
-    assert.equal(hitData[0].socialAction, 'tweet');
-    assert.equal(hitData[0].socialTarget, undefined);
-  });
-
-
-  it('should not capture clicks without the network and action fields',
+  it('should not capture clicks without the network, action, and target fields',
       function *() {
 
     var hitData = (yield browser
