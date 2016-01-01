@@ -2,7 +2,6 @@ var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var connect = require('connect');
 var gulp = require('gulp');
-var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
 var seleniumServerJar = require('selenium-server-standalone-jar');
 var shell = require('shelljs');
@@ -15,11 +14,6 @@ var webdriver = require('gulp-webdriver');
 
 
 var server;
-
-
-function isProd() {
-  return process.env.NODE_ENV == 'production';
-}
 
 
 gulp.task('javascript', function(done) {
@@ -35,9 +29,9 @@ gulp.task('javascript', function(done) {
   .pipe(source('./autotrack.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init({loadMaps: true}))
-  .pipe(gulpIf(isProd(), uglify()))
+  .pipe(uglify())
   .pipe(sourcemaps.write('./'))
-  .pipe(gulp.dest('./dist'));
+  .pipe(gulp.dest('./'));
 });
 
 
