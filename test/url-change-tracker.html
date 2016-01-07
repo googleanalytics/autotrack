@@ -32,6 +32,7 @@
       <li><a id="foo" href="foo.html">foo.html</a></li>
       <li><a id="bar" href="bar.html">bar.html</a></li>
       <li><a id="qux" href="qux.html">qux.html</a></li>
+      <li><a id="replace" href="#">replace</a></li>
       <li><a id="hash" href="#hash">#hash</a></li>
     </ul>
   </nav>
@@ -44,8 +45,7 @@
     var foo = document.getElementById('foo');
     var bar = document.getElementById('bar');
     var qux = document.getElementById('qux');
-
-    history.replaceState({}, document.title, location.href);
+    var replace = document.getElementById('replace');
 
     foo.addEventListener('click', function(event) {
       event.preventDefault();
@@ -63,6 +63,11 @@
       event.preventDefault();
       history.pushState({}, 'Qux', this.href);
       quxPage();
+    });
+
+    replace.addEventListener('click', function(event) {
+      event.preventDefault();
+      history.replaceState({}, document.title, location.pathname);
     });
 
     window.addEventListener('popstate', function(event) {

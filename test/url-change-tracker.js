@@ -78,6 +78,29 @@ describe('urlTracker', function() {
   });
 
 
+  it('should update the tracker but not send hits when using replaceState',
+      function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var url = (yield browser
+        .url('/test/url-change-tracker.html?q=extraStuff')
+        .click('#replace')
+        .url())
+        .value;
+
+    // Replace state was called to just use the pathname value.
+    assert.equal(url, baseUrl + '/test/url-change-tracker.html');
+
+    var hitData = (yield browser
+        .execute(getPageData))
+        .value;
+
+    assert.equal(hitData.count, 0);
+  });
+
+
+
   it('should not capture hash changes', function *() {
 
     if (notSupportedInBrowser()) return;
@@ -103,6 +126,7 @@ describe('urlTracker', function() {
 
     assert.equal(hitData.count, 0);
   });
+
 
   it('should support customizing what is considered a change', function *() {
 
