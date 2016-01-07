@@ -9,7 +9,7 @@ var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 var capabilities = [
   {browserName: 'chrome'},
   {browserName: 'firefox'},
-  {browserName: 'safari'},
+  {browserName: 'safari'}
 ];
 
 if (isSauceLabs) {
