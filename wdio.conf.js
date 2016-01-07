@@ -8,8 +8,7 @@ var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
 // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
 var capabilities = [
   {browserName: 'chrome'},
-  {browserName: 'firefox'},
-  {browserName: 'safari'}
+  {browserName: 'firefox'}
 ];
 
 if (isSauceLabs) {
