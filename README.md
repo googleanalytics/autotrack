@@ -190,7 +190,7 @@ The `outboundLinkTracker` plugin automatically detects when links are clicked wi
 
 Session duration in Google Analytics is defined as the amount of time between the first and last hit of a session. For session where a user visits just one page and then leaves, the session duration is zero, even if the user stayed on the page for several minutes. Even for sessions with multiple pageviews, it can still be a problem because the duration of the last pageview is usually not considered.
 
-The `sessionDurationTracker` plugin solves this problem by sending an event hit to Google Analytics when the document is being unloaded. The event category is "Window" and the action is "unload". For browsers that support the [`performance.timing` API](https://developer.mozilla.org/en-US/docs/Web/API/Performance), the event value is the time since the `navigationStart` event.
+The `sessionDurationTracker` plugin partially solves this problem by sending an event hit to Google Analytics (in browser that support [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)) when the document is being unloaded. The event category is "Window" and the action is "unload". For browsers that support the [`performance.timing` API](https://developer.mozilla.org/en-US/docs/Web/API/Performance), the event value is the time since the `navigationStart` event.
 
 ### `socialTracker`
 

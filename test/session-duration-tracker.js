@@ -28,7 +28,6 @@ describe('sessionDurationTracker', function() {
 
     return browser
         .frame(childFrame)
-        .execute(stubBeacon)
         .click('#outbound-link')
         .frame()
         .waitUntil(pageDataMatches([
@@ -39,41 +38,7 @@ describe('sessionDurationTracker', function() {
           ['[0][0].nonInteraction', true]
         ]));
   });
-
-
-
-  it('should send the event sync when beacon is not supported', function() {
-
-    if (notSupportedInBrowser()) return;
-    if (noSyncCorsXhr()) return;
-
-    return browser
-        .frame(childFrame)
-        .execute(stubNoBeacon)
-        .click('#outbound-link')
-        .frame()
-        .waitUntil(pageDataMatches([
-          ['[0].url', 'https://www.google-analytics.com/collect'],
-          ['[0].async', false],
-          ['[1].eventCategory', 'Window'],
-          ['[1].eventAction', 'unload'],
-          ['[1].nonInteraction', true]
-        ]));
-  });
-
 });
-
-
-function stubBeacon() {
-  navigator.sendBeacon = function() {
-    return true;
-  };
-}
-
-
-function stubNoBeacon() {
-  navigator.sendBeacon = undefined;
-}
 
 
 function getPageData() {
@@ -92,12 +57,6 @@ function pageDataMatches(expected) {
 }
 
 
-function isIE9() {
-  return browserCaps.browserName == 'internet explorer' &&
-         browserCaps.version == '9';
-}
-
-
 function isEdge() {
   return browserCaps.browserName == 'MicrosoftEdge';
 }
@@ -108,9 +67,4 @@ function notSupportedInBrowser() {
   // against Edge right now. Wait for build 10532 to support frame
   // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
   return isEdge();
-}
-
-
-function noSyncCorsXhr() {
-  return isIE9();
 }

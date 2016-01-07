@@ -33,31 +33,6 @@
       window.parent.postMessage(data, '*');
     });
   });
-
-
-  ga(function(tracker) {
-    var originalXHROpen = XMLHttpRequest.prototype.open;
-    var originalXHRSend = XMLHttpRequest.prototype.send;
-    XMLHttpRequest.prototype.open = function(verb, url, async) {
-      var data = JSON.stringify({
-        sessionDurationMessage: {verb: verb, url: url, async: async}
-      });
-      window.parent.postMessage(data, '*');
-      originalXHROpen.call(this, verb, url, async);
-    };
-    XMLHttpRequest.prototype.send = function(payload) {
-      var data = JSON.stringify({
-        sessionDurationMessage: {
-          eventCategory: tracker.get('eventCategory'),
-          eventAction: tracker.get('eventAction'),
-          nonInteraction: tracker.get('nonInteraction')
-        }
-      });
-      window.parent.postMessage(data, '*');
-      originalXHRSend.call(payload);
-    };
-  });
-
   </script>
 
   <a id="outbound-link" href="http://google-analytics.com/collect">Outbound</a>
