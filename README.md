@@ -133,7 +133,7 @@ You can tell the `mediaQueryTracker` plugin what media query data to look for vi
 
 Note, Google Analytics does not have built in fields for media query data, but you can set up one or more [custom dimensions](https://support.google.com/analytics/answer/2709828) to capture this data. You must set up your custom dimensions in Google Analytics before you can use this plugin, as each of the `mediaQueryDefinitions` objects requires a `dimensionIndex` value, which is specific to your individual setup.
 
-To create a custom dimension, refer to the support article: [Create and edit custom dimensions and metrics](https://support.google.com/analytics/answer/2709829). You can choose any name you want (if can be changed later), and you should select a scope of "hit".
+To create a custom dimension, refer to the support article: [Create and edit custom dimensions and metrics](https://support.google.com/analytics/answer/2709829). You can choose any name you want (it can be changed later), and you should select a scope of "hit".
 
 #### Options
 
@@ -180,17 +180,17 @@ See the [`mediaQueryDefinitions`](#mediaquerydefinitions) option documentation f
 
 ### `outboundFormTracker`
 
-The `outboundFormTracker` plugin automatically detects when forms are submitted to sites on different domains and sends and event hit. The event category is "Outbound Form", the event action is "submit", and the event label is the value of the form's `action` attribute.
+The `outboundFormTracker` plugin automatically detects when forms are submitted to sites on different domains an sends and event hit. The event category is "Outbound Form", the event action is "submit", and the event label is the value of the form's `action` attribute.
 
 ### `outboundLinkTracker`
 
-The `outboundLinkTracker` plugin automatically detects when links are clicked with `href` attributes pointing to sites on different domains and sends and event hit. The event category is "Outbound Link", the event action is "click", and the event label is the value of the link's `href` attribute.
+The `outboundLinkTracker` plugin automatically detects when links are clicked with `href` attributes pointing to sites on different domains and sends an event hit. The event category is "Outbound Link", the event action is "click", and the event label is the value of the link's `href` attribute.
 
 ### `sessionDurationTracker`
 
-Session duration in Google Analytics is defined as the amount of time between the first and last hit of a session. For session where a user visits just one page and then leaves, the session duration is zero, even if the user stayed on the page for several minutes. Even for sessions with multiple pageviews, it can still be a problem because the duration of the last pageview is usually not considered.
+Session duration in Google Analytics is defined as the amount of time between the first and last hit of a session. For a session where a user visits just one page and then leaves, the session duration is zero, even if the user stayed on the page for several minutes. Even for sessions with multiple pageviews, it can still be a problem because the duration of the last pageview is usually not considered.
 
-The `sessionDurationTracker` plugin partially solves this problem by sending an event hit to Google Analytics (in browser that support [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)) when the document is being unloaded. The event category is "Window" and the action is "unload". For browsers that support the [`performance.timing` API](https://developer.mozilla.org/en-US/docs/Web/API/Performance), the event value is the time since the `navigationStart` event.
+The `sessionDurationTracker` plugin partially solves this problem by sending an event hit to Google Analytics (in browsers that support [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)) when the document is being unloaded. The event category is "Window" and the action is "unload". For browsers that support the [`performance.timing` API](https://developer.mozilla.org/en-US/docs/Web/API/Performance), the event value is the time since the `navigationStart` event.
 
 ### `socialTracker`
 
@@ -259,7 +259,7 @@ The attribute prefix for declarative event and social tracking. The value used a
 A media query definitions object or a list of media query definition objects. A media query definitions object contains the following properties:
 
   - `name`: a unique name that will be used as the `eventCategory` value for media query change events.
-  - `dimensionIndex`: the index of the custom dimension created in Google Analytics.
+  - `dimensionIndex`: the index of the custom dimension [created in Google Analytics](https://support.google.com/analytics/answer/2709829).
   - `items`: An array of objects with the following properties:
     - `name`: The value that will be set on the custom dimension.
     - `media`: The media query value to test for a match.
@@ -341,7 +341,7 @@ The function is invoked with the string values `newPath` and `oldPath` which rep
 
 ### Custom builds
 
-The `autotrack` library is built modularly and each plugin includes its own dependencies, so you can create a custom build of the library using a script bundler such as Browserify.
+The `autotrack` library is built modularly and each plugin includes its own dependencies, so you can create a custom build of the library using a script bundler such as [Browserify](http://browserify.org/).
 
 The following example shows how to create a build that only includes the `outboundLinkTracker` and `sessionDurationTracker` plugins:
 
