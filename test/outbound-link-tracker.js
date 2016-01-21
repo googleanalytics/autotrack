@@ -1,4 +1,6 @@
 var assert = require('assert');
+var get = require('lodash/object/get');
+var constants = require('../lib/constants');
 
 
 describe('outboundLinkTracker', function() {
@@ -10,7 +12,7 @@ describe('outboundLinkTracker', function() {
         .execute(stopClickEvents)
         .execute(stubBeacon)
         .click('#outbound-link')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'Outbound Link');
@@ -26,7 +28,7 @@ describe('outboundLinkTracker', function() {
         .execute(stopClickEvents)
         .execute(stubBeacon)
         .click('#local-link')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert(!testData.count);
@@ -61,7 +63,38 @@ describe('outboundLinkTracker', function() {
 
     assert.equal('_blank', target);
   });
+
+
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/outbound-link-tracker.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+  });
+
 });
+
+
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getHitData() {
+  return hitData;
+}
+
+
+function hitDataMatches(expected) {
+  return function() {
+    return browser.execute(getHitData).then(function(hitData) {
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
+      });
+    });
+  };
+}
 
 
 function urlMatches(expectedUrl) {
@@ -88,9 +121,4 @@ function stubBeacon() {
 
 function stubNoBeacon() {
   navigator.sendBeacon = undefined;
-}
-
-
-function getPageData() {
-  return hitData;
 }

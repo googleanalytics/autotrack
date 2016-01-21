@@ -1,4 +1,6 @@
 var assert = require('assert');
+var get = require('lodash/object/get');
+var constants = require('../lib/constants');
 
 
 var browserCaps;
@@ -60,7 +62,7 @@ describe('urlTracker', function() {
     assert.equal(back3Url, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData[0].page, '/test/foo.html');
@@ -93,7 +95,7 @@ describe('urlTracker', function() {
     assert.equal(url, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData.count, 0);
@@ -121,7 +123,7 @@ describe('urlTracker', function() {
     assert.equal(backUrl, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData.count, 0);
@@ -149,16 +151,42 @@ describe('urlTracker', function() {
                           '/test/url-change-tracker-conditional.html');
 
     var hitData = (yield browser
-       .execute(getPageData))
+       .execute(getHitData))
        .value;
 
     assert.equal(hitData.count, 0);
   });
+
+
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/url-change-tracker.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+  });
+
 });
 
 
-function getPageData() {
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getHitData() {
   return hitData;
+}
+
+
+function hitDataMatches(expected) {
+  return function() {
+    return browser.execute(getHitData).then(function(hitData) {
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
+      });
+    });
+  };
 }
 
 

@@ -1,5 +1,6 @@
 var assert = require('assert');
 var get = require('lodash/object/get');
+var constants = require('../lib/constants');
 
 
 var browserCaps;
@@ -30,7 +31,7 @@ describe('sessionDurationTracker', function() {
         .frame(childFrame)
         .click('#outbound-link')
         .frame()
-        .waitUntil(pageDataMatches([
+        .waitUntil(messagesDataMatches([
           ['count', 1],
           ['[0].count', 1],
           ['[0][0].eventCategory', 'Window'],
@@ -38,17 +39,48 @@ describe('sessionDurationTracker', function() {
           ['[0][0].nonInteraction', true]
         ]));
   });
+
+
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/session-duration-tracker-frame.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+  });
+
 });
 
 
-function getPageData() {
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getHitData() {
+  return hitData;
+}
+
+
+function hitDataMatches(expected) {
+  return function() {
+    return browser.execute(getHitData).then(function(hitData) {
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
+      });
+    });
+  };
+}
+
+
+function getMessagesData() {
   return messages;
 }
 
 
-function pageDataMatches(expected) {
+function messagesDataMatches(expected) {
   return function() {
-    return browser.execute(getPageData).then(function(pageData) {
+    return browser.execute(getMessagesData).then(function(pageData) {
       return expected.every(function(item) {
         return get(pageData.value, item[0]) === item[1];
       });

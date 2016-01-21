@@ -24,15 +24,15 @@ describe('mediaQueryTracker', function() {
   });
 
 
-  it('should set initial data via custom dimensions', function *() {
+  it('should set initial data via custom dimensions', function() {
 
     if (notSupportedInBrowser()) return;
 
     return browser
         .url('/test/media-query-tracker.html')
-        .waitUntil(pageDataMatches([
-          ['dimensions.dimension1', 'lg'],
-          ['dimensions.dimension2', 'md']
+        .waitUntil(dimensionDataMatches([
+          ['dimension1', 'lg'],
+          ['dimension2', 'md']
         ]));
   });
 
@@ -44,15 +44,17 @@ describe('mediaQueryTracker', function() {
     return browser
         .url('/test/media-query-tracker.html')
         .setViewportSize({width:400, height:400}, false)
-        .waitUntil(pageDataMatches([
-          ['dimensions.dimension1', 'sm'],
-          ['dimensions.dimension2', 'sm'],
-          ['hitData[0].eventCategory', 'Width'],
-          ['hitData[0].eventAction', 'change'],
-          ['hitData[0].eventLabel', 'lg => sm'],
-          ['hitData[1].eventCategory', 'Height'],
-          ['hitData[1].eventAction', 'change'],
-          ['hitData[1].eventLabel', 'md => sm']
+        .waitUntil(dimensionDataMatches([
+          ['dimension1', 'sm'],
+          ['dimension2', 'sm']
+        ]))
+        .waitUntil(hitDataMatches([
+          ['[0].eventCategory', 'Width'],
+          ['[0].eventAction', 'change'],
+          ['[0].eventLabel', 'lg => sm'],
+          ['[1].eventCategory', 'Height'],
+          ['[1].eventAction', 'change'],
+          ['[1].eventLabel', 'md => sm']
         ]));
   });
 
@@ -66,10 +68,12 @@ describe('mediaQueryTracker', function() {
         .setViewportSize({width:400, height:400}, false)
 
     var timeoutStart = Date.now();
-    yield browser.waitUntil(pageDataMatches([
-      ['dimensions.dimension1', 'sm'],
-      ['dimensions.dimension2', 'sm'],
-      ['hitData.count', 2]
+    yield browser.waitUntil(dimensionDataMatches([
+      ['dimension1', 'sm'],
+      ['dimension2', 'sm']
+    ]))
+    .waitUntil(hitDataMatches([
+      ['count', 2]
     ]));
     var timeoutDuration = Date.now() - timeoutStart;
 
@@ -86,10 +90,12 @@ describe('mediaQueryTracker', function() {
         .setViewportSize({width:400, height:400}, false)
 
     var shortTimeoutStart = Date.now();
-    yield browser.waitUntil(pageDataMatches([
-      ['dimensions.dimension1', 'sm'],
-      ['dimensions.dimension2', 'sm'],
-      ['hitData.count', 2]
+    yield browser.waitUntil(dimensionDataMatches([
+      ['dimension1', 'sm'],
+      ['dimension2', 'sm']
+    ]))
+    .waitUntil(hitDataMatches([
+      ['count', 2]
     ]));
     var shortTimeoutDuration = Date.now() - shortTimeoutStart;
 
@@ -99,10 +105,12 @@ describe('mediaQueryTracker', function() {
         .setViewportSize({width:400, height:400}, false);
 
     var longTimeoutStart = Date.now();
-    yield browser.waitUntil(pageDataMatches([
-      ['dimensions.dimension1', 'sm'],
-      ['dimensions.dimension2', 'sm'],
-      ['hitData.count', 2]
+    yield browser.waitUntil(dimensionDataMatches([
+      ['dimension1', 'sm'],
+      ['dimension2', 'sm']
+    ]))
+    .waitUntil(hitDataMatches([
+      ['count', 2]
     ]));
     var longTimeoutDuration = Date.now() - longTimeoutStart;
 
@@ -119,31 +127,60 @@ describe('mediaQueryTracker', function() {
     return browser
         .url('/test/media-query-tracker-change-template.html')
         .setViewportSize({width:400, height:400}, false)
-        .waitUntil(pageDataMatches([
-          ['hitData[0].eventLabel', 'lg:sm'],
-          ['hitData[1].eventLabel', 'md:sm']
+        .waitUntil(hitDataMatches([
+          ['[0].eventLabel', 'lg:sm'],
+          ['[1].eventLabel', 'md:sm']
         ]));
   });
+
+
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/media-query-tracker.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', 'i5iSjo']]));
+  });
+
 });
 
 
-function getPageData() {
-  var tracker = ga.getAll()[0];
-  return {
-    dimensions: {
-      dimension1: tracker.get('dimension1'),
-      dimension2: tracker.get('dimension2')
-    },
-    hitData: hitData
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getHitData() {
+  return hitData;
+}
+
+
+function hitDataMatches(expected) {
+  return function() {
+    return browser.execute(getHitData).then(function(hitData) {
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
+      });
+    });
   };
 }
 
 
-function pageDataMatches(expected) {
+function getDimensionData() {
+  var tracker = ga.getAll()[0];
+  return {
+    dimension1: tracker.get('dimension1'),
+    dimension2: tracker.get('dimension2')
+
+  };
+}
+
+
+function dimensionDataMatches(expected) {
   return function() {
-    return browser.execute(getPageData).then(function(pageData) {
+    return browser.execute(getDimensionData).then(function(dimensionData) {
       return expected.every(function(item) {
-        return get(pageData.value, item[0]) === item[1];
+        return get(dimensionData.value, item[0]) === item[1];
       });
     });
   };

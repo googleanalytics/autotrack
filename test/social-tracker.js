@@ -1,5 +1,6 @@
 var assert = require('assert');
 var get = require('lodash/object/get');
+var constants = require('../lib/constants');
 
 
 var browserCaps;
@@ -18,7 +19,7 @@ describe('socialTracker', function() {
         .url('/test/social-tracker.html')
         .waitUntil(pageIsLoaded())
         .click('#social-button')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData[0].socialNetwork, 'Twitter');
@@ -34,7 +35,7 @@ describe('socialTracker', function() {
         .url('/test/social-tracker.html')
         .waitUntil(pageIsLoaded())
         .click('#social-button-missing-fields')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData.count, 0);
@@ -47,7 +48,7 @@ describe('socialTracker', function() {
         .url('/test/social-tracker-custom-prefix.html')
         .waitUntil(pageIsLoaded())
         .click('#social-button-custom-prefix')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData[0].socialNetwork, 'Twitter');
@@ -79,7 +80,7 @@ describe('socialTracker', function() {
         .frame(followFrame)
         .click('a')
         .frame()
-        .waitUntil(pageDataMatches([
+        .waitUntil(hitDataMatches([
           ['[0].socialNetwork', 'Twitter'],
           ['[0].socialAction', 'tweet'],
           ['[0].socialTarget', 'http://example.com'],
@@ -107,19 +108,32 @@ describe('socialTracker', function() {
   //       .debug();
   // });
 
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/social-tracker.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+  });
+
 });
 
 
-function getPageData() {
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getHitData() {
   return hitData;
 }
 
 
-function pageDataMatches(expected) {
+function hitDataMatches(expected) {
   return function() {
-    return browser.execute(getPageData).then(function(pageData) {
+    return browser.execute(getHitData).then(function(hitData) {
       return expected.every(function(item) {
-        return get(pageData.value, item[0]) === item[1];
+        return get(hitData.value, item[0]) === item[1];
       });
     });
   };
