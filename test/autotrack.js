@@ -1,4 +1,6 @@
 var assert = require('assert');
+var get = require('lodash/object/get');
+var constants = require('../lib/constants');
 
 
 describe('autotrack', function() {
@@ -7,7 +9,7 @@ describe('autotrack', function() {
 
     var gaplugins = (yield browser
         .url('/test/autotrack.html')
-        .execute(getPageData))
+        .execute(getGaPlugins))
         .value;
 
     assert(gaplugins.Autotrack);
@@ -19,9 +21,39 @@ describe('autotrack', function() {
     assert(gaplugins.SocialTracker);
     assert(gaplugins.UrlChangeTracker);
   });
+
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/autotrack.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+  });
+
 });
 
 
-function getPageData() {
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getGaPlugins() {
   return gaplugins;
+}
+
+
+function getHitData() {
+  return hitData;
+}
+
+
+function hitDataMatches(expected) {
+  return function() {
+    return browser.execute(getHitData).then(function(hitData) {
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
+      });
+    });
+  };
 }

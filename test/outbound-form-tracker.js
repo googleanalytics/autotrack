@@ -1,4 +1,6 @@
 var assert = require('assert');
+var get = require('lodash/object/get');
+var constants = require('../lib/constants');
 
 
 describe('outboundFormTracker', function() {
@@ -10,7 +12,7 @@ describe('outboundFormTracker', function() {
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
         .click('#submit-1')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
@@ -26,7 +28,7 @@ describe('outboundFormTracker', function() {
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
         .click('#submit-2')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert(!testData.count);
@@ -57,7 +59,7 @@ describe('outboundFormTracker', function() {
         .execute(stubNoBeacon)
         .execute(disableFormSubmitMethod)
         .click('#submit-1')
-        .execute(getPageData))
+        .execute(getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
@@ -71,7 +73,38 @@ describe('outboundFormTracker', function() {
 
     // TODO(philipwalton): figure out a way to test the hitCallback timing out.
   });
+
+
+  it('should include the &did param with all hits', function() {
+
+    return browser
+        .url('/test/outbound-form-tracker.html')
+        .execute(sendPageview)
+        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+  });
+
 });
+
+
+function sendPageview() {
+  ga('send', 'pageview');
+}
+
+
+function getHitData() {
+  return hitData;
+}
+
+
+function hitDataMatches(expected) {
+  return function() {
+    return browser.execute(getHitData).then(function(hitData) {
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
+      });
+    });
+  };
+}
 
 
 function urlMatches(expectedUrl) {
@@ -105,9 +138,4 @@ function disableFormSubmitMethod() {
   for (var i = 0, form; form = document.forms[i]; i++) {
     form.submit = function() {};
   }
-}
-
-
-function getPageData() {
-  return hitData;
 }

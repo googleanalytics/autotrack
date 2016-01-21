@@ -17,7 +17,8 @@
   ga('set', 'sendHitTask', function(model) {
     hitData[hitData.count] = {
       page: model.get('page'),
-      title: model.get('title')
+      title: model.get('title'),
+      devId: model.get('&did')
     };
     hitData.count++;
   });
