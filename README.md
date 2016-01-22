@@ -5,11 +5,13 @@ Autotrack
 
 ## Overview
 
-The default [JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/) for Google Analytics is powerful and collects important information about the pages users are visiting on your website. But as sites today are becoming increasingly complex, there's a lot more going on that the default snippet is not capturing.
+The default [JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/) for Google Analytics runs when a web page is first loaded and sends a pageview hit to Google Analytics. If you want to know about more than just pageviews (e.g. events, social interactions), you have to write code to capture that information yourself.
 
-The `autotrack` library attempts to solve this problem. It's a small (3.1K gzipped) collection of [analytics.js](https://developers.google.com/analytics/devguides/collection/analyticsjs/) plugins built for today's modern web. It's goal is to provide a new baseline for web tracking and to make it easier to build your own custom implementations.
+Since most website owners care about most of the same types of user interactions, web developers end up writing the same code over and over again for every new site they build.
 
-The following plugins are included with `autotrack.js`:
+Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are using your site.
+
+The `autotrack.js` library is small (3K gzipped), and includes the following plugins. By default all plugin are bundled together, but they can be included and configured separately as well:
 
 <table>
   <tr>
@@ -48,9 +50,9 @@ The following plugins are included with `autotrack.js`:
 
 ## Usage
 
-To add `autotrack` to your site, you have to do two things:
+To add autotrack to your site, you have to do two things:
 
-1. Load the JavaScript file on your page.
+1. Load the `autotrack.js` script file on your page.
 2. Update the [tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference) to [require](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) the `autotrack` plugin.
 
 If your site already includes the default JavaScript tracking snippet, you can replace it with the following modified snippet (note the added `require` command as well as the additional `autotrack.js` script):
@@ -66,11 +68,11 @@ ga('send', 'pageview');
 <script async src='path/to/autotrack.js'></script>
 ```
 
-The [analytics.js plugin system](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) is designed to support asynchronously loaded scripts, so it doesn't matter if the `autotrack.js` is loaded before or after `analytics.js`. It also doesn't matter if the `autotrack` library is loaded individually or bundled with the rest of your JavaScript code.
+The [analytics.js plugin system](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) is designed to support asynchronously loaded scripts, so it doesn't matter if `autotrack.js` is loaded before or after `analytics.js`. It also doesn't matter if the `autotrack.js` library is loaded individually or bundled with the rest of your JavaScript code.
 
-### Loading `autotrack` via npm
+### Loading autotrack via npm
 
-If you use npm and a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs), you can include `autotrack` in your build by requiring it as you would any other npm module:
+If you use npm and a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs), you can include autotrack in your build by requiring it as you would any other npm module:
 
 ```sh
 npm install autotrack
@@ -81,10 +83,10 @@ npm install autotrack
 require('autotrack');
 ```
 
-Note that the above code will include the `autotrack` plugins in your build, but it won't register the plugin for use on an analytics.js tracker object. Adding the `require` command to the tracking snippet is still necessary:
+Note that the above code will include the autotrack plugins in the generated JavaScript file, but it won't register the plugin for use on an `analytics.js` tracker object. Adding the `require` command to the tracking snippet is still necessary:
 
 ```js
-// In the analytics.js snippet
+// In the analytics.js tracking snippet
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('require', 'autotrack');
 ga('send', 'pageview');
@@ -105,7 +107,7 @@ ga('require', 'sessionDurationTracker');
 ga('send', 'pageview');
 ```
 
-Note that the `autotrack` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
+Note that the `autotrack.js` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
 
 ## Plugins
 
@@ -127,13 +129,15 @@ The following element would send an event hit to Google Analytics with the categ
 
 ### `mediaQueryTracker`
 
-The `mediaQueryTracker` plugin allows you to track what media query is currently active as well as how often the matching media query changes.
+The `mediaQueryTracker` plugin allows you to track what media query is active as well as how often the matching media query changes.
 
 You can tell the `mediaQueryTracker` plugin what media query data to look for via the [`mediaQueryDefinitions`](#mediaquerydefinitions) configuration option.
 
-Note, Google Analytics does not have built in fields for media query data, but you can set up one or more [custom dimensions](https://support.google.com/analytics/answer/2709828) to capture this data. You must set up your custom dimensions in Google Analytics before you can use this plugin, as each of the `mediaQueryDefinitions` objects requires a `dimensionIndex` value, which is specific to your individual setup.
+**Important: unlike the other autotrack plugins, to use the `mediaQueryTracker` plugin you have to first make a few changes to your property settings in Google Analytics. Here's what needs to be done:**
 
-To create a custom dimension, refer to the support article: [Create and edit custom dimensions and metrics](https://support.google.com/analytics/answer/2709829). You can choose any name you want (it can be changed later), and you should select a scope of "hit".
+1. Log in to Google Analytics, choose the [account and property](https://support.google.com/analytics/answer/1009618) you're sending data too, and [create a custom dimension](https://support.google.com/analytics/answer/2709829) for each set of media queries you want to track (e.g. Breakpoints, Resolution/DPI, Device Orientation)
+2. Give each dimension a name (e.g. Breakpoints), select a scope of [hit](https://support.google.com/analytics/answer/2709828#example-hit), and make sure the "active" checkbox is checked.
+3. In the [`mediaQueryDefinitions`](#mediaquerydefinitions) config object, set the `name` and `dimensionIndex` values to be the same as the name and index shown in Google Analytics.
 
 #### Options
 
@@ -180,7 +184,7 @@ See the [`mediaQueryDefinitions`](#mediaquerydefinitions) option documentation f
 
 ### `outboundFormTracker`
 
-The `outboundFormTracker` plugin automatically detects when forms are submitted to sites on different domains an sends and event hit. The event category is "Outbound Form", the event action is "submit", and the event label is the value of the form's `action` attribute.
+The `outboundFormTracker` plugin automatically detects when forms are submitted to sites on different domains and sends an event hit. The event category is "Outbound Form", the event action is "submit", and the event label is the value of the form's `action` attribute.
 
 ### `outboundLinkTracker`
 
@@ -194,11 +198,11 @@ The `sessionDurationTracker` plugin partially solves this problem by sending an 
 
 ### `socialTracker`
 
-The `sessionDurationTracker` plugin adds declarative social interaction tracking for click events on any element with the `data-social-network`, `data-social-action`, and `data-social-target` attributes, similar to the `eventTracking` plugin.
+The `socialTracker` plugin adds declarative social interaction tracking for click events on any element with the `data-social-network`, `data-social-action`, and `data-social-target` attributes, similar to the `eventTracking` plugin.
 
-In addition, pages that include the official Twitter tweet and follow buttons, as well as the Facebook like buttons will have those interactions tracked as well.
+It also automatically adds social tracking for the offical Twitter tweet/follow buttons and the Facebook like button. In other words, if you include offical Twitter or Facebook buttons on your page and you're using autotrack (or even just the `socialTracker` plugin), user interactions with those buttons will be automatically tracked.
 
-The following table outlines the social fields used for each:
+The following table outlines the social fields captured:
 
 <table>
   <tr>
@@ -229,9 +233,9 @@ The following table outlines the social fields used for each:
 
 ### `urlChangeTracker`
 
-The `urlChangeTracker` plugin detects changes to the URL via the [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) and automatically updates the tracker and sends additional pageviews.
+The `urlChangeTracker` plugin detects changes to the URL via the [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) and automatically updates the tracker and sends additional pageviews. This allows [single page applications](https://en.wikipedia.org/wiki/Single-page_application) to be tracked like traditional sites without any extra configuration.
 
-The plugin does not support tracking hash changes as most Google Analytics implementations do not capture the hash portion of the URL when tracking pageviews.
+Note, this plugin does not support tracking hash changes as most Google Analytics implementations do not capture the hash portion of the URL when tracking pageviews. Also, developers of single page applications should make sure their framework isn't already tracking URL changes to avoid collecting duplicate data.
 
 #### Options
 
@@ -341,7 +345,7 @@ The function is invoked with the string values `newPath` and `oldPath` which rep
 
 ### Custom builds
 
-The `autotrack` library is built modularly and each plugin includes its own dependencies, so you can create a custom build of the library using a script bundler such as [Browserify](http://browserify.org/).
+The autotrack library is built modularly and each plugin includes its own dependencies, so you can create a custom build of the library using a script bundler such as [Browserify](http://browserify.org/).
 
 The following example shows how to create a build that only includes the `outboundLinkTracker` and `sessionDurationTracker` plugins:
 
@@ -349,9 +353,9 @@ The following example shows how to create a build that only includes the `outbou
 browserify lib/plugins/outbound-link-tracker lib/plugins/session-duration-tracker
 ```
 
-When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will prevent subsequent `analytics.js` commands from running.
+When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will prevent any subsequent `analytics.js` commands from running.
 
-If you're already using a module loader like Browserify, Webpack, or SystemJS to build your JavaScript, you can skip the above step and just require the plugins you want directly in your source files:
+If you're already using a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs) to build your JavaScript, you can skip the above step and just require the plugins you want directly in your source files:
 
 ```js
 // In your JavaScript code
@@ -359,11 +363,11 @@ require('autotrack/lib/plugins/outbound-link-tracker');
 require('autotrack/lib/plugins/session-duration-tracker');
 ```
 
-Check out the [`autotrack` source code](https://github.com/philipwalton/autotrack/blob/master/lib/plugins/autotrack.js) to get a better idea how this works.
+Check out the [autotrack source code](https://github.com/philipwalton/autotrack/blob/master/lib/plugins/autotrack.js) to get a better idea how this works.
 
-### Using `autotrack` with multiple trackers
+### Using autotrack with multiple trackers
 
-All `autotrack` plugins support multiple trackers and work by specifying the tracker name in the `require` command. The following example creates two trackers and requires `autotrack` on both.
+All autotrack plugins support multiple trackers and work by specifying the tracker name in the `require` command. The following example creates two trackers and requires `autotrack` on both.
 
 ```js
 ga('create', 'UA-XXXXX-Y', 'auto', 'tracker1');
