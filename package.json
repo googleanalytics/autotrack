@@ -1,0 +1,56 @@
+{
+  "name": "autotrack",
+  "version": "0.4.0",
+  "description": "Automatic + enhanced analytics.js tracking for common user interactions",
+  "main": "lib/plugins/autotrack.js",
+  "scripts": {
+    "build": "gulp build",
+    "start": "gulp watch",
+    "test": "gulp test",
+    "watch": "gulp watch"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/googleanalytics/autotrack.git"
+  },
+  "keywords": [
+    "analytics",
+    "analyticsjs",
+    "auto",
+    "google"
+  ],
+  "author": {
+    "name": "Philip Walton",
+    "email": "philip@philipwalton.com",
+    "url": "http://philipwalton.com"
+  },
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/googleanalytics/autotrack/issues"
+  },
+  "homepage": "https://github.com/googleanalytics/autotrack#readme",
+  "dependencies": {
+    "debounce": "^1.0.0",
+    "delegate": "^3.0.0"
+  },
+  "devDependencies": {
+    "browserify": "^12.0.1",
+    "connect": "^3.4.0",
+    "gulp": "^3.9.0",
+    "gulp-sourcemaps": "^1.6.0",
+    "gulp-uglify": "^1.5.1",
+    "gulp-util": "^3.0.7",
+    "gulp-webdriver": "^1.0.2",
+    "lodash": "^3.10.1",
+    "mocha": "^2.3.4",
+    "saucelabs": "^1.0.1",
+    "selenium-server-standalone-jar": "^2.48.2",
+    "selenium-webdriver": "^2.48.2",
+    "serve-static": "^1.10.0",
+    "shelljs": "^0.5.3",
+    "uglify-js": "^2.6.1",
+    "vinyl-buffer": "^1.0.0",
+    "vinyl-source-stream": "^1.1.0",
+    "webdriverio": "^3.3.0"
+  }
+}
