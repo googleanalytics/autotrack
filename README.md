@@ -246,34 +246,36 @@ A media query definitions object or a list of media query definition objects. A 
 The following array is an example of three media query object defintions:
 
 ```js
-[
-  {
-    name: 'Breakpoint',
-    dimensionIndex: 1,
-    items: [
-      {name: 'sm', media: 'all'},
-      {name: 'md', media: '(min-width: 30em)'},
-      {name: 'lg', media: '(min-width: 48em)'}
-    ]
-  },
-  {
-    name: 'Resolution',
-    dimensionIndex: 2,
-    items: [
-      {name: '1x',   media: 'all'},
-      {name: '1.5x', media: '(min-resolution: 144dpi)'},
-      {name: '2x',   media: '(min-resolution: 192dpi)'}
-    ]
-  },
-  {
-    name: 'Orientation',
-    dimensionIndex: 3,
-    items: [
-      {name: 'landscape', media: '(orientation: landscape)'},
-      {name: 'portrait',  media: '(orientation: portrait)'}
-    ]
-  }
-]
+ga('require', 'autotrack', {
+  mediaQueryDefinitions: [
+    {
+      name: 'Breakpoint',
+      dimensionIndex: 1,
+      items: [
+        {name: 'sm', media: 'all'},
+        {name: 'md', media: '(min-width: 30em)'},
+        {name: 'lg', media: '(min-width: 48em)'}
+      ]
+    },
+    {
+      name: 'Resolution',
+      dimensionIndex: 2,
+      items: [
+        {name: '1x',   media: 'all'},
+        {name: '1.5x', media: '(min-resolution: 144dpi)'},
+        {name: '2x',   media: '(min-resolution: 192dpi)'}
+      ]
+    },
+    {
+      name: 'Orientation',
+      dimensionIndex: 3,
+      items: [
+        {name: 'landscape', media: '(orientation: landscape)'},
+        {name: 'portrait',  media: '(orientation: portrait)'}
+      ]
+    }
+  ]
+});
 ```
 
 If multiple `media` values match at the same time, the one specified later in the `items` array will take precedence. For example, in the "Breakpoint" example above, the item `sm` is set to `all`, so it will always match unless `md` or `lg` matches.
