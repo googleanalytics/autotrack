@@ -186,9 +186,49 @@ See the [`mediaQueryDefinitions`](#mediaquerydefinitions) option documentation f
 
 The `outboundFormTracker` plugin automatically detects when forms are submitted to sites on different domains and sends an event hit. The event category is "Outbound Form", the event action is "submit", and the event label is the value of the form's `action` attribute.
 
+By default a form is considered outbound if its action is not relative and does not contain the current `location.hostname` value. This logic can be customized via the [`shouldTrackOutboundForm`](#shouldtrackoutboundform) configuration option.
+
+#### Options
+
+* [`shouldTrackOutboundForm`](#shouldtrackoutboundform)
+
+#### Example
+
+The default `shouldTrackOutboundForm` option will consider a form submission from `blog.example.com` to `store.example.com` an outbound form submit. To customize this logic and exclude forms pointing to any `*.example.com` subdomain, you could override the option as follows:
+
+```js
+ga('require', 'autotrack', {
+  shouldTrackOutboundForm: function(form) {
+    var action = form.getAttribute('action');
+    // Checks that the action starts with "http" to exclude relative paths,
+    // then checks that the action does not contain the string "example.com".
+    return action.indexOf('http') === 0 && action.indexOf('example.com') < 0;
+  }
+}
+```
+
 ### `outboundLinkTracker`
 
 The `outboundLinkTracker` plugin automatically detects when links are clicked with `href` attributes pointing to sites on different domains and sends an event hit. The event category is "Outbound Link", the event action is "click", and the event label is the value of the link's `href` attribute.
+
+By default a link is considered outbound if its `hostname` property is not equal to `location.hostname`. This logic can be customized via the [`shouldTrackOutboundLink`](#shouldtrackoutboundlink) configuration option.
+
+#### Options
+
+* [`shouldTrackOutboundLink`](#shouldtrackoutboundlink)
+
+#### Example
+
+The default `shouldTrackOutboundLink` option will consider a link clicks from `blog.example.com` to `store.example.com` an outbound link click. To customize this logic and exclude links pointing to any `*.example.com` subdomain, you could override the option as follows:
+
+```js
+ga('require', 'autotrack', {
+  shouldTrackOutboundLink: function(link) {
+    // Checks that the link's hostname does not contain "example.com".
+    return link.hostname.indexOf('example.com') < 0;
+  }
+}
+```
 
 ### `sessionDurationTracker`
 
@@ -324,6 +364,39 @@ A function used to format the `eventLabel` of media query change events. For exa
 **Default**: `1000`
 
 The debounce timeout, i.e., the amount of time to wait before sending the change hit. If multiple change events occur within the timeout period, only the last one is sent.
+
+### `shouldTrackOutboundForm`
+
+**Type**: `Function`
+
+**Default**:
+
+```js
+function(form) {
+  var action = form.getAttribute('action');
+  return action.indexOf('http') === 0 && action.indexOf(location.hostname) < 0;
+};
+```
+
+A function used to determine if a form submit should be tracked as an "Outbound Form".
+
+The function is invoked with the `<form>` element as its only argument, and, if it returns truthy, the form submit will be tracked.
+
+### `shouldTrackOutboundLink`
+
+**Type**: `Function`
+
+**Default**:
+
+```js
+function(link) {
+  return link.hostname != location.hostname;
+};
+```
+
+A function used to determine if a link click should be tracked as an "Outbound Link".
+
+The function is invoked with the `<a>` element as its only argument, and, if it returns truthy, the link click will be tracked.
 
 ### `shouldTrackUrlChange`
 
