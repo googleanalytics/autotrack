@@ -52,6 +52,21 @@ describe('outboundFormTracker', function() {
   });
 
 
+  it('should allow customizing what is considered an outbound form',
+      function *() {
+
+    var testData = (yield browser
+        .url('/test/outbound-form-tracker-conditional.html')
+        .execute(stopFormSubmitEvents)
+        .execute(stubBeacon)
+        .click('#submit-1')
+        .execute(getHitData))
+        .value;
+
+    assert(!testData.count);
+  });
+
+
   it('should navigate to the proper location on submit', function *() {
 
     yield browser
