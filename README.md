@@ -139,48 +139,11 @@ You can tell the `mediaQueryTracker` plugin what media query data to look for vi
 2. Give each dimension a name (e.g. Breakpoints), select a scope of [hit](https://support.google.com/analytics/answer/2709828#example-hit), and make sure the "active" checkbox is checked.
 3. In the [`mediaQueryDefinitions`](#mediaquerydefinitions) config object, set the `name` and `dimensionIndex` values to be the same as the name and index shown in Google Analytics.
 
+Refer to the [`mediaQueryDefinitions`](#mediaquerydefinitions) configuration option documentation for an example definition that will track breakpoint, device resolution, and device orientation data.
+
 #### Options
 
 * [`mediaQueryDefinitions`](#mediaquerydefinitions)
-
-#### Example
-
-The following configuration will track breakpoint, device resolution, and device orientation data:
-
-```js
-ga('require', 'autotrack', {
-  mediaQueryDefinitions: [
-    {
-      name: 'Breakpoint',
-      dimensionIndex: 1,
-      items: [
-        {name: 'sm', media: 'all'},
-        {name: 'md', media: '(min-width: 30em)'},
-        {name: 'lg', media: '(min-width: 48em)'}
-      ]
-    },
-    {
-      name: 'Resolution',
-      dimensionIndex: 2,
-      items: [
-        {name: '1x',   media: 'all'},
-        {name: '1.5x', media: '(min-resolution: 144dpi)'},
-        {name: '2x',   media: '(min-resolution: 192dpi)'}
-      ]
-    },
-    {
-      name: 'Orientation',
-      dimensionIndex: 3,
-      items: [
-        {name: 'landscape', media: '(orientation: landscape)'},
-        {name: 'portrait',  media: '(orientation: portrait)'}
-      ]
-    }
-  ]
-});
-```
-
-See the [`mediaQueryDefinitions`](#mediaquerydefinitions) option documentation for more details.
 
 ### `outboundFormTracker`
 
