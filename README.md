@@ -70,6 +70,18 @@ ga('send', 'pageview');
 
 The [analytics.js plugin system](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) is designed to support asynchronously loaded scripts, so it doesn't matter if `autotrack.js` is loaded before or after `analytics.js`. It also doesn't matter if the `autotrack.js` library is loaded individually or bundled with the rest of your JavaScript code.
 
+### Passing configuration options
+
+The default behavior of autotrack can be customized via [configuration options](#configuration-options). You can pass configuration options to autotrack via the `require` command using the optional third parameter.
+
+For example, you could override the default [`attributePrefix`](#attributeprefix) option as follows:
+
+```
+ga('require', 'autotrack', {
+  attributePrefix: 'data-ga'
+});
+```
+
 ### Loading autotrack via npm
 
 If you use npm and a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs), you can include autotrack in your build by requiring it as you would any other npm module:
@@ -96,7 +108,7 @@ ga('send', 'pageview');
 
 The `autotrack.js` source file includes all the plugins described below, but in some cases you might not want to use all of them.
 
-When you require the `autotrack` plugin, it runs the require command for each of the bundled plugins and passes them a copy of the configuration object it received (if any). To only use select plugins, you can require them individually instead of requiring the `autotrack` plugin.
+When you require the `autotrack` plugin, it runs the `require` command for each of the bundled plugins and passes them a copy of the configuration object it received (if any). To only use select plugins, you can require them individually instead of requiring the `autotrack` plugin.
 
 For example, to only use the `outboundLinkTracker` and `sessionDurationTracker` plugins, you can modify the snippet as follows:
 
@@ -107,7 +119,16 @@ ga('require', 'sessionDurationTracker');
 ga('send', 'pageview');
 ```
 
-Note that the `autotrack.js` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
+Individual plugins accept the same set of configuration options as autotrack. Options not relevant to a particular plugin are ignored. To use configuration options when requiring individual plugins, the simplest way is usually to pass each plugin the same object.
+
+```js
+var opts = { /* configuration options */ };
+
+ga('require', 'outboundLinkTracker', opts);
+ga('require', 'sessionDurationTracker', opts);
+```
+
+When only requiring select plugins, it's important to realize that the `autotrack.js` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
 
 ## Plugins
 
