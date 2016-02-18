@@ -22,6 +22,7 @@ var fs = require('fs');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
 var seleniumServerJar = require('selenium-server-standalone-jar');
+var pkg = require('./package.json');
 var shell = require('shelljs');
 var serveStatic = require('serve-static');
 var source = require('vinyl-source-stream');
@@ -40,6 +41,8 @@ gulp.task('javascript', function(done) {
   var license = fs.readFileSync(__filename, 'utf-8')
       .split('\n').slice(0, 15).join('\n');
 
+  var version = '/*! autotrack.js v' + pkg.version + ' */';
+
   browserify('./', {
     debug: true
   })
@@ -54,7 +57,7 @@ gulp.task('javascript', function(done) {
   .pipe(source('./autotrack.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init({loadMaps: true}))
-  .pipe(uglify({output: {preamble: license}}))
+  .pipe(uglify({output: {preamble: license + '\n\n' + version}}))
   .pipe(sourcemaps.write('./'))
   .pipe(gulp.dest('./'));
 });
