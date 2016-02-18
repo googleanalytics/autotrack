@@ -70,6 +70,18 @@ ga('send', 'pageview');
 
 The [analytics.js plugin system](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) is designed to support asynchronously loaded scripts, so it doesn't matter if `autotrack.js` is loaded before or after `analytics.js`. It also doesn't matter if the `autotrack.js` library is loaded individually or bundled with the rest of your JavaScript code.
 
+### Passing configuration options
+
+The default behavior of autotrack can be customized via [configuration options](#configuration-options). You can pass configuration options to autotrack via the `require` command using the optional third parameter.
+
+For example, you could override the default [`attributePrefix`](#attributeprefix) option as follows:
+
+```
+ga('require', 'autotrack', {
+  attributePrefix: 'data-ga'
+});
+```
+
 ### Loading autotrack via npm
 
 If you use npm and a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs), you can include autotrack in your build by requiring it as you would any other npm module:
@@ -96,7 +108,7 @@ ga('send', 'pageview');
 
 The `autotrack.js` source file includes all the plugins described below, but in some cases you might not want to use all of them.
 
-When you require the `autotrack` plugin, it runs the require command for each of the bundled plugins and passes them a copy of the configuration object it received (if any). To only use select plugins, you can require them individually instead of requiring the `autotrack` plugin.
+When you require the `autotrack` plugin, it runs the `require` command for each of the bundled plugins and passes them a copy of the configuration object it received (if any). To only use select plugins, you can require them individually instead of requiring the `autotrack` plugin.
 
 For example, to only use the `outboundLinkTracker` and `sessionDurationTracker` plugins, you can modify the snippet as follows:
 
@@ -107,7 +119,16 @@ ga('require', 'sessionDurationTracker');
 ga('send', 'pageview');
 ```
 
-Note that the `autotrack.js` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
+Individual plugins accept the same set of configuration options as autotrack. Options not relevant to a particular plugin are ignored. To use configuration options when requiring individual plugins, the simplest way is usually to pass each plugin the same object.
+
+```js
+var opts = { /* configuration options */ };
+
+ga('require', 'outboundLinkTracker', opts);
+ga('require', 'sessionDurationTracker', opts);
+```
+
+When only requiring select plugins, it's important to realize that the `autotrack.js` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
 
 ## Plugins
 
@@ -139,48 +160,11 @@ You can tell the `mediaQueryTracker` plugin what media query data to look for vi
 2. Give each dimension a name (e.g. Breakpoints), select a scope of [hit](https://support.google.com/analytics/answer/2709828#example-hit), and make sure the "active" checkbox is checked.
 3. In the [`mediaQueryDefinitions`](#mediaquerydefinitions) config object, set the `name` and `dimensionIndex` values to be the same as the name and index shown in Google Analytics.
 
+Refer to the [`mediaQueryDefinitions`](#mediaquerydefinitions) configuration option documentation for an example definition that will track breakpoint, device resolution, and device orientation data.
+
 #### Options
 
 * [`mediaQueryDefinitions`](#mediaquerydefinitions)
-
-#### Example
-
-The following configuration will track breakpoint, device resolution, and device orientation data:
-
-```js
-ga('require', 'autotrack', {
-  mediaQueryDefinitions: [
-    {
-      name: 'Breakpoint',
-      dimensionIndex: 1,
-      items: [
-        {name: 'sm', media: 'all'},
-        {name: 'md', media: '(min-width: 30em)'},
-        {name: 'lg', media: '(min-width: 48em)'}
-      ]
-    },
-    {
-      name: 'Resolution',
-      dimensionIndex: 2,
-      items: [
-        {name: '1x',   media: 'all'},
-        {name: '1.5x', media: '(min-resolution: 144dpi)'},
-        {name: '2x',   media: '(min-resolution: 192dpi)'}
-      ]
-    },
-    {
-      name: 'Orientation',
-      dimensionIndex: 3,
-      items: [
-        {name: 'landscape', media: '(orientation: landscape)'},
-        {name: 'portrait',  media: '(orientation: portrait)'}
-      ]
-    }
-  ]
-});
-```
-
-See the [`mediaQueryDefinitions`](#mediaquerydefinitions) option documentation for more details.
 
 ### `outboundFormTracker`
 
@@ -206,7 +190,7 @@ By default a link is considered outbound if its `hostname` property is not equal
 
 Session duration in Google Analytics is defined as the amount of time between the first and last hit of a session. For a session where a user visits just one page and then leaves, the session duration is zero, even if the user stayed on the page for several minutes. Even for sessions with multiple pageviews, it can still be a problem because the duration of the last pageview is usually not considered.
 
-The `sessionDurationTracker` plugin partially solves this problem by sending an event hit to Google Analytics (in browsers that support [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)) when the document is being unloaded. The event category is "Window" and the action is "unload". For browsers that support the [`performance.timing` API](https://developer.mozilla.org/en-US/docs/Web/API/Performance), the event value is the time since the `navigationStart` event.
+The `sessionDurationTracker` plugin partially solves this problem by sending an event hit to Google Analytics (in browsers that support [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)) when the document is being unloaded. The event category is "Window" and the action is "unload".
 
 ### `socialTracker`
 
@@ -283,34 +267,36 @@ A media query definitions object or a list of media query definition objects. A 
 The following array is an example of three media query object defintions:
 
 ```js
-[
-  {
-    name: 'Breakpoint',
-    dimensionIndex: 1,
-    items: [
-      {name: 'sm', media: 'all'},
-      {name: 'md', media: '(min-width: 30em)'},
-      {name: 'lg', media: '(min-width: 48em)'}
-    ]
-  },
-  {
-    name: 'Resolution',
-    dimensionIndex: 2,
-    items: [
-      {name: '1x',   media: 'all'},
-      {name: '1.5x', media: '(min-resolution: 144dpi)'},
-      {name: '2x',   media: '(min-resolution: 192dpi)'}
-    ]
-  },
-  {
-    name: 'Orientation',
-    dimensionIndex: 3,
-    items: [
-      {name: 'landscape', media: '(orientation: landscape)'},
-      {name: 'portrait',  media: '(orientation: portrait)'}
-    ]
-  }
-]
+ga('require', 'autotrack', {
+  mediaQueryDefinitions: [
+    {
+      name: 'Breakpoint',
+      dimensionIndex: 1,
+      items: [
+        {name: 'sm', media: 'all'},
+        {name: 'md', media: '(min-width: 30em)'},
+        {name: 'lg', media: '(min-width: 48em)'}
+      ]
+    },
+    {
+      name: 'Resolution',
+      dimensionIndex: 2,
+      items: [
+        {name: '1x',   media: 'all'},
+        {name: '1.5x', media: '(min-resolution: 144dpi)'},
+        {name: '2x',   media: '(min-resolution: 192dpi)'}
+      ]
+    },
+    {
+      name: 'Orientation',
+      dimensionIndex: 3,
+      items: [
+        {name: 'landscape', media: '(orientation: landscape)'},
+        {name: 'portrait',  media: '(orientation: portrait)'}
+      ]
+    }
+  ]
+});
 ```
 
 If multiple `media` values match at the same time, the one specified later in the `items` array will take precedence. For example, in the "Breakpoint" example above, the item `sm` is set to `all`, so it will always match unless `md` or `lg` matches.
