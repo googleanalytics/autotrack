@@ -52,6 +52,21 @@ describe('outboundLinkTracker', function() {
   });
 
 
+  it('should allow customizing what is considered an outbound link',
+      function*() {
+
+    var testData = (yield browser
+        .url('/test/outbound-link-tracker-conditional.html')
+        .execute(stopClickEvents)
+        .execute(stubBeacon)
+        .click('#outbound-link')
+        .execute(getHitData))
+        .value;
+
+    assert(!testData.count);
+  });
+
+
   it('should navigate to the proper location on submit', function *() {
 
     yield browser
