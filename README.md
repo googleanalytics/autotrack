@@ -78,7 +78,7 @@ For example, you could override the default [`attributePrefix`](#attributeprefix
 
 ```
 ga('require', 'autotrack', {
-  attributePrefix: 'data-ga'
+  attributePrefix: 'data-ga-'
 });
 ```
 
@@ -196,7 +196,7 @@ The `sessionDurationTracker` plugin partially solves this problem by sending an 
 
 The `socialTracker` plugin adds declarative social interaction tracking for click events on any element with the `data-social-network`, `data-social-action`, and `data-social-target` attributes, similar to the `eventTracking` plugin.
 
-It also automatically adds social tracking for the offical Twitter tweet/follow buttons and the Facebook like button. In other words, if you include offical Twitter or Facebook buttons on your page and you're using autotrack (or even just the `socialTracker` plugin), user interactions with those buttons will be automatically tracked.
+It also automatically adds social tracking for the official Twitter tweet/follow buttons and the Facebook like button. In other words, if you include official Twitter or Facebook buttons on your page and you're using autotrack (or even just the `socialTracker` plugin), user interactions with those buttons will be automatically tracked.
 
 The following table outlines the social fields captured:
 
@@ -264,7 +264,7 @@ A media query definitions object or a list of media query definition objects. A 
     - `name`: The value that will be set on the custom dimension.
     - `media`: The media query value to test for a match.
 
-The following array is an example of three media query object defintions:
+The following array is an example of three media query object definitions:
 
 ```js
 ga('require', 'autotrack', {
@@ -434,4 +434,3 @@ ga('tracker2.send', 'pageview');
 ## Disclaimer
 
 The autotrack library is not an official Google Analytics product and is not covered by Google Analytics Premium support. Developers that choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
-
