@@ -331,11 +331,11 @@ The debounce timeout, i.e., the amount of time to wait before sending the change
 
 **Type**: `number`
 
-**Default**: `30 * 60 * 1000` (30 seconds)
+**Default**: `30` (minutes)
 
-The `sessionDurationTracker` plugin will send an end-of-session hit if (and only if) the session has not timed out. A session timeout occurs when more than `sessionTimeout` milliseconds has elapsed since the tracker sent the previous hit.
+The `sessionDurationTracker` plugin will send an end-of-session hit if (and only if) the session has not timed out. A session timeout occurs when more than `sessionTimeout` minutes has elapsed since the tracker sent the previous hit.
 
-The `sessionTimeout` value should correspond to the [session timeout setting](https://support.google.com/analytics/answer/2795871) in your Google Analytics property settings, which defaults to 30 seconds for new properties.
+The `sessionTimeout` value should correspond to the [session timeout setting](https://support.google.com/analytics/answer/2795871) in your Google Analytics property settings, which defaults to 30 minutes for new properties.
 
 ### `shouldTrackOutboundForm`
 
