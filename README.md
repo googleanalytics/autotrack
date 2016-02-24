@@ -44,10 +44,6 @@ The `autotrack.js` library is small (3K gzipped), and includes the following plu
     <td>Automatic outbound link tracking</td>
   </tr>
   <tr>
-    <td><a href="#sessiondurationtracker"><code>sessionDurationTracker</code></a></td>
-    <td>Enhanced session duration tracking</td>
-  </tr>
-  <tr>
     <td><a href="#socialtracker"><code>socialTracker</code></a></td>
     <td>Automatic and enhanced declarative social tracking</td>
   </tr>
@@ -119,12 +115,12 @@ The `autotrack.js` source file includes all the plugins described below, but in 
 
 When you require the `autotrack` plugin, it runs the `require` command for each of the bundled plugins and passes them a copy of the configuration object it received (if any). To only use select plugins, you can require them individually instead of requiring the `autotrack` plugin.
 
-For example, to only use the `outboundLinkTracker` and `sessionDurationTracker` plugins, you can modify the snippet as follows:
+For example, to only use the `eventTracker` and `outboundLinkTracker` plugins, you can modify the snippet as follows:
 
 ```js
 ga('create', 'UA-XXXXX-Y', 'auto');
+ga('require', 'eventTracker');
 ga('require', 'outboundLinkTracker');
-ga('require', 'sessionDurationTracker');
 ga('send', 'pageview');
 ```
 
@@ -133,8 +129,8 @@ Individual plugins accept the same set of configuration options as autotrack. Op
 ```js
 var opts = { /* configuration options */ };
 
+ga('require', 'eventTracker', opts);
 ga('require', 'outboundLinkTracker', opts);
-ga('require', 'sessionDurationTracker', opts);
 ```
 
 When only requiring select plugins, it's important to realize that the `autotrack.js` source file still includes the code for all plugins. To build a custom version of the script with only the desired plugins, see the [custom builds](#custom-builds) section below.
@@ -194,16 +190,6 @@ By default a link is considered outbound if its `hostname` property is not equal
 #### Options
 
 * [`shouldTrackOutboundLink`](#shouldtrackoutboundlink)
-
-### `sessionDurationTracker`
-
-Session duration in Google Analytics is defined as the amount of time between the first and last hit of a session. For a session where a user visits just one page and then leaves, the session duration is zero, even if the user stayed on the page for several minutes. Even for sessions with multiple pageviews, it can still be a problem because the duration of the last pageview is usually not considered.
-
-The `sessionDurationTracker` plugin partially solves this problem by sending an event hit to Google Analytics (in browsers that support [`navigator.sendBeacon`](https://developer.mozilla.org/en-US/docs/Web/API/Navigator/sendBeacon)) when the document is being unloaded. The event category is "Window" and the action is "unload".
-
-#### Options
-
-* [`sessionTimeout`](#sessiontimeout)
 
 ### `socialTracker`
 
@@ -336,16 +322,6 @@ A function used to format the `eventLabel` of media query change events. For exa
 
 The debounce timeout, i.e., the amount of time to wait before sending the change hit. If multiple change events occur within the timeout period, only the last one is sent.
 
-### `sessionTimeout`
-
-**Type**: `number`
-
-**Default**: `30` (minutes)
-
-The `sessionDurationTracker` plugin will send an end-of-session hit if (and only if) the session has not timed out. A session timeout occurs when more than `sessionTimeout` minutes has elapsed since the tracker sent the previous hit.
-
-The `sessionTimeout` value should correspond to the [session timeout setting](https://support.google.com/analytics/answer/2795871) in your Google Analytics property settings, which defaults to 30 minutes for new properties.
-
 ### `shouldTrackOutboundForm`
 
 **Type**: `Function`
@@ -422,10 +398,10 @@ The function is invoked with the string values `newPath` and `oldPath` which rep
 
 The autotrack library is built modularly and each plugin includes its own dependencies, so you can create a custom build of the library using a script bundler such as [Browserify](http://browserify.org/).
 
-The following example shows how to create a build that only includes the `outboundLinkTracker` and `sessionDurationTracker` plugins:
+The following example shows how to create a build that only includes the `eventTracker` and `outboundLinkTracker` plugins:
 
 ```sh
-browserify lib/plugins/outbound-link-tracker lib/plugins/session-duration-tracker
+browserify lib/plugins/event-tracker lib/plugins/outbound-link-tracker
 ```
 
 When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will prevent any subsequent `analytics.js` commands from running.
@@ -434,8 +410,8 @@ If you're already using a module loader like [Browserify](http://browserify.org/
 
 ```js
 // In your JavaScript code
+require('autotrack/lib/plugins/event-tracker');
 require('autotrack/lib/plugins/outbound-link-tracker');
-require('autotrack/lib/plugins/session-duration-tracker');
 ```
 
 Check out the [autotrack source code](https://github.com/philipwalton/autotrack/blob/master/lib/plugins/autotrack.js) to get a better idea how this works.

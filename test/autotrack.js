@@ -34,7 +34,6 @@ describe('autotrack', function() {
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
     assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.SessionDurationTracker);
     assert(gaplugins.SocialTracker);
     assert(gaplugins.UrlChangeTracker);
   });
