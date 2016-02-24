@@ -25,24 +25,18 @@ var browserCaps;
 
 describe('sessionDurationTracker', function() {
 
-  var childFrame;
-
-
   before(function *() {
     browserCaps = (yield browser.session()).value;
   });
 
 
-  beforeEach(function *() {
-    childFrame = (yield browser
-        .url('/test/session-duration-tracker.html')
-        .element('iframe')).value;
-  });
-
-
-  it('should send an event when the page is being unloaded', function() {
+  it('should send an event when the page is being unloaded', function *() {
 
     if (notSupportedInBrowser()) return;
+
+    var childFrame = (yield browser
+        .url('/test/session-duration-tracker.html')
+        .element('iframe')).value;
 
     return browser
         .frame(childFrame)
@@ -55,6 +49,52 @@ describe('sessionDurationTracker', function() {
           ['[0][0].eventAction', 'unload'],
           ['[0][0].nonInteraction', true]
         ]));
+  });
+
+
+  it('should not send an event if the session has timed out', function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var childFrame = (yield browser
+        .url('/test/session-duration-tracker-timeout.html')
+        .element('iframe')).value;
+
+    var messages = (yield browser
+        .frame(childFrame)
+        .execute(sendPageview)
+        .pause(750)
+        .click('#outbound-link')
+        .frame()
+        .execute(getMessages)).value;
+
+    assert.equal(messages[0].count, 1);
+    assert.equal(messages[0][0].hitType, 'pageview');
+  });
+
+
+  it('should let other hits reset the session timeout', function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var childFrame = (yield browser
+        .url('/test/session-duration-tracker-timeout.html')
+        .element('iframe')).value;
+
+    var messages = (yield browser
+        .frame(childFrame)
+        .pause(750)
+        .execute(sendPageview)
+        .click('#outbound-link')
+        .frame()
+        .execute(getMessages)).value;
+
+    assert.equal(messages[0].count, 2);
+    assert.equal(messages[0][0].hitType, 'pageview');
+    assert.equal(messages[0][1].hitType, 'event');
+    assert.equal(messages[0][1].eventCategory, 'Window');
+    assert.equal(messages[0][1].eventAction, 'unload');
+    assert.equal(messages[0][1].nonInteraction, true);
   });
 
 
@@ -90,14 +130,14 @@ function hitDataMatches(expected) {
 }
 
 
-function getMessagesData() {
+function getMessages() {
   return messages;
 }
 
 
 function messagesDataMatches(expected) {
   return function() {
-    return browser.execute(getMessagesData).then(function(pageData) {
+    return browser.execute(getMessages).then(function(pageData) {
       return expected.every(function(item) {
         return get(pageData.value, item[0]) === item[1];
       });
