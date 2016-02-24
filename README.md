@@ -1,7 +1,4 @@
-Autotrack
-=========
-
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/autotrack.svg)](https://saucelabs.com/u/autotrack)
+# Autotrack [![Build Status](https://travis-ci.org/googleanalytics/autotrack.svg?branch=master)](https://travis-ci.org/googleanalytics/autotrack)
 
 ## Overview
 
