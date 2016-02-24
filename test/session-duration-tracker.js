@@ -63,7 +63,7 @@ describe('sessionDurationTracker', function() {
     var messages = (yield browser
         .frame(childFrame)
         .execute(sendPageview)
-        .pause(750)
+        .pause(2000)
         .click('#outbound-link')
         .frame()
         .execute(getMessages)).value;
@@ -83,7 +83,7 @@ describe('sessionDurationTracker', function() {
 
     var messages = (yield browser
         .frame(childFrame)
-        .pause(750)
+        .pause(2000)
         .execute(sendPageview)
         .click('#outbound-link')
         .frame()

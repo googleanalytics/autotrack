@@ -32,7 +32,7 @@ if (isSauceLabs) {
   capabilities = [
     {
       browserName: 'chrome',
-      platform: 'linux'
+      platform: 'Windows 10'
     },
     {
       browserName: 'firefox',
