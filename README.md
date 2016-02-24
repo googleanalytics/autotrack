@@ -1,5 +1,17 @@
 # Autotrack [![Build Status](https://travis-ci.org/googleanalytics/autotrack.svg?branch=master)](https://travis-ci.org/googleanalytics/autotrack)
 
+- [Overview](#overview)
+- [Usage](#usage)
+  - [Passing configuration options](#passing-configuration-options)
+  - [Loading autotrack via npm](#loading-autotrack-via-npm)
+  - [Using individual plugins](#using-individual-plugins)
+- [Plugins](#plugins)
+- [Configuration Options](#configuration-options)
+- [Advanced Usage](#advanced-usage)
+  - [Custom builds](#custom-builds)
+  - [Using autotrack with multiple trackers](#using-autotrack-with-multiple-trackers)
+- [Browser Support](#browser-support)
+
 ## Overview
 
 The default [JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/) for Google Analytics runs when a web page is first loaded and sends a pageview hit to Google Analytics. If you want to know about more than just pageviews (e.g. events, social interactions), you have to write code to capture that information yourself.
