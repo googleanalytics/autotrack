@@ -443,7 +443,7 @@ ga('tracker2.send', 'pageview');
 
 Autotrack will safely run in any browser without errors, as feature detection is always used with any potentially unsupported code. However, autotrack will only track features supported in the browser running it. For example, a user running Internet Explorer 8 will not be able to track media query usage, as media queries themselves aren't supported in Internet Explorer 8.
 
-All autotrack plugins are [tested via Sauce Labs](https://saucelabs.com/u/autotrack) in the following browers:
+All autotrack plugins are [tested via Sauce Labs](https://saucelabs.com/u/autotrack) in the following browsers:
 
 <table>
   <tr>
