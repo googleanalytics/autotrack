@@ -1,7 +1,16 @@
-Autotrack
-=========
+# Autotrack [![Build Status](https://travis-ci.org/googleanalytics/autotrack.svg?branch=master)](https://travis-ci.org/googleanalytics/autotrack)
 
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/autotrack.svg)](https://saucelabs.com/u/autotrack)
+- [Overview](#overview)
+- [Usage](#usage)
+  - [Passing configuration options](#passing-configuration-options)
+  - [Loading autotrack via npm](#loading-autotrack-via-npm)
+  - [Using individual plugins](#using-individual-plugins)
+- [Plugins](#plugins)
+- [Configuration Options](#configuration-options)
+- [Advanced Usage](#advanced-usage)
+  - [Custom builds](#custom-builds)
+  - [Using autotrack with multiple trackers](#using-autotrack-with-multiple-trackers)
+- [Browser Support](#browser-support)
 
 ## Overview
 
@@ -430,6 +439,40 @@ ga('tracker1.send', 'pageview');
 ga('tracker2.send', 'pageview');
 ```
 
+## Browser Support
+
+Autotrack will safely run in any browser without errors, as feature detection is always used with any potentially unsupported code. However, autotrack will only track features supported in the browser running it. For example, a user running Internet Explorer 8 will not be able to track media query usage, as media queries themselves aren't supported in Internet Explorer 8.
+
+All autotrack plugins are [tested via Sauce Labs](https://saucelabs.com/u/autotrack) in the following browsers:
+
+<table>
+  <tr>
+    <td align="center">
+      <img src="https://raw.github.com/alrra/browser-logos/master/chrome/chrome_48x48.png" alt="Chrome"><br>
+      ✔
+    </td>
+    <td align="center">
+      <img src="https://raw.github.com/alrra/browser-logos/master/firefox/firefox_48x48.png" alt="Firefox"><br>
+      ✔
+    </td>
+    <td align="center">
+      <img src="https://raw.github.com/alrra/browser-logos/master/safari/safari_48x48.png" alt="Safari"><br>
+      6+
+    </td>
+    <td align="center">
+      <img src="https://raw.github.com/alrra/browser-logos/master/edge/edge_48x48.png" alt="Edge"><br>
+      ✔
+    </td>
+    <td align="center">
+      <img src="https://raw.github.com/alrra/browser-logos/master/internet-explorer/internet-explorer_48x48.png" alt="Internet Explorer"><br>
+      9+
+    </td>
+    <td align="center">
+      <img src="https://raw.github.com/alrra/browser-logos/master/opera/opera_48x48.png" alt="Opera"><br>
+      ✔
+    </td>
+  </tr>
+</table>
 
 ## Disclaimer
 
