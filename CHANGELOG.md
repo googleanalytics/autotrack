@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.6.1 (2016-02-26)
+
+- Allow sourcing autotrack.js before the snippet (#24)
+
 ### 0.6.0 (2016-02-26)
 
 - Remove the sessionDurationTracker (#21)
