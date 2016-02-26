@@ -38,6 +38,54 @@ describe('autotrack', function() {
     assert(gaplugins.UrlChangeTracker);
   });
 
+
+  it('should provide plugins even if sourced before the tracking snippet',
+      function *() {
+
+    var gaplugins = (yield browser
+        .url('/test/autotrack-source-order.html')
+        .execute(getGaPlugins))
+        .value;
+
+    assert(gaplugins.Autotrack);
+    assert(gaplugins.EventTracker);
+    assert(gaplugins.MediaQueryTracker);
+    assert(gaplugins.OutboundFormTracker);
+    assert(gaplugins.OutboundLinkTracker);
+    assert(gaplugins.SocialTracker);
+    assert(gaplugins.UrlChangeTracker);
+
+    var hitData = (yield browser
+        .execute(sendPageview)
+        .execute(getHitData)).value;
+
+    assert(hitData.count === 1);
+  });
+
+
+  it('should work with renaming the global object', function *() {
+
+    var gaplugins = (yield browser
+        .url('/test/autotrack-rename-ga.html')
+        .execute(getGaPlugins))
+        .value;
+
+    assert(gaplugins.Autotrack);
+    assert(gaplugins.EventTracker);
+    assert(gaplugins.MediaQueryTracker);
+    assert(gaplugins.OutboundFormTracker);
+    assert(gaplugins.OutboundLinkTracker);
+    assert(gaplugins.SocialTracker);
+    assert(gaplugins.UrlChangeTracker);
+
+    var hitData = (yield browser
+        .execute(sendPageview)
+        .execute(getHitData)).value;
+
+    assert(hitData.count === 1);
+  });
+
+
   it('should include the &did param with all hits', function() {
 
     return browser
@@ -50,7 +98,7 @@ describe('autotrack', function() {
 
 
 function sendPageview() {
-  ga('send', 'pageview');
+  window[window.GoogleAnalyticsObject || 'ga']('send', 'pageview');
 }
 
 
