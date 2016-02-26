@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.6.0 (2016-02-26)
+
+- Remove the sessionDurationTracker (#21)
+
 ### 0.5.0 (2016-02-18)
 
 - Make outbound link/form logic configurable (#3)
