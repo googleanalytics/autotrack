@@ -57,6 +57,8 @@ The `autotrack.js` library is small (3K gzipped), and includes the following plu
   </tr>
 </table>
 
+**Note:** autotrack is maintained by the Google Analytics developer relations team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics premium support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
+
 ## Usage
 
 To add autotrack to your site, you have to do two things:
@@ -487,7 +489,3 @@ All autotrack plugins are [tested via Sauce Labs](https://saucelabs.com/u/autotr
     </td>
   </tr>
 </table>
-
-## Disclaimer
-
-The autotrack library is not an official Google Analytics product and is not covered by Google Analytics Premium support. Developers that choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
