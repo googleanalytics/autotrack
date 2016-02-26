@@ -81,7 +81,7 @@ The default behavior of autotrack can be customized via [configuration options](
 
 For example, you could override the default [`attributePrefix`](#attributeprefix) option as follows:
 
-```
+```js
 ga('require', 'autotrack', {
   attributePrefix: 'data-ga-'
 });
