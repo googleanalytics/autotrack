@@ -1,0 +1,38 @@
+<!doctype html>
+<html>
+<body>
+  <script>
+  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+
+
+  ga('create', 'UA-XXXXX-Y', 'auto');
+
+
+  // Note(philipwalton):
+  // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
+  var hitData = {count: 0};
+  ga('set', 'sendHitTask', function(model) {
+
+    hitData[hitData.count] = {
+      hitType: model.get('hitType'),
+      eventCategory: model.get('eventCategory'),
+      eventAction: model.get('eventAction'),
+      eventLabel: model.get('eventLabel'),
+      devId: model.get('&did')
+    };
+    console.log(hitData[hitData.count]);
+    hitData.count++;
+  });
+
+
+  ga('require', 'pageVisibilityTracker', {
+    // sessionTimeout: 1/6
+  });
+
+  </script>
+
+  <script async src='//www.google-analytics.com/analytics.js'></script>
+  <script aysnc src="/autotrack.js"></script>
+
+</body>
+</html>
