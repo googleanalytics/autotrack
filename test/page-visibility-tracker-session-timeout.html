@@ -18,14 +18,16 @@
       eventCategory: model.get('eventCategory'),
       eventAction: model.get('eventAction'),
       eventLabel: model.get('eventLabel'),
+      sessionControl: model.get('sessionControl'),
       devId: model.get('&did')
     };
+    console.log(hitData[hitData.count]);
     hitData.count++;
   });
 
 
   ga('require', 'pageVisibilityTracker', {
-    // sessionTimeout: 1/6
+    sessionTimeout: 1/60
   });
 
   </script>

@@ -22,6 +22,7 @@ var constants = require('../lib/constants');
 
 var CTRL = '\uE009';
 var META = '\uE03D';
+var SESSION_TIMEOUT = 1000;
 
 
 var browserCaps;
@@ -58,6 +59,106 @@ describe('pageVisibilityTracker', function() {
   });
 
 
+  it('should not send any hidden events if the session has timed out',
+      function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = (yield browser
+        .url('/test/page-visibility-tracker-session-timeout.html')
+        .pause(SESSION_TIMEOUT)
+        .element('body')
+        .keys(command + 't' + command)
+        .execute(getHitData)).value;
+
+    assert.equal(hitData.count, 0);
+  });
+
+
+  it('should preemptively start all new session hits with a pageview',
+      function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = (yield browser
+        .url('/test/page-visibility-tracker-session-timeout.html')
+        .pause(SESSION_TIMEOUT)
+        .execute(sendEvent)
+        .execute(getHitData)).value;
+
+    // Expects non-pageview hits queued to be sent after the session has timed
+    // out to include a pageview immediately before them.
+    assert.equal(hitData.count, 2);
+    assert.equal(hitData[0].hitType, 'pageview');
+    assert.equal(hitData[0].sessionControl, 'start');
+    assert.equal(hitData[1].eventCategory, 'Uncategorized');
+    assert.equal(hitData[1].eventAction, 'inactive');
+
+    hitData = (yield browser
+        .url('/test/page-visibility-tracker-session-timeout.html')
+        .pause(SESSION_TIMEOUT)
+        .execute(sendPageview)
+        .execute(getHitData)).value;
+
+    // Expects non-pageview hits to send as normal.
+    assert.equal(hitData.count, 1);
+    assert.equal(hitData[0].hitType, 'pageview');
+    assert.notEqual(hitData[0].sessionControl, 'start');
+  });
+
+
+  it('should not send visible events when starting a new session',
+      function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = (yield browser
+        .url('/test/page-visibility-tracker-session-timeout.html')
+        .pause(SESSION_TIMEOUT)
+        .element('body')
+        .keys(command + 't' + command)
+        .element('body')
+        .keys(command + 'w' + command)
+        .execute(getHitData)).value;
+
+    // Expects a pageview in lieu of a visible event because the session
+    // has timed out.
+    assert.equal(hitData.count, 1);
+    assert.equal(hitData[0].hitType, 'pageview');
+    assert.equal(hitData[0].sessionControl, 'start');
+  });
+
+
+  it('should reset the session timeout when other hits are sent', function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = (yield browser
+        .url('/test/page-visibility-tracker-session-timeout.html')
+        .pause(SESSION_TIMEOUT / 2)
+        .execute(sendEvent)
+        .pause(SESSION_TIMEOUT / 2)
+        .element('body')
+        .keys(command + 't' + command)
+        .element('body')
+        .keys(command + 'w' + command)
+        .execute(getHitData)).value;
+
+    assert.equal(hitData.count, 3);
+    assert.equal(hitData[0].eventCategory, 'Uncategorized');
+    assert.equal(hitData[0].eventAction, 'inactive');
+
+    // Since the event above reset the session timeout, opening a new
+    // tab will still be considered within the session timeout.
+    assert.equal(hitData[1].eventCategory, 'Page Visibility');
+    assert.equal(hitData[1].eventAction, 'change');
+    assert.equal(hitData[1].eventLabel, 'hidden');
+    assert.equal(hitData[2].eventCategory, 'Page Visibility');
+    assert.equal(hitData[2].eventAction, 'change');
+    assert.equal(hitData[2].eventLabel, 'visible');
+  });
+
+
   it('should include the &did param with all hits', function() {
 
     return browser
@@ -67,7 +168,6 @@ describe('pageVisibilityTracker', function() {
   });
 
 });
-
 
 
 function sendPageview() {
