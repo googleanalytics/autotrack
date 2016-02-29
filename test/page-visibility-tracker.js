@@ -90,7 +90,6 @@ describe('pageVisibilityTracker', function() {
     // out to include a pageview immediately before them.
     assert.equal(hitData.count, 2);
     assert.equal(hitData[0].hitType, 'pageview');
-    assert.equal(hitData[0].sessionControl, 'start');
     assert.equal(hitData[1].eventCategory, 'Uncategorized');
     assert.equal(hitData[1].eventAction, 'inactive');
 
@@ -103,7 +102,6 @@ describe('pageVisibilityTracker', function() {
     // Expects non-pageview hits to send as normal.
     assert.equal(hitData.count, 1);
     assert.equal(hitData[0].hitType, 'pageview');
-    assert.notEqual(hitData[0].sessionControl, 'start');
   });
 
 
@@ -125,7 +123,6 @@ describe('pageVisibilityTracker', function() {
     // has timed out.
     assert.equal(hitData.count, 1);
     assert.equal(hitData[0].hitType, 'pageview');
-    assert.equal(hitData[0].sessionControl, 'start');
   });
 
 
