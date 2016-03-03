@@ -7,17 +7,24 @@
 
   ga('create', 'UA-XXXXX-Y', 'auto');
 
-  // Note(philipwalton):
-  // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
-  var hitData = {count: 0};
-  ga('set', 'sendHitTask', function(model) {
-    hitData[hitData.count] = {
-      eventCategory: model.get('eventCategory'),
-      eventAction: model.get('eventAction'),
-      eventLabel: model.get('eventLabel'),
-      devId: model.get('&did')
+  ga(function(tracker) {
+    window.onerror = function(message) {
+      tracker.send('exception', {exDescription: message});
     };
-    hitData.count++;
+
+    // Note(philipwalton):
+    // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
+    window.hitData = {count: 0};
+    tracker.set('sendHitTask', function(model) {
+      hitData[window.hitData.count] = {
+        hitType: model.get('hitType'),
+        eventCategory: model.get('eventCategory'),
+        eventAction: model.get('eventAction'),
+        eventLabel: model.get('eventLabel'),
+        devId: model.get('&did')
+      };
+      window.hitData.count++;
+    });
   });
 
   ga('require', 'outboundFormTracker');
@@ -30,6 +37,10 @@
 
   <form action="/test/blank.html">
     <input id="submit-2" type="submit">
+  </form>
+
+  <form>
+    <input id="submit-3" type="submit">
   </form>
 
   <script>

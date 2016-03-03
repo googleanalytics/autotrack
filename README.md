@@ -333,7 +333,9 @@ The debounce timeout, i.e., the amount of time to wait before sending the change
 ```js
 function(form) {
   var action = form.getAttribute('action');
-  return action.indexOf('http') === 0 && action.indexOf(location.hostname) < 0;
+  return action &&
+      action.indexOf('http') === 0 &&
+      action.indexOf(location.hostname) < 0;
 };
 ```
 
@@ -345,9 +347,10 @@ The default `shouldTrackOutboundForm` option will consider a form submission fro
 ga('require', 'autotrack', {
   shouldTrackOutboundForm: function(form) {
     var action = form.getAttribute('action');
-    // Checks that the action starts with "http" to exclude relative paths,
-    // then checks that the action does not contain the string "example.com".
-    return action.indexOf('http') === 0 && action.indexOf('example.com') < 0;
+    // Checks that the action is set and starts with "http" to exclude relative // paths, then checks that it does not contain the string "example.com".
+    return action &&
+        action.indexOf('http') === 0 &&
+        action.indexOf('example.com') < 0;
   }
 }
 ```
