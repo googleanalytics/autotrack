@@ -93,15 +93,6 @@ describe('pageVisibilityTracker', function() {
     assert.equal(hitData[1].eventCategory, 'Uncategorized');
     assert.equal(hitData[1].eventAction, 'inactive');
 
-    hitData = (yield browser
-        .url('/test/page-visibility-tracker-session-timeout.html')
-        .pause(SESSION_TIMEOUT)
-        .execute(sendPageview)
-        .execute(getHitData)).value;
-
-    // Expects non-pageview hits to send as normal.
-    assert.equal(hitData.count, 1);
-    assert.equal(hitData[0].hitType, 'pageview');
   });
 
 
@@ -123,6 +114,42 @@ describe('pageVisibilityTracker', function() {
     // has timed out.
     assert.equal(hitData.count, 1);
     assert.equal(hitData[0].hitType, 'pageview');
+  });
+
+
+  it('should allow setting additional fields for virtual pageviews',
+      function *() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = (yield browser
+        .url('/test/page-visibility-tracker-virtual-pageview-fields.html')
+        .pause(SESSION_TIMEOUT)
+        .execute(sendEvent)
+        .execute(getHitData)).value;
+
+    // Expects non-pageview hits queued to be sent after the session has timed
+    // out to include a pageview immediately before them.
+    assert.equal(hitData.count, 2);
+    assert.equal(hitData[0].hitType, 'pageview');
+    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker')
+    assert.equal(hitData[1].eventCategory, 'Uncategorized');
+    assert.equal(hitData[1].eventAction, 'inactive');
+
+    hitData = (yield browser
+        .url('/test/page-visibility-tracker-virtual-pageview-fields.html')
+        .pause(SESSION_TIMEOUT)
+        .element('body')
+        .keys(command + 't' + command)
+        .element('body')
+        .keys(command + 'w' + command)
+        .execute(getHitData)).value;
+
+    // Expects non-pageview hits queued to be sent after the session has timed
+    // out to include a pageview immediately before them.
+    assert.equal(hitData.count, 1);
+    assert.equal(hitData[0].hitType, 'pageview');
+    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker')
   });
 
 
