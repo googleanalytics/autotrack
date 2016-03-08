@@ -469,3 +469,15 @@ All autotrack plugins are [tested via Sauce Labs](https://saucelabs.com/u/autotr
     </td>
   </tr>
 </table>
+
+## Translations
+
+The following translations have been graciously provided by the community. Please note that these translations are unofficial and may be inaccurate or out of date:
+
+* [Japanese](https://github.com/nebosuker/autotrack)
+
+If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
+
+1. Fork this repository
+2. Remove all files other than `README.md`.
+3. Submit a pull request to this repository that adds a link to your translations to the above list.
