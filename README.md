@@ -11,6 +11,7 @@
   - [Custom builds](#custom-builds)
   - [Using autotrack with multiple trackers](#using-autotrack-with-multiple-trackers)
 - [Browser Support](#browser-support)
+- [Translations](#translations)
 
 ## Overview
 
