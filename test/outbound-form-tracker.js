@@ -52,6 +52,20 @@ describe('outboundFormTracker', function() {
   });
 
 
+  it('should work with forms missing the action attribute', function *() {
+
+    var testData = (yield browser
+        .url('/test/outbound-form-tracker.html')
+        .execute(stopFormSubmitEvents)
+        .execute(stubBeacon)
+        .click('#submit-3')
+        .execute(getHitData))
+        .value;
+
+    assert(!testData.count);
+  });
+
+
   it('should allow customizing what is considered an outbound form',
       function *() {
 
@@ -60,6 +74,8 @@ describe('outboundFormTracker', function() {
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
         .click('#submit-1')
+        .click('#submit-2')
+        .click('#submit-3')
         .execute(getHitData))
         .value;
 
