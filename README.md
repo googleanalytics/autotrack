@@ -21,7 +21,7 @@ Since most website owners care about most of the same types of user interactions
 
 Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are using your site.
 
-The `autotrack.js` library is small (3K gzipped), and includes the following plugins. By default all plugin are bundled together, but they can be included and configured separately as well:
+The `autotrack.js` library is small (3K gzipped), and includes the following plugins. By default all plugins are bundled together, but they can be included and configured separately as well:
 
 <table>
   <tr>
