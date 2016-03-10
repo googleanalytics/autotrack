@@ -67,7 +67,7 @@ If your site already includes the default JavaScript tracking snippet, you can r
 
 ```html
 <script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments);ga.l=+new Date;}
 ga('create', 'UA-XXXXX-Y', 'auto');
 ga('require', 'autotrack');
 ga('send', 'pageview');
