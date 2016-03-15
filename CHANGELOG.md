@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.6.3 (2016-03-15)
+
+- Update the generated license text
+
 ### 0.6.2 (2016-03-07)
 
 - Add a check to ensure the form action exists (#28)
