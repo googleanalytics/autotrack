@@ -16,17 +16,23 @@
 
 
 var assert = require('assert');
-var get = require('lodash/object/get');
+var ga = require('./analytics');
 var constants = require('../lib/constants');
 
 
 describe('autotrack', function() {
 
-  it('should require all other plugins', function *() {
+  afterEach(function* () {
+    yield browser
+        .execute(ga.clearHitData)
+        .execute(ga.removeTracker);
+  })
+
+  it('should provide all plugins', function *() {
 
     var gaplugins = (yield browser
-        .url('/test/autotrack.html')
-        .execute(getGaPlugins))
+        .url('/test/fixtures/autotrack.html')
+        .execute(ga.getProvidedPlugins))
         .value;
 
     assert(gaplugins.Autotrack);
@@ -43,8 +49,11 @@ describe('autotrack', function() {
       function *() {
 
     var gaplugins = (yield browser
-        .url('/test/autotrack-source-order.html')
-        .execute(getGaPlugins))
+        .url('/test/fixtures/autotrack-reorder.html')
+        .execute(ga.createTracker)
+        .execute(ga.trackHitData)
+        .execute(ga.requirePlugin, 'autotrack')
+        .execute(ga.getProvidedPlugins))
         .value;
 
     assert(gaplugins.Autotrack);
@@ -56,18 +65,21 @@ describe('autotrack', function() {
     assert(gaplugins.UrlChangeTracker);
 
     var hitData = (yield browser
-        .execute(sendPageview)
-        .execute(getHitData)).value;
+        .execute(ga.sendHit, 'pageview')
+        .execute(ga.getHitData)).value;
 
-    assert(hitData.count === 1);
+    assert.equal(hitData.count, 1);
   });
 
 
   it('should work with renaming the global object', function *() {
 
     var gaplugins = (yield browser
-        .url('/test/autotrack-rename-ga.html')
-        .execute(getGaPlugins))
+        .url('/test/fixtures/autotrack-rename.html')
+        .execute(ga.createTracker)
+        .execute(ga.trackHitData)
+        .execute(ga.requirePlugin, 'autotrack')
+        .execute(ga.getProvidedPlugins))
         .value;
 
     assert(gaplugins.Autotrack);
@@ -79,10 +91,10 @@ describe('autotrack', function() {
     assert(gaplugins.UrlChangeTracker);
 
     var hitData = (yield browser
-        .execute(sendPageview)
-        .execute(getHitData)).value;
+        .execute(ga.sendHit, 'pageview')
+        .execute(ga.getHitData)).value;
 
-    assert(hitData.count === 1);
+    assert.equal(hitData.count, 1);
   });
 
 
@@ -90,34 +102,11 @@ describe('autotrack', function() {
 
     return browser
         .url('/test/autotrack.html')
-        .execute(sendPageview)
-        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.createTracker)
+        .execute(ga.trackHitData)
+        .execute(ga.requirePlugin, 'autotrack')
+        .execute(ga.sendHit, 'pageview')
+        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
 });
-
-
-function sendPageview() {
-  window[window.GoogleAnalyticsObject || 'ga']('send', 'pageview');
-}
-
-
-function getGaPlugins() {
-  return gaplugins;
-}
-
-
-function getHitData() {
-  return hitData;
-}
-
-
-function hitDataMatches(expected) {
-  return function() {
-    return browser.execute(getHitData).then(function(hitData) {
-      return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
-      });
-    });
-  };
-}
