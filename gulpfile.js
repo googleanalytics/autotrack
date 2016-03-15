@@ -37,9 +37,11 @@ var server;
 
 gulp.task('javascript', function(done) {
 
-  // Gets the license string from this file, the first 15 lines.
+  // Gets the license string from this file (the first 15 lines),
+  // and adds an @license tag.
   var license = fs.readFileSync(__filename, 'utf-8')
-      .split('\n').slice(0, 15).join('\n');
+      .split('\n').slice(0, 15)
+      .join('\n').replace(/^\/\*\*/, '/**\n * @license');
 
   var version = '/*! autotrack.js v' + pkg.version + ' */';
 
