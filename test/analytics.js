@@ -15,22 +15,31 @@
  */
 
 
-module.exports = {
+/* global ga */
+
+
+var get = require('lodash/object/get');
+
+
+module.exports =  {
 
   createTracker: function() {
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
     ga('create', 'UA-XXXXX-Y', 'auto');
   },
 
-  loadPlugin: function(plugin, opts) {
-    return function() {
-      ga('require', plugin, opts);
-    }
+  getProvidedPlugins: function() {
+    return gaplugins;
+  },
+
+  requirePlugin: function(plugin, opts) {
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
+    ga('require', plugin, opts);
   },
 
   sendHit: function(hitType, fieldsObject) {
-    return function() {
-      ga('send', hitType, fieldsObject);
-    }
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
+    ga('send', hitType, fieldsObject);
   },
 
   getHitData: function() {
@@ -41,6 +50,7 @@ module.exports = {
     // Note(philipwalton):
     // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
     window.hitData = {count: 0};
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
     ga('set', 'sendHitTask', function(model) {
 
       hitData[hitData.count] = {
@@ -56,15 +66,20 @@ module.exports = {
 
   hitDataMatches: function(expected) {
     return function() {
-      return browser.execute(getHitData).then(function(hitData) {
+      return browser.execute(this.getHitData).then(function(hitData) {
         return expected.every(function(item) {
           return get(hitData.value, item[0]) === item[1];
         });
       });
-    };
+    }.bind(this);
+  },
+
+  clearHitData: function() {
+    window.hitData = {count: 0};
   },
 
   removeTracker: function() {
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
     ga('remove');
   }
 };
