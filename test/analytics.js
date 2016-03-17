@@ -58,6 +58,7 @@ module.exports =  {
         eventCategory: model.get('eventCategory'),
         eventAction: model.get('eventAction'),
         eventLabel: model.get('eventLabel'),
+        eventValue: model.get('eventValue'),
         devId: model.get('&did')
       };
       hitData.count++;

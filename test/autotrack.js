@@ -22,11 +22,11 @@ var constants = require('../lib/constants');
 
 describe('autotrack', function() {
 
-  afterEach(function* () {
-    yield browser
+  afterEach(function () {
+    return browser
         .execute(ga.clearHitData)
         .execute(ga.removeTracker);
-  })
+  });
 
   it('should provide all plugins', function *() {
 
