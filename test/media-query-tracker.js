@@ -16,28 +16,61 @@
 
 
 var assert = require('assert');
-var get = require('lodash/object/get');
+var ga = require('./analytics');
+var partials = require('./partials');
+var constants = require('../lib/constants');
 
 
 var browserCaps;
 var TIMEOUT = 1000;
 
 
+var autotrackOpts = {
+  mediaQueryDefinitions: [
+    {
+      name: 'Width',
+      dimensionIndex: 1,
+      items: [
+        {name: 'sm', media: 'all'},
+        {name: 'md', media: '(min-width: 480px)'},
+        {name: 'lg', media: '(min-width: 640px)'}
+      ]
+    },
+    {
+      name: 'Height',
+      dimensionIndex: 2,
+      items: [
+        {name: 'sm', media: 'all'},
+        {name: 'md', media: '(min-height: 480px)'},
+        {name: 'lg', media: '(min-height: 640px)'}
+      ]
+    }
+  ]
+}
+
+
 describe('mediaQueryTracker', function() {
 
   before(function *() {
     browserCaps = (yield browser.session()).value;
+
+    yield browser.url('/test/fixtures/autotrack.html');
   });
 
 
   beforeEach(function() {
-
-    if (notSupportedInBrowser()) return;
-
     return browser
-        // Loads a blank page to speed up testing.
-        .url('/test/blank.html')
-        .setViewportSize({width:800, height:600}, false);
+        .setViewportSize({width:800, height:600}, false)
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData);
+  });
+
+
+  afterEach(function () {
+    return browser
+        .execute(ga.clearHitData)
+        .execute(ga.run, 'mediaQueryTracker:remove')
+        .execute(ga.run, 'remove');
   });
 
 
@@ -46,8 +79,8 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     return browser
-        .url('/test/media-query-tracker.html')
-        .waitUntil(dimensionDataMatches([
+        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
+        .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'lg'],
           ['dimension2', 'md']
         ]));
@@ -59,13 +92,13 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     return browser
-        .url('/test/media-query-tracker.html')
+        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
         .setViewportSize({width:400, height:400}, false)
-        .waitUntil(dimensionDataMatches([
+        .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'sm'],
           ['dimension2', 'sm']
         ]))
-        .waitUntil(hitDataMatches([
+        .waitUntil(ga.hitDataMatches([
           ['[0].eventCategory', 'Width'],
           ['[0].eventAction', 'change'],
           ['[0].eventLabel', 'lg => sm'],
@@ -81,15 +114,15 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     yield browser
-        .url('/test/media-query-tracker.html')
+        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
         .setViewportSize({width:400, height:400}, false)
 
     var timeoutStart = Date.now();
-    yield browser.waitUntil(dimensionDataMatches([
+    yield browser.waitUntil(ga.trackerDataMatches([
       ['dimension1', 'sm'],
       ['dimension2', 'sm']
     ]))
-    .waitUntil(hitDataMatches([
+    .waitUntil(ga.hitDataMatches([
       ['count', 2]
     ]));
     var timeoutDuration = Date.now() - timeoutStart;
@@ -103,30 +136,36 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     yield browser
-        .url('/test/media-query-tracker-change-timeout.html')
+        .execute(ga.run, 'require', 'mediaQueryTracker',
+            Object.assign({}, autotrackOpts, {mediaQueryChangeTimeout: 0}))
         .setViewportSize({width:400, height:400}, false)
 
     var shortTimeoutStart = Date.now();
-    yield browser.waitUntil(dimensionDataMatches([
+    yield browser.waitUntil(ga.trackerDataMatches([
       ['dimension1', 'sm'],
       ['dimension2', 'sm']
     ]))
-    .waitUntil(hitDataMatches([
+    .waitUntil(ga.hitDataMatches([
       ['count', 2]
     ]));
     var shortTimeoutDuration = Date.now() - shortTimeoutStart;
 
     yield browser
+        .execute(ga.clearHitData)
+        .execute(ga.run, 'mediaQueryTracker:remove')
+        .execute(ga.run, 'remove')
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData)
         .setViewportSize({width:800, height:600}, false)
-        .url('/test/media-query-tracker.html')
+        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
         .setViewportSize({width:400, height:400}, false);
 
     var longTimeoutStart = Date.now();
-    yield browser.waitUntil(dimensionDataMatches([
+    yield browser.waitUntil(ga.trackerDataMatches([
       ['dimension1', 'sm'],
       ['dimension2', 'sm']
     ]))
-    .waitUntil(hitDataMatches([
+    .waitUntil(ga.hitDataMatches([
       ['count', 2]
     ]));
     var longTimeoutDuration = Date.now() - longTimeoutStart;
@@ -142,9 +181,9 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     return browser
-        .url('/test/media-query-tracker-change-template.html')
+        .execute(requireMediaQueryTrackerWithChangeTemplate)
         .setViewportSize({width:400, height:400}, false)
-        .waitUntil(hitDataMatches([
+        .waitUntil(ga.hitDataMatches([
           ['[0].eventLabel', 'lg:sm'],
           ['[1].eventLabel', 'md:sm']
         ]));
@@ -154,53 +193,45 @@ describe('mediaQueryTracker', function() {
   it('should include the &did param with all hits', function() {
 
     return browser
-        .url('/test/media-query-tracker.html')
-        .execute(sendPageview)
-        .waitUntil(hitDataMatches([['[0].devId', 'i5iSjo']]));
+        .execute(ga.run, 'require', 'mediaQueryTracker')
+        .execute(ga.run, 'send', 'pageview')
+        .waitUntil(ga.hitDataMatches([['[0].devId', 'i5iSjo']]));
   });
 
 });
 
 
-function sendPageview() {
-  ga('send', 'pageview');
-}
-
-
-function getHitData() {
-  return hitData;
-}
-
-
-function hitDataMatches(expected) {
-  return function() {
-    return browser.execute(getHitData).then(function(hitData) {
-      return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
-      });
-    });
-  };
-}
-
-
-function getDimensionData() {
-  var tracker = ga.getAll()[0];
-  return {
-    dimension1: tracker.get('dimension1'),
-    dimension2: tracker.get('dimension2')
-
-  };
-}
-
-
-function dimensionDataMatches(expected) {
-  return function() {
-    return browser.execute(getDimensionData).then(function(dimensionData) {
-      return expected.every(function(item) {
-        return get(dimensionData.value, item[0]) === item[1];
-      });
-    });
-  };
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `mediaQueryChangeTemplate`.
+ */
+function requireMediaQueryTrackerWithChangeTemplate() {
+  ga('require', 'mediaQueryTracker', {
+    mediaQueryDefinitions: [
+      {
+        name: 'Width',
+        dimensionIndex: 1,
+        items: [
+          {name: 'sm', media: 'all'},
+          {name: 'md', media: '(min-width: 480px)'},
+          {name: 'lg', media: '(min-width: 640px)'}
+        ]
+      },
+      {
+        name: 'Height',
+        dimensionIndex: 2,
+        items: [
+          {name: 'sm', media: 'all'},
+          {name: 'md', media: '(min-height: 480px)'},
+          {name: 'lg', media: '(min-height: 640px)'}
+        ]
+      }
+    ],
+    mediaQueryChangeTemplate: function(oldValue, newValue) {
+      return oldValue + ':' + newValue;
+    }
+  });
 }
 
 
