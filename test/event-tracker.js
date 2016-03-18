@@ -39,6 +39,7 @@ describe('eventTracker', function() {
   afterEach(function () {
     return browser
         .execute(ga.clearHitData)
+        .execute(ga.run, 'eventTracker:remove')
         .execute(ga.run, 'remove');
   });
 
