@@ -23,23 +23,13 @@ var get = require('lodash/object/get');
 
 module.exports =  {
 
-  createTracker: function() {
+  run: function(command, arg1, arg2) {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga('create', 'UA-XXXXX-Y', 'auto');
+    ga(command, arg1, arg2);
   },
 
   getProvidedPlugins: function() {
     return gaplugins;
-  },
-
-  requirePlugin: function(plugin, opts) {
-    var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga('require', plugin, opts);
-  },
-
-  sendHit: function(hitType, fieldsObject) {
-    var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga('send', hitType, fieldsObject);
   },
 
   getHitData: function() {
@@ -52,13 +42,14 @@ module.exports =  {
     window.hitData = {count: 0};
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
     ga('set', 'sendHitTask', function(model) {
-
       hitData[hitData.count] = {
         hitType: model.get('hitType'),
         eventCategory: model.get('eventCategory'),
         eventAction: model.get('eventAction'),
         eventLabel: model.get('eventLabel'),
         eventValue: model.get('eventValue'),
+        dimension1: model.get('dimension1'),
+        dimension2: model.get('dimension2'),
         devId: model.get('&did')
       };
       hitData.count++;
@@ -75,12 +66,25 @@ module.exports =  {
     }.bind(this);
   },
 
-  clearHitData: function() {
-    window.hitData = {count: 0};
+  getTrackerData: function() {
+    var tracker = ga.getAll()[0];
+    return {
+      dimension1: tracker.get('dimension1'),
+      dimension2: tracker.get('dimension2')
+    };
   },
 
-  removeTracker: function() {
-    var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga('remove');
+  trackerDataMatches: function(expected) {
+    return function() {
+      return browser.execute(this.getTrackerData).then(function(trackerData) {
+        return expected.every(function(item) {
+          return get(trackerData.value, item[0]) === item[1];
+        });
+      });
+    }.bind(this);
+  },
+
+  clearHitData: function() {
+    window.hitData = {count: 0};
   }
 };
