@@ -15,9 +15,6 @@
  */
 
 
-/* global ga */
-
-
 var get = require('lodash/object/get');
 
 
@@ -29,11 +26,11 @@ module.exports =  {
   },
 
   getProvidedPlugins: function() {
-    return gaplugins;
+    return window.gaplugins;
   },
 
   getHitData: function() {
-    return hitData;
+    return window.hitData;
   },
 
   trackHitData: function() {
@@ -67,6 +64,7 @@ module.exports =  {
   },
 
   getTrackerData: function() {
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
     var tracker = ga.getAll()[0];
     return {
       dimension1: tracker.get('dimension1'),
