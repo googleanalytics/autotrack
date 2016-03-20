@@ -41,6 +41,8 @@ module.exports =  {
     ga('set', 'sendHitTask', function(model) {
       hitData[hitData.count] = {
         hitType: model.get('hitType'),
+        page: model.get('page'),
+        title: model.get('title'),
         eventCategory: model.get('eventCategory'),
         eventAction: model.get('eventAction'),
         eventLabel: model.get('eventLabel'),
