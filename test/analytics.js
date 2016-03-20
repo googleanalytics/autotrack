@@ -45,6 +45,9 @@ module.exports =  {
         eventAction: model.get('eventAction'),
         eventLabel: model.get('eventLabel'),
         eventValue: model.get('eventValue'),
+        socialNetwork: model.get('socialNetwork'),
+        socialAction: model.get('socialAction'),
+        socialTarget: model.get('socialTarget'),
         dimension1: model.get('dimension1'),
         dimension2: model.get('dimension2'),
         devId: model.get('&did')
