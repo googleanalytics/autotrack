@@ -16,7 +16,8 @@
 
 
 var assert = require('assert');
-var get = require('lodash/object/get');
+var ga = require('./analytics');
+var partials = require('./partials');
 var constants = require('../lib/constants');
 
 
@@ -28,6 +29,23 @@ describe('urlTracker', function() {
 
   before(function *() {
     browserCaps = (yield browser.session()).value;
+
+    yield browser.url('/test/url-change-tracker.html');
+  });
+
+
+  beforeEach(function() {
+    return browser
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData);
+  });
+
+
+  afterEach(function () {
+    return browser
+        .execute(ga.clearHitData)
+        .execute(ga.run, 'urlChangeTracker:remove')
+        .execute(ga.run, 'remove');
   });
 
 
@@ -35,8 +53,9 @@ describe('urlTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
+    yield browser.execute(ga.run, 'require', 'urlChangeTracker');
+
     var fooUrl = (yield browser
-        .url('/test/url-change-tracker.html')
         .click('#foo')
         .url())
         .value;
@@ -79,7 +98,7 @@ describe('urlTracker', function() {
     assert.equal(back3Url, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData[0].page, '/test/foo.html');
@@ -96,15 +115,23 @@ describe('urlTracker', function() {
     assert.equal(hitData[5].title, 'Home');
   });
 
-
   it('should update the tracker but not send hits when using replaceState',
       function *() {
 
     if (notSupportedInBrowser()) return;
 
+    yield browser.execute(ga.run, 'require', 'urlChangeTracker');
+
     var url = (yield browser
-        .url('/test/url-change-tracker.html?q=extraStuff')
         .click('#replace')
+        .url())
+        .value;
+
+    // Replace state was called to just use the pathname value.
+    assert.equal(url, baseUrl + '/test/replaced.html');
+
+    var url = (yield browser
+        .click('#restore')
         .url())
         .value;
 
@@ -112,20 +139,20 @@ describe('urlTracker', function() {
     assert.equal(url, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData.count, 0);
   });
 
 
-
   it('should not capture hash changes', function *() {
 
     if (notSupportedInBrowser()) return;
 
+    yield browser.execute(ga.run, 'require', 'urlChangeTracker');
+
     var url = (yield browser
-        .url('/test/url-change-tracker.html')
         .click('#hash')
         .url())
         .value;
@@ -140,7 +167,7 @@ describe('urlTracker', function() {
     assert.equal(backUrl, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData.count, 0);
@@ -151,8 +178,9 @@ describe('urlTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
+    yield browser.execute(requireUrlChangeTrackerTrackerWithConditional);
+
     var fooUrl = (yield browser
-        .url('/test/url-change-tracker-conditional.html')
         .click('#foo')
         .url())
         .value;
@@ -164,11 +192,10 @@ describe('urlTracker', function() {
        .url())
        .value;
 
-    assert.equal(backUrl, baseUrl +
-                          '/test/url-change-tracker-conditional.html');
+    assert.equal(backUrl, baseUrl + '/test/url-change-tracker.html');
 
     var hitData = (yield browser
-       .execute(getHitData))
+       .execute(ga.getHitData))
        .value;
 
     assert.equal(hitData.count, 0);
@@ -178,32 +205,25 @@ describe('urlTracker', function() {
   it('should include the &did param with all hits', function() {
 
     return browser
-        .url('/test/url-change-tracker.html')
-        .execute(sendPageview)
-        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.run, 'require', 'urlChangeTracker')
+        .execute(ga.run, 'send', 'pageview')
+        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
 });
 
 
-function sendPageview() {
-  ga('send', 'pageview');
-}
-
-
-function getHitData() {
-  return hitData;
-}
-
-
-function hitDataMatches(expected) {
-  return function() {
-    return browser.execute(getHitData).then(function(hitData) {
-      return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
-      });
-    });
-  };
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `shouldTrackOutboundForm`.
+ */
+function requireUrlChangeTrackerTrackerWithConditional() {
+  ga('require', 'urlChangeTracker', {
+    shouldTrackUrlChange: function(newPath, oldPath) {
+      return false;
+    }
+  });
 }
 
 
