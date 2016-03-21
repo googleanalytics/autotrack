@@ -48,10 +48,13 @@ if (isSauceLabs) {
       platform: 'OS X 10.8',
       version: '6'
     },
-    {
-      browserName: 'MicrosoftEdge',
-      platform: 'Windows 10'
-    },
+    // TODO(philipwalton) Edge webdriver is too flaky to support at this time.
+    // Wait for full support and then re-add:
+    // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
+    // {
+    //   browserName: 'MicrosoftEdge',
+    //   platform: 'Windows 10'
+    // },
     {
       browserName: 'internet explorer',
       platform: 'Windows 8.1',
@@ -128,7 +131,7 @@ exports.config = {
   //
   // Set a base URL in order to shorten url command calls. If your url parameter starts
   // with "/", the base url gets prepended.
-  baseUrl: 'http://localhost:8080',
+  baseUrl: process.env.BASE_URL || 'http://localhost:8080',
   //
   // Default timeout for all waitForXXX commands.
   waitforTimeout: process.env.CI ? 60000 : 5000,
