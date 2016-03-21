@@ -17,17 +17,13 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var partials = require('./partials');
 var constants = require('../lib/constants');
 
 
 describe('eventTracker', function() {
 
   before(function() {
-    var content = partials.get('event-tracker');
-    return browser
-        .url('/test/fixtures/autotrack.html')
-        .execute(partials.load, content);
+    return browser.url('/test/event-tracker.html')
   });
 
   beforeEach(function() {

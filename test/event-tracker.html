@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+<head>
+  <script>
+    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+  </script>
+  <script async src='https://www.google-analytics.com/analytics.js'></script>
+  <script aysnc src="/autotrack.js"></script>
+</head>
+<body>
+
+  <button
+    id="event-button"
+    data-event-category="foo"
+    data-event-action="bar"
+    data-event-label="qux"
+    data-event-value="42">
+    Click
+  </button>
+
+  <button
+    id="event-button-some-fields"
+    data-event-category="foo"
+    data-event-action="bar"
+    data-event-label="qux">
+    Click
+  </button>
+
+  <button
+    id="event-button-missing-fields"
+    data-event-label="qux"
+    data-event-value="42">
+    Click
+  </button>
+
+  <button
+    id="event-button-custom-prefix"
+    event-category="foo"
+    event-action="bar"
+    event-label="qux"
+    event-value="42">
+    Click
+  </button>
+
+</body>
+</html>

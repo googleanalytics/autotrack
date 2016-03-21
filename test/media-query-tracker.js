@@ -17,7 +17,6 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var partials = require('./partials');
 var constants = require('../lib/constants');
 
 
@@ -54,7 +53,8 @@ describe('mediaQueryTracker', function() {
   before(function *() {
     browserCaps = (yield browser.session()).value;
 
-    yield browser.url('/test/fixtures/autotrack.html');
+    // Loads the autotrack file since no custom HTML is needed.
+    yield browser.url('/test/autotrack.html');
   });
 
 

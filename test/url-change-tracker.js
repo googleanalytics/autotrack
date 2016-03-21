@@ -17,7 +17,6 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var partials = require('./partials');
 var constants = require('../lib/constants');
 
 

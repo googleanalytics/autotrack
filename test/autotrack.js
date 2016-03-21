@@ -22,16 +22,22 @@ var constants = require('../lib/constants');
 
 describe('autotrack', function() {
 
-  afterEach(function () {
+  afterEach(function() {
     return browser
         .execute(ga.clearHitData)
-        .execute(ga.removeTracker);
+        .execute(ga.run, 'eventTracker:remove')
+        .execute(ga.run, 'mediaQueryTracker:remove')
+        .execute(ga.run, 'outboundFormTracker:remove')
+        .execute(ga.run, 'outboundLinkTracker:remove')
+        .execute(ga.run, 'socialTracker:remove')
+        .execute(ga.run, 'urlChangeTracker:remove')
+        .execute(ga.run, 'remove');
   });
 
   it('should provide all plugins', function *() {
 
     var gaplugins = (yield browser
-        .url('/test/fixtures/autotrack.html')
+        .url('/test/autotrack.html')
         .execute(ga.getProvidedPlugins))
         .value;
 
@@ -49,10 +55,10 @@ describe('autotrack', function() {
       function *() {
 
     var gaplugins = (yield browser
-        .url('/test/fixtures/autotrack-reorder.html')
-        .execute(ga.createTracker)
+        .url('/test/autotrack-reorder.html')
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
-        .execute(ga.requirePlugin, 'autotrack')
+        .execute(ga.run, 'require', 'autotrack')
         .execute(ga.getProvidedPlugins))
         .value;
 
@@ -65,7 +71,7 @@ describe('autotrack', function() {
     assert(gaplugins.UrlChangeTracker);
 
     var hitData = (yield browser
-        .execute(ga.sendHit, 'pageview')
+        .execute(ga.run, 'send', 'pageview')
         .execute(ga.getHitData)).value;
 
     assert.equal(hitData.count, 1);
@@ -75,10 +81,10 @@ describe('autotrack', function() {
   it('should work with renaming the global object', function *() {
 
     var gaplugins = (yield browser
-        .url('/test/fixtures/autotrack-rename.html')
-        .execute(ga.createTracker)
+        .url('/test/autotrack-rename.html')
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
-        .execute(ga.requirePlugin, 'autotrack')
+        .execute(ga.run, 'require', 'autotrack')
         .execute(ga.getProvidedPlugins))
         .value;
 
@@ -91,7 +97,7 @@ describe('autotrack', function() {
     assert(gaplugins.UrlChangeTracker);
 
     var hitData = (yield browser
-        .execute(ga.sendHit, 'pageview')
+        .execute(ga.run, 'send', 'pageview')
         .execute(ga.getHitData)).value;
 
     assert.equal(hitData.count, 1);
@@ -102,10 +108,10 @@ describe('autotrack', function() {
 
     return browser
         .url('/test/autotrack.html')
-        .execute(ga.createTracker)
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
-        .execute(ga.requirePlugin, 'autotrack')
-        .execute(ga.sendHit, 'pageview')
+        .execute(ga.run, 'require', 'autotrack')
+        .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 

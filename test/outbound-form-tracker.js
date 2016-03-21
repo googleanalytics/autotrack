@@ -17,17 +17,13 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var partials = require('./partials');
 var constants = require('../lib/constants');
 
 
 describe('outboundFormTracker', function() {
 
   function setupPage() {
-    var content = partials.get('outbound-form-tracker');
-    return browser
-        .url('/test/fixtures/autotrack.html')
-        .execute(partials.load, content);
+    return browser.url('/test/outbound-form-tracker.html');
   }
 
 
