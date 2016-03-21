@@ -74,7 +74,7 @@ describe('autotrack', function() {
         .execute(ga.run, 'send', 'pageview')
         .execute(ga.getHitData)).value;
 
-    assert.equal(hitData.count, 1);
+    assert.equal(hitData.length, 1);
   });
 
 
@@ -100,7 +100,7 @@ describe('autotrack', function() {
         .execute(ga.run, 'send', 'pageview')
         .execute(ga.getHitData)).value;
 
-    assert.equal(hitData.count, 1);
+    assert.equal(hitData.length, 1);
   });
 
 

@@ -74,7 +74,7 @@ describe('outboundLinkTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!hitData.count);
+    assert(!hitData.length);
   });
 
 
@@ -89,7 +89,7 @@ describe('outboundLinkTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!hitData.count);
+    assert(!hitData.length);
   });
 
 

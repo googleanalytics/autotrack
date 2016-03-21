@@ -123,7 +123,7 @@ describe('mediaQueryTracker', function() {
       ['dimension2', 'sm']
     ]))
     .waitUntil(ga.hitDataMatches([
-      ['count', 2]
+      ['length', 2]
     ]));
     var timeoutDuration = Date.now() - timeoutStart;
 
@@ -146,7 +146,7 @@ describe('mediaQueryTracker', function() {
       ['dimension2', 'sm']
     ]))
     .waitUntil(ga.hitDataMatches([
-      ['count', 2]
+      ['length', 2]
     ]));
     var shortTimeoutDuration = Date.now() - shortTimeoutStart;
 
@@ -166,7 +166,7 @@ describe('mediaQueryTracker', function() {
       ['dimension2', 'sm']
     ]))
     .waitUntil(ga.hitDataMatches([
-      ['count', 2]
+      ['length', 2]
     ]));
     var longTimeoutDuration = Date.now() - longTimeoutStart;
 

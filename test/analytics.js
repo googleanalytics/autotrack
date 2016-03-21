@@ -34,12 +34,10 @@ module.exports =  {
   },
 
   trackHitData: function() {
-    // Note(philipwalton):
-    // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
-    window.hitData = {count: 0};
+    window.hitData = [];
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
     ga('set', 'sendHitTask', function(model) {
-      hitData[hitData.count] = {
+      hitData.push({
         hitType: model.get('hitType'),
         page: model.get('page'),
         title: model.get('title'),
@@ -53,8 +51,7 @@ module.exports =  {
         dimension1: model.get('dimension1'),
         dimension2: model.get('dimension2'),
         devId: model.get('&did')
-      };
-      hitData.count++;
+      });
     });
   },
 
@@ -88,6 +85,6 @@ module.exports =  {
   },
 
   clearHitData: function() {
-    window.hitData = {count: 0};
+    window.hitData = [];
   }
 };

@@ -78,7 +78,7 @@ describe('eventTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert.equal(hitData.count, 0);
+    assert.equal(hitData.length, 0);
   });
 
 

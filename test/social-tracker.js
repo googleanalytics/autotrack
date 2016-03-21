@@ -55,7 +55,7 @@ describe('socialTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert.equal(hitData.count, 1);
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].socialNetwork, 'Twitter');
     assert.equal(hitData[0].socialAction, 'tweet');
     assert.equal(hitData[0].socialTarget, 'foo');
@@ -70,7 +70,7 @@ describe('socialTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert.equal(hitData.count, 0);
+    assert.equal(hitData.length, 0);
   });
 
 
@@ -82,7 +82,7 @@ describe('socialTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert.equal(hitData.count, 1);
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].socialNetwork, 'Twitter');
     assert.equal(hitData[0].socialAction, 'tweet');
     assert.equal(hitData[0].socialTarget, 'foo');

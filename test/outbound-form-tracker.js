@@ -74,7 +74,7 @@ describe('outboundFormTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!hitData.count);
+    assert(!hitData.length);
   });
 
 
@@ -88,7 +88,7 @@ describe('outboundFormTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!hitData.count);
+    assert(!hitData.length);
   });
 
 
@@ -105,7 +105,7 @@ describe('outboundFormTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!testData.count);
+    assert(!testData.length);
   });
 
 
