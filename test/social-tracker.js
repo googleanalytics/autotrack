@@ -16,7 +16,7 @@
 
 
 var assert = require('assert');
-var get = require('lodash/object/get');
+var ga = require('./analytics');
 var constants = require('../lib/constants');
 
 
@@ -27,47 +27,62 @@ describe('socialTracker', function() {
 
   before(function *() {
     browserCaps = (yield browser.session()).value;
+
+    yield browser.url('/test/social-tracker.html');
+  });
+
+
+  beforeEach(function() {
+    return browser
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData);
+  });
+
+
+  afterEach(function () {
+    return browser
+        .execute(ga.clearHitData)
+        .execute(ga.run, 'socialTracker:remove')
+        .execute(ga.run, 'remove');
   });
 
 
   it('should support declarative event binding to DOM elements', function *() {
 
     var hitData = (yield browser
-        .url('/test/social-tracker.html')
-        .waitUntil(pageIsLoaded())
+        .execute(ga.run, 'require', 'socialTracker')
         .click('#social-button')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].socialNetwork, 'Twitter');
     assert.equal(hitData[0].socialAction, 'tweet');
     assert.equal(hitData[0].socialTarget, 'foo');
   });
 
-
   it('should not capture clicks without the network, action, and target fields',
       function *() {
 
     var hitData = (yield browser
-        .url('/test/social-tracker.html')
-        .waitUntil(pageIsLoaded())
+        .execute(ga.run, 'require', 'socialTracker')
         .click('#social-button-missing-fields')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
-    assert.equal(hitData.count, 0);
+    assert.equal(hitData.length, 0);
   });
 
 
   it('should support customizing the attribute prefix', function *() {
 
     var hitData = (yield browser
-        .url('/test/social-tracker-custom-prefix.html')
-        .waitUntil(pageIsLoaded())
+        .execute(ga.run, 'require', 'socialTracker', {attributePrefix: ''})
         .click('#social-button-custom-prefix')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].socialNetwork, 'Twitter');
     assert.equal(hitData[0].socialAction, 'tweet');
     assert.equal(hitData[0].socialTarget, 'foo');
@@ -79,15 +94,14 @@ describe('socialTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
+    yield browser.execute(ga.run, 'require', 'socialTracker')
+
     var tweetFrame = (yield browser
-        .url('/test/social-tracker-widgets.html')
         .waitForVisible('iframe.twitter-share-button')
-        .pause(1000) // Needed for Safari (for some reason).
         .element('iframe.twitter-share-button')).value;
 
     var followFrame = (yield browser
         .waitForVisible('iframe.twitter-follow-button')
-        .pause(1000) // Needed for Safari (for some reason).
         .element('iframe.twitter-follow-button')).value;
 
     yield browser
@@ -97,7 +111,7 @@ describe('socialTracker', function() {
         .frame(followFrame)
         .click('a')
         .frame()
-        .waitUntil(hitDataMatches([
+        .waitUntil(ga.hitDataMatches([
           ['[0].socialNetwork', 'Twitter'],
           ['[0].socialAction', 'tweet'],
           ['[0].socialTarget', 'http://example.com'],
@@ -125,63 +139,17 @@ describe('socialTracker', function() {
   //       .debug();
   // });
 
+
   it('should include the &did param with all hits', function() {
 
     return browser
-        .url('/test/social-tracker.html')
-        .execute(sendPageview)
-        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.run, 'require', 'socialTracker')
+        .execute(ga.run, 'send', 'pageview')
+        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
+
 });
-
-
-function sendPageview() {
-  ga('send', 'pageview');
-}
-
-
-function getHitData() {
-  return hitData;
-}
-
-
-function hitDataMatches(expected) {
-  return function() {
-    return browser.execute(getHitData).then(function(hitData) {
-      return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
-      });
-    });
-  };
-}
-
-
-function pageIsLoaded() {
-  return function() {
-    return browser.execute(function() {
-      return document.readyState;
-    })
-    .then(function(response) {
-      return response.value == 'complete';
-    });
-  };
-}
-
-
-function socialButtonsAreRendered() {
-  return function() {
-    return browser.execute(function() {
-      return {
-        shareBtn: !!document.querySelector('iframe.twitter-share-button'),
-        followBtn: !!document.querySelector('iframe.twitter-follow-button')
-      };
-    })
-    .then(function(response) {
-      return response.value.shareBtn && response.value.followBtn;
-    });
-  };
-}
 
 
 function isEdge() {

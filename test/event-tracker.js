@@ -16,18 +16,35 @@
 
 
 var assert = require('assert');
-var get = require('lodash/object/get');
+var ga = require('./analytics');
 var constants = require('../lib/constants');
 
 
 describe('eventTracker', function() {
 
+  before(function() {
+    return browser.url('/test/event-tracker.html')
+  });
+
+  beforeEach(function() {
+    return browser
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData)
+  })
+
+  afterEach(function () {
+    return browser
+        .execute(ga.clearHitData)
+        .execute(ga.run, 'eventTracker:remove')
+        .execute(ga.run, 'remove');
+  });
+
   it('should support declarative event binding to DOM elements', function *() {
 
     var hitData = (yield browser
-        .url('/test/event-tracker.html')
+        .execute(ga.run, 'require', 'eventTracker')
         .click('#event-button')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'foo');
@@ -40,9 +57,9 @@ describe('eventTracker', function() {
   it('should support only specifying some of the event fields', function *() {
 
     var hitData = (yield browser
-        .url('/test/event-tracker.html')
+        .execute(ga.run, 'require', 'eventTracker')
         .click('#event-button-some-fields')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'foo');
@@ -56,21 +73,21 @@ describe('eventTracker', function() {
       function *() {
 
     var hitData = (yield browser
-        .url('/test/event-tracker.html')
+        .execute(ga.run, 'require', 'eventTracker')
         .click('#event-button-missing-fields')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
-    assert.equal(hitData.count, 0);
+    assert.equal(hitData.length, 0);
   });
 
 
   it('should support customizing the attribute prefix', function *() {
 
     var hitData = (yield browser
-        .url('/test/event-tracker-custom-prefix.html')
+        .execute(ga.run, 'require', 'eventTracker', {attributePrefix: ''})
         .click('#event-button-custom-prefix')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'foo');
@@ -83,30 +100,9 @@ describe('eventTracker', function() {
   it('should include the &did param with all hits', function() {
 
     return browser
-        .url('/test/event-tracker.html')
-        .execute(sendPageview)
-        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.run, 'require', 'eventTracker')
+        .execute(ga.run, 'send', 'pageview')
+        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
 });
-
-
-function sendPageview() {
-  ga('send', 'pageview');
-}
-
-
-function getHitData() {
-  return hitData;
-}
-
-
-function hitDataMatches(expected) {
-  return function() {
-    return browser.execute(getHitData).then(function(hitData) {
-      return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
-      });
-    });
-  };
-}

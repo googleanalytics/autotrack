@@ -1,30 +1,20 @@
 <!doctype html>
 <html>
-<body>
+<head>
+  <title>Social Tracker Test</title>
+  <meta property="og:title" content="Social Tracker Test" />
+  <meta property="og:url" content="http://example.com" />
   <script>
-  window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-
-
-  ga('create', 'UA-XXXXX-Y', 'auto');
-
-
-  // Note(philipwalton):
-  // Selenium on Windows 10 Edge doesn't handle arrays well, so we fake it.
-  var hitData = {count: 0};
-  ga('set', 'sendHitTask', function(model) {
-    hitData[hitData.count] = {
-      socialNetwork: model.get('socialNetwork'),
-      socialAction: model.get('socialAction'),
-      socialTarget: model.get('socialTarget'),
-      devId: model.get('&did')
-    };
-    hitData.count++;
-  });
-
-
-  ga('require', 'socialTracker');
-
+    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
   </script>
+  <script async src='https://www.google-analytics.com/analytics.js'></script>
+  <script aysnc src="/autotrack.js"></script>
+
+  <script async id="twitter-wjs" src="https://platform.twitter.com/widgets.js"></script>
+  <script async id="facebook-jssdk" src="https://connect.facebook.net/en_US/sdk.js#xfbml=1&version=v2.5"></script>
+
+</head>
+<body>
 
   <button
     id="social-button"
@@ -41,8 +31,20 @@
     Tweet
   </button>
 
-  <script async src='//www.google-analytics.com/analytics.js'></script>
-  <script aysnc src="/autotrack.js"></script>
+  <button
+    id="social-button-custom-prefix"
+    social-network="Twitter"
+    social-action="tweet"
+    social-target="foo">
+    Tweet
+  </button>
+
+  <p><a href="https://twitter.com/share" class="twitter-share-button" data-url="http://example.com">Tweet</a></p>
+
+  <p><a class="twitter-follow-button" href="https://twitter.com/twitter">
+    Follow @twitter</a></p>
+
+  <p class="fb-like" data-layout="standard" data-action="like" data-share="true"></p>
 
 </body>
 </html>

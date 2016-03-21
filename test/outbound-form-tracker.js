@@ -16,20 +16,46 @@
 
 
 var assert = require('assert');
-var get = require('lodash/object/get');
+var ga = require('./analytics');
 var constants = require('../lib/constants');
 
 
 describe('outboundFormTracker', function() {
 
+  function setupPage() {
+    return browser.url('/test/outbound-form-tracker.html');
+  }
+
+
+  function startTracking() {
+    return browser
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData)
+  }
+
+
+  function stopTracking() {
+    return browser
+        .execute(unstopFormSubmitEvents)
+        .execute(ga.clearHitData)
+        .execute(ga.run, 'outboundFormTracker:remove')
+        .execute(ga.run, 'remove');
+  }
+
+
+  before(setupPage);
+  beforeEach(startTracking);
+  afterEach(stopTracking);
+
+
   it('should send events on outbound form submits', function *() {
 
     var hitData = (yield browser
-        .url('/test/outbound-form-tracker.html')
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
@@ -40,29 +66,29 @@ describe('outboundFormTracker', function() {
 
   it('should not send events on local form submits', function *() {
 
-    var testData = (yield browser
-        .url('/test/outbound-form-tracker.html')
+    var hitData = (yield browser
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-2')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
-    assert(!testData.count);
+    assert(!hitData.length);
   });
 
 
   it('should work with forms missing the action attribute', function *() {
 
-    var testData = (yield browser
-        .url('/test/outbound-form-tracker.html')
+    var hitData = (yield browser
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-3')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
-    assert(!testData.count);
+    assert(!hitData.length);
   });
 
 
@@ -70,32 +96,42 @@ describe('outboundFormTracker', function() {
       function *() {
 
     var testData = (yield browser
-        .url('/test/outbound-form-tracker-conditional.html')
         .execute(stopFormSubmitEvents)
         .execute(stubBeacon)
+        .execute(requireOutboundFormTrackerWithConditional)
         .click('#submit-1')
         .click('#submit-2')
         .click('#submit-3')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
-    assert(!testData.count);
+    assert(!testData.length);
   });
 
 
-  it('should navigate to the proper location on submit', function *() {
+  it('should navigate to the proper outbound location on submit', function *() {
 
     yield browser
-        .url('/test/outbound-form-tracker.html')
         .execute(stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
         .waitUntil(urlMatches('http://google-analytics.com/collect'));
 
+    // Restores the page state.
+    yield setupPage();
+  });
+
+
+  it('should navigate to the proper local location on submit', function *() {
+
     yield browser
-        .url('/test/outbound-form-tracker.html')
         .execute(stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-2')
         .waitUntil(urlMatches('/test/blank.html'));
+
+    // Restores the page state.
+    yield setupPage();
   });
 
 
@@ -103,21 +139,29 @@ describe('outboundFormTracker', function() {
       'after the hit succeeds or times out', function* () {
 
     var hitData = (yield browser
-        .url('/test/outbound-form-tracker.html')
+        .execute(disableProgramaticFormSubmits)
         .execute(stubNoBeacon)
-        .execute(disableFormSubmitMethod)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
-        .execute(getHitData))
+        .execute(ga.getHitData))
         .value;
 
+    // Tests that the hit is sent.
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
     assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
 
+    // Tests that navigation actually happens
+    yield setupPage();
+    yield startTracking();
     yield browser
-        .url('/test/outbound-form-tracker.html')
+        .execute(stubNoBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
         .waitUntil(urlMatches('http://google-analytics.com/collect'));
+
+    // Restores the page state.
+    yield setupPage();
 
     // TODO(philipwalton): figure out a way to test the hitCallback timing out.
   });
@@ -126,32 +170,28 @@ describe('outboundFormTracker', function() {
   it('should include the &did param with all hits', function() {
 
     return browser
-        .url('/test/outbound-form-tracker.html')
-        .execute(sendPageview)
-        .waitUntil(hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.run, 'require', 'outboundFormTracker')
+        .execute(ga.run, 'send', 'pageview')
+        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
 });
 
 
-function sendPageview() {
-  ga('send', 'pageview');
-}
-
-
-function getHitData() {
-  return hitData;
-}
-
-
-function hitDataMatches(expected) {
-  return function() {
-    return browser.execute(getHitData).then(function(hitData) {
-      return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
-      });
-    });
-  };
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `shouldTrackOutboundForm`.
+ */
+function requireOutboundFormTrackerWithConditional() {
+  ga('require', 'outboundFormTracker', {
+    shouldTrackOutboundForm: function(form) {
+      var action = form.getAttribute('action');
+      return action &&
+          action.indexOf('http') === 0 &&
+          action.indexOf('google-analytics.com') < 0;
+    }
+  });
 }
 
 
@@ -166,7 +206,16 @@ function urlMatches(expectedUrl) {
 
 
 function stopFormSubmitEvents() {
-  window.__stopFormSubmitEvents__ = true;
+  window.__stopFormSubmits__ = function(event) {
+    event.preventDefault();
+  };
+
+  document.addEventListener('submit', window.__stopFormSubmits__);
+}
+
+
+function unstopFormSubmitEvents() {
+  document.removeEventListener('submit', window.__stopFormSubmits__);
 }
 
 
@@ -182,7 +231,7 @@ function stubNoBeacon() {
 }
 
 
-function disableFormSubmitMethod() {
+function disableProgramaticFormSubmits() {
   for (var i = 0, form; form = document.forms[i]; i++) {
     form.submit = function() {};
   }
