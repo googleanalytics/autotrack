@@ -20,9 +20,9 @@ var get = require('lodash/get');
 
 module.exports =  {
 
-  run: function(command, arg1, arg2) {
+  run: function() {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga(command, arg1, arg2);
+    ga.apply(null, arguments);
   },
 
   getProvidedPlugins: function() {
