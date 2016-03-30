@@ -58,6 +58,7 @@ describe('outboundLinkTracker', function() {
         .execute(ga.getHitData))
         .value;
 
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Outbound Link');
     assert.equal(hitData[0].eventAction, 'click');
     assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
@@ -74,7 +75,22 @@ describe('outboundLinkTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!hitData.length);
+    assert.equal(hitData.length, 0);
+  });
+
+
+  it('should not send events on non-http(s) protocol links', function*() {
+
+    var hitData = (yield browser
+        .execute(stopLinkClickEvents)
+        .execute(stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker')
+        .click('#javascript-protocol')
+        .click('#file-protocol')
+        .execute(ga.getHitData))
+        .value;
+
+    assert.equal(hitData.length, 0);
   });
 
 
@@ -89,7 +105,7 @@ describe('outboundLinkTracker', function() {
         .execute(ga.getHitData))
         .value;
 
-    assert(!hitData.length);
+    assert.equal(hitData.length, 0);
   });
 
 

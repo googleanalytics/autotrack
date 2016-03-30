@@ -365,7 +365,8 @@ ga('require', 'autotrack', {
 
 ```js
 function(link) {
-  return link.hostname != location.hostname;
+  return link.hostname != location.hostname &&
+      link.protocol.indexOf('http') === 0;
 };
 ```
 
@@ -377,10 +378,13 @@ The default `shouldTrackOutboundLink` option will consider a link click from `bl
 ga('require', 'autotrack', {
   shouldTrackOutboundLink: function(link) {
     // Checks that the link's hostname does not contain "example.com".
-    return link.hostname.indexOf('example.com') < 0;
+    return link.hostname.indexOf('example.com') < 0 &&
+        link.protocol.indexOf('http') === 0;
   }
 }
 ```
+
+The default `shouldTrackOutboundLink` option also only tracks links with the `http:` or `https:` protocols. You can remove this check if you'd like to track protocols like `tel:` or `mailto:` as outbound links.
 
 ### `shouldTrackUrlChange`
 
