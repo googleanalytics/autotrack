@@ -18,6 +18,7 @@
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var connect = require('connect');
+var eslint = require('gulp-eslint');
 var fs = require('fs');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
@@ -65,7 +66,15 @@ gulp.task('javascript', function(done) {
 });
 
 
-gulp.task('test', ['javascript', 'serve', 'selenium'], function() {
+gulp.task('lint', function () {
+  return gulp.src(['lib/**/*.js', 'test/**/*.js'])
+      .pipe(eslint())
+      .pipe(eslint.format())
+      .pipe(eslint.failAfterError());
+});
+
+
+gulp.task('test', ['javascript', 'lint', 'serve', 'selenium'], function() {
   function stopServers() {
     server.close();
     if (!process.env.CI) seleniumServer.kill();
