@@ -94,7 +94,7 @@ describe('socialTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    yield browser.execute(ga.run, 'require', 'socialTracker')
+    yield browser.execute(ga.run, 'require', 'socialTracker');
 
     var tweetFrame = (yield browser
         .waitForVisible('iframe.twitter-share-button')
@@ -148,22 +148,16 @@ describe('socialTracker', function() {
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
-
 });
 
 
-function isEdge() {
-  return browserCaps.browserName == 'MicrosoftEdge';
-}
-
-
-function isIE() {
-  return browserCaps.browserName == 'internet explorer';
-}
-
-
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
 function notSupportedInBrowser() {
   // TODO(philipwalton): IE and Edge are flaky with the tweet button test,
   // though they work when manually testing.
-  return isEdge() || isIE();
+  return browserCaps.browserName == 'MicrosoftEdge' ||
+      browserCaps.browserName == 'internet explorer';
 }

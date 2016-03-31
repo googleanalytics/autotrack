@@ -23,14 +23,14 @@ var constants = require('../lib/constants');
 describe('eventTracker', function() {
 
   before(function() {
-    return browser.url('/test/event-tracker.html')
+    return browser.url('/test/event-tracker.html');
   });
 
   beforeEach(function() {
     return browser
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-  })
+        .execute(ga.trackHitData);
+  });
 
   afterEach(function () {
     return browser

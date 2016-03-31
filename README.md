@@ -394,7 +394,7 @@ The default `shouldTrackOutboundLink` option also only tracks links with the `ht
 
 ```js
 function(newPath, oldPath) {
-  return true;
+  return newPath && oldPath;
 }
 ```
 

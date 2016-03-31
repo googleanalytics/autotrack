@@ -45,7 +45,7 @@ var autotrackOpts = {
       ]
     }
   ]
-}
+};
 
 
 describe('mediaQueryTracker', function() {
@@ -60,7 +60,7 @@ describe('mediaQueryTracker', function() {
 
   beforeEach(function() {
     return browser
-        .setViewportSize({width:800, height:600}, false)
+        .setViewportSize({width: 800, height: 600}, false)
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData);
   });
@@ -93,7 +93,7 @@ describe('mediaQueryTracker', function() {
 
     return browser
         .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
-        .setViewportSize({width:400, height:400}, false)
+        .setViewportSize({width: 400, height: 400}, false)
         .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'sm'],
           ['dimension2', 'sm']
@@ -115,7 +115,7 @@ describe('mediaQueryTracker', function() {
 
     yield browser
         .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
-        .setViewportSize({width:400, height:400}, false)
+        .setViewportSize({width: 400, height: 400}, false);
 
     var timeoutStart = Date.now();
     yield browser.waitUntil(ga.trackerDataMatches([
@@ -138,7 +138,7 @@ describe('mediaQueryTracker', function() {
     yield browser
         .execute(ga.run, 'require', 'mediaQueryTracker',
             Object.assign({}, autotrackOpts, {mediaQueryChangeTimeout: 0}))
-        .setViewportSize({width:400, height:400}, false)
+        .setViewportSize({width: 400, height: 400}, false);
 
     var shortTimeoutStart = Date.now();
     yield browser.waitUntil(ga.trackerDataMatches([
@@ -156,9 +156,9 @@ describe('mediaQueryTracker', function() {
         .execute(ga.run, 'remove')
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
-        .setViewportSize({width:800, height:600}, false)
+        .setViewportSize({width: 800, height: 600}, false)
         .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
-        .setViewportSize({width:400, height:400}, false);
+        .setViewportSize({width: 400, height: 400}, false);
 
     var longTimeoutStart = Date.now();
     yield browser.waitUntil(ga.trackerDataMatches([
@@ -182,7 +182,7 @@ describe('mediaQueryTracker', function() {
 
     return browser
         .execute(requireMediaQueryTrackerWithChangeTemplate)
-        .setViewportSize({width:400, height:400}, false)
+        .setViewportSize({width: 400, height: 400}, false)
         .waitUntil(ga.hitDataMatches([
           ['[0].eventLabel', 'lg:sm'],
           ['[1].eventLabel', 'md:sm']
@@ -195,7 +195,7 @@ describe('mediaQueryTracker', function() {
     return browser
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'send', 'pageview')
-        .waitUntil(ga.hitDataMatches([['[0].devId', 'i5iSjo']]));
+        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
 
 });
@@ -235,22 +235,17 @@ function requireMediaQueryTrackerWithChangeTemplate() {
 }
 
 
-function isEdge() {
-  return browserCaps.browserName == 'MicrosoftEdge';
-}
-
-
-function isIE9() {
-  return browserCaps.browserName == 'internet explorer' &&
-         browserCaps.version == '9';
-}
-
-
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
 function notSupportedInBrowser() {
   // TODO(philipwalton): Some capabilities aren't implemented, so we can't test
   // against Edge right now. Wait for build 10532 to support setViewportSize
   // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
 
   // IE9 doesn't support matchMedia, so it's not tested.
-  return isEdge() || isIE9();
+  return browserCaps.browserName == 'MicrosoftEdge' ||
+      (browserCaps.browserName == 'internet explorer' &&
+          browserCaps.version == '9');
 }
