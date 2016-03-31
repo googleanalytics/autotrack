@@ -1,5 +1,12 @@
 # Changelog
 
+### 0.6.4 (2016-03-30)
+
+- Ensure only http(s) links are considered outbound (#44)
+- Remove unnecessary caught errors (#42)
+- Move the gaplugin assignment to the provide call (#36)
+- Refactor tests to make fewer full page requests (#35)
+
 ### 0.6.3 (2016-03-15)
 
 - Update the generated license text
