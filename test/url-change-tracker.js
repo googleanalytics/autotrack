@@ -129,7 +129,7 @@ describe('urlTracker', function() {
     // Replace state was called to just use the pathname value.
     assert.equal(url, baseUrl + '/test/replaced.html');
 
-    var url = (yield browser
+    url = (yield browser
         .click('#restore')
         .url())
         .value;
@@ -219,20 +219,19 @@ describe('urlTracker', function() {
  */
 function requireUrlChangeTrackerTrackerWithConditional() {
   ga('require', 'urlChangeTracker', {
-    shouldTrackUrlChange: function(newPath, oldPath) {
+    shouldTrackUrlChange: function() {
       return false;
     }
   });
 }
 
 
-function isIE9() {
-  return browserCaps.browserName == 'internet explorer' &&
-         browserCaps.version == '9';
-}
-
-
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
 function notSupportedInBrowser() {
   // IE9 doesn't support the HTML5 History API.
-  return isIE9();
+  return browserCaps.browserName == 'internet explorer' &&
+      browserCaps.version == '9';
 }

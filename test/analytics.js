@@ -37,7 +37,7 @@ module.exports =  {
     window.hitData = [];
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
     ga('set', 'sendHitTask', function(model) {
-      hitData.push({
+      window.hitData.push({
         hitType: model.get('hitType'),
         page: model.get('page'),
         title: model.get('title'),
