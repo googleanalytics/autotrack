@@ -18,7 +18,7 @@
 module.exports = {
 
   /**
-   * @param {string} expectedUrl The URLto match.
+   * @param {string} expectedUrl The URL to match.
    * @return {Function} A function that, when invoked, returns a promise
    *     that is fulfilled when the URL in the browsers address bar matches
    *     the passed URL.
@@ -65,7 +65,7 @@ module.exports = {
 
 
   /**
-   * Prevents the default link clik action allowing links to be interacted
+   * Prevents the default link click action allowing links to be interacted
    * with without navigating away from the current page.
    */
   stopLinkClickEvents: function() {
