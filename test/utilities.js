@@ -69,7 +69,7 @@ module.exports = {
    * with without navigating away from the current page.
    */
   stopLinkClickEvents: function() {
-    window.__stopClinkClicks__ = function(event) {
+    window.__stopLinkClicks__ = function(event) {
       event.preventDefault();
     };
 
