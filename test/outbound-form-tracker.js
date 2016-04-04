@@ -40,7 +40,7 @@ describe('outboundFormTracker', function() {
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
-    assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
   });
 
 
@@ -95,7 +95,7 @@ describe('outboundFormTracker', function() {
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
-        .waitUntil(utilities.urlMatches('http://google-analytics.com/collect'));
+        .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
 
     // Restores the page state.
     yield setupPage();
@@ -129,7 +129,7 @@ describe('outboundFormTracker', function() {
     // Tests that the hit is sent.
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
-    assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
 
     // Tests that navigation actually happens
     yield setupPage();
@@ -138,7 +138,7 @@ describe('outboundFormTracker', function() {
         .execute(utilities.stubNoBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
-        .waitUntil(utilities.urlMatches('http://google-analytics.com/collect'));
+        .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
 
     // Restores the page state.
     yield setupPage();

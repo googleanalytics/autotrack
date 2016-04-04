@@ -41,7 +41,7 @@ describe('outboundLinkTracker', function() {
     assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Outbound Link');
     assert.equal(hitData[0].eventAction, 'click');
-    assert.equal(hitData[0].eventLabel, 'http://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
   });
 
 
@@ -95,7 +95,7 @@ describe('outboundLinkTracker', function() {
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
-        .waitUntil(utilities.urlMatches('http://google-analytics.com/collect'));
+        .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
 
     // Restores the page state.
     yield setupPage();

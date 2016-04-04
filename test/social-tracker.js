@@ -114,7 +114,7 @@ describe('socialTracker', function() {
         .waitUntil(ga.hitDataMatches([
           ['[0].socialNetwork', 'Twitter'],
           ['[0].socialAction', 'tweet'],
-          ['[0].socialTarget', 'http://example.com'],
+          ['[0].socialTarget', 'https://example.com'],
           ['[1].socialNetwork', 'Twitter'],
           ['[1].socialAction', 'follow'],
           ['[1].socialTarget', 'twitter']
