@@ -69,11 +69,11 @@ module.exports = {
    * with without navigating away from the current page.
    */
   stopLinkClickEvents: function() {
-    window.__stopClinkClicks__ = function(event) {
+    window.__stopLinkClicks__ = function(event) {
       event.preventDefault();
     };
 
-    document.addEventListener('click', window.__stopClinkClicks__);
+    document.addEventListener('click', window.__stopLinkClicks__);
   },
 
 
@@ -81,7 +81,7 @@ module.exports = {
    * Restores normal link click behavior.
    */
   unstopLinkClickEvents: function() {
-    document.removeEventListener('click', window.__stopClinkClicks__);
+    document.removeEventListener('click', window.__stopLinkClicks__);
   },
 
 
