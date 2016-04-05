@@ -15,6 +15,9 @@
  */
 
 
+/* eslint require-jsdoc: "off" */
+
+
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var connect = require('connect');
@@ -22,9 +25,9 @@ var eslint = require('gulp-eslint');
 var fs = require('fs');
 var gulp = require('gulp');
 var gutil = require('gulp-util');
-var seleniumServerJar = require('selenium-server-standalone-jar');
+var ngrok = require('ngrok');
 var pkg = require('./package.json');
-var shell = require('shelljs');
+var seleniumServerJar = require('selenium-server-standalone-jar');
 var serveStatic = require('serve-static');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
@@ -34,6 +37,7 @@ var webdriver = require('gulp-webdriver');
 
 
 var server;
+var seleniumServer;
 
 
 gulp.task('javascript', function(done) {
@@ -67,21 +71,32 @@ gulp.task('javascript', function(done) {
 
 
 gulp.task('lint', function () {
-  return gulp.src(['lib/**/*.js', 'test/**/*.js'])
+  return gulp.src(['gulpfile.js', 'lib/**/*.js', 'test/**/*.js'])
       .pipe(eslint())
       .pipe(eslint.format())
       .pipe(eslint.failAfterError());
 });
 
 
-gulp.task('test', ['javascript', 'lint', 'serve', 'selenium'], function() {
+gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
   function stopServers() {
     server.close();
+    ngrok.kill();
     if (!process.env.CI) seleniumServer.kill();
   }
   return gulp.src('./wdio.conf.js')
       .pipe(webdriver())
       .on('end', stopServers);
+});
+
+
+gulp.task('tunnel', ['serve'], function(done) {
+  ngrok.connect(8080, function(err, url) {
+    if (err) return done(err);
+
+    process.env.BASE_URL = url;
+    done();
+  });
 });
 
 

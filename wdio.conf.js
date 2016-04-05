@@ -77,7 +77,6 @@ if (isSauceLabs) {
                   ' - ' + (cap.version || 'latest');
 
     cap['build'] = process.env.TRAVIS_BUILD_NUMBER;
-    cap['tunnel-identifier'] = process.env.TRAVIS_JOB_NUMBER;
   });
 }
 
