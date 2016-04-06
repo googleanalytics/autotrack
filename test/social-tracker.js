@@ -25,34 +25,34 @@ var browserCaps;
 
 describe('socialTracker', function() {
 
-  before(function *() {
-    browserCaps = (yield browser.session()).value;
+  before(function() {
+    browserCaps = browser.session().value;
 
-    yield browser.url('/test/social-tracker.html');
+    browser.url('/test/social-tracker.html');
   });
 
 
   beforeEach(function() {
-    return browser
+    browser
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData);
   });
 
 
   afterEach(function () {
-    return browser
+    browser
         .execute(ga.clearHitData)
         .execute(ga.run, 'socialTracker:remove')
         .execute(ga.run, 'remove');
   });
 
 
-  it('should support declarative event binding to DOM elements', function *() {
+  it('should support declarative event binding to DOM elements', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(ga.run, 'require', 'socialTracker')
         .click('#social-button')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 1);
@@ -62,24 +62,24 @@ describe('socialTracker', function() {
   });
 
   it('should not capture clicks without the network, action, and target fields',
-      function *() {
+      function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(ga.run, 'require', 'socialTracker')
         .click('#social-button-missing-fields')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 0);
   });
 
 
-  it('should support customizing the attribute prefix', function *() {
+  it('should support customizing the attribute prefix', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(ga.run, 'require', 'socialTracker', {attributePrefix: ''})
         .click('#social-button-custom-prefix')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 1);
@@ -90,21 +90,19 @@ describe('socialTracker', function() {
 
 
   it('should support tweets and follows from the official twitter widgets',
-      function *() {
+      function() {
 
     if (notSupportedInBrowser()) return;
 
-    yield browser.execute(ga.run, 'require', 'socialTracker');
+    browser.execute(ga.run, 'require', 'socialTracker');
 
-    var tweetFrame = (yield browser
-        .waitForVisible('iframe.twitter-share-button')
-        .element('iframe.twitter-share-button')).value;
+    browser.waitForVisible('iframe.twitter-share-button');
+    var tweetFrame = browser.element('iframe.twitter-share-button').value;
 
-    var followFrame = (yield browser
-        .waitForVisible('iframe.twitter-follow-button')
-        .element('iframe.twitter-follow-button')).value;
+    browser.waitForVisible('iframe.twitter-follow-button');
+    var followFrame = browser.element('iframe.twitter-follow-button').value;
 
-    yield browser
+    browser
         .frame(tweetFrame)
         .click('a')
         .frame()
@@ -123,17 +121,17 @@ describe('socialTracker', function() {
 
 
   // TODO(philipwalton): figure out why this doesn't work...
-  // it('should support likes from the official facebook widget', function *() {
+  // it('should support likes from the official facebook widget', function() {
 
-  //   var mainWindow = (yield browser
+  //   var mainWindow = browser
   //       .url('/test/social-tracker-widgets.html')
-  //       .windowHandle()).value;
+  //       .windowHandle().value;
 
-  //   var likeFrame = (yield browser
+  //   var likeFrame = browser
   //       .waitForVisible('.fb-like iframe')
-  //       .element('.fb-like iframe')).value;
+  //       .element('.fb-like iframe').value;
 
-  //   yield browser
+  //   browser
   //       .frame(likeFrame)
   //       .click('form .pluginButtonLabel')
   //       .debug();
@@ -142,7 +140,7 @@ describe('socialTracker', function() {
 
   it('should include the &did param with all hits', function() {
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'socialTracker')
         .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));

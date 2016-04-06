@@ -28,14 +28,14 @@ describe('outboundFormTracker', function() {
   afterEach(stopTracking);
 
 
-  it('should send events on outbound form submits', function *() {
+  it('should send events on outbound form submits', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopFormSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
@@ -44,28 +44,28 @@ describe('outboundFormTracker', function() {
   });
 
 
-  it('should not send events on local form submits', function *() {
+  it('should not send events on local form submits', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopFormSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-2')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert(!hitData.length);
   });
 
 
-  it('should work with forms missing the action attribute', function *() {
+  it('should work with forms missing the action attribute', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopFormSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-3')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert(!hitData.length);
@@ -73,57 +73,57 @@ describe('outboundFormTracker', function() {
 
 
   it('should allow customizing what is considered an outbound form',
-      function *() {
+      function() {
 
-    var testData = (yield browser
+    var testData = browser
         .execute(utilities.stopFormSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(requireOutboundFormTrackerWithConditional)
         .click('#submit-1')
         .click('#submit-2')
         .click('#submit-3')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert(!testData.length);
   });
 
 
-  it('should navigate to the proper outbound location on submit', function *() {
+  it('should navigate to the proper outbound location on submit', function() {
 
-    yield browser
+    browser
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
         .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
 
     // Restores the page state.
-    yield setupPage();
+    setupPage();
   });
 
 
-  it('should navigate to the proper local location on submit', function *() {
+  it('should navigate to the proper local location on submit', function() {
 
-    yield browser
+    browser
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-2')
         .waitUntil(utilities.urlMatches('/test/blank.html'));
 
     // Restores the page state.
-    yield setupPage();
+    setupPage();
   });
 
 
   it('should stop the event when beacon is not supported and re-emit ' +
-      'after the hit succeeds or times out', function* () {
+      'after the hit succeeds or times out', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.disableProgramaticFormSubmits)
         .execute(utilities.stubNoBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     // Tests that the hit is sent.
@@ -132,16 +132,16 @@ describe('outboundFormTracker', function() {
     assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
 
     // Tests that navigation actually happens
-    yield setupPage();
-    yield startTracking();
-    yield browser
+    setupPage();
+    startTracking();
+    browser
         .execute(utilities.stubNoBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
         .click('#submit-1')
         .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
 
     // Restores the page state.
-    yield setupPage();
+    setupPage();
 
     // TODO(philipwalton): figure out a way to test the hitCallback timing out.
   });
@@ -149,7 +149,7 @@ describe('outboundFormTracker', function() {
 
   it('should include the &did param with all hits', function() {
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'outboundFormTracker')
         .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
@@ -160,19 +160,17 @@ describe('outboundFormTracker', function() {
 
 /**
  * Navigates to the outbound form tracker test page.
- * @return {Promise} The webdriverio browser promise object.
  */
 function setupPage() {
-  return browser.url('/test/outbound-form-tracker.html');
+  browser.url('/test/outbound-form-tracker.html');
 }
 
 
 /**
  * Initiates the tracker and capturing hit data.
- * @return {Promise} The webdriverio browser promise object.
  */
 function startTracking() {
-  return browser
+  browser
       .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
       .execute(ga.trackHitData);
 }
@@ -180,10 +178,9 @@ function startTracking() {
 
 /**
  * Stops capturing hit data and remove the plugin and tracker.
- * @return {Promise} The webdriverio browser promise object.
  */
 function stopTracking() {
-  return browser
+  browser
       .execute(utilities.unstopFormSubmitEvents)
       .execute(ga.clearHitData)
       .execute(ga.run, 'outboundFormTracker:remove')

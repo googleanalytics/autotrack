@@ -15,7 +15,7 @@
  */
 
 
-var get = require('lodash/object/get');
+var get = require('lodash/get');
 
 
 module.exports =  {
