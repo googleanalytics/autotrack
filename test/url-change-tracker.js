@@ -75,24 +75,21 @@ describe('urlTracker', function() {
 
     assert.equal(quxUrl, baseUrl + '/test/qux.html');
 
-    var back1Url = browser
-        .back()
-        .url()
-        .value;
+    // TODO(philipwalton): Safari currently doesn't allow chaining the `back()`
+    // method, so we have to separate this into two expressions. This can
+    // probably be reverted in a future version (here and elsewhere).
+    browser.back();
+    var back1Url = browser.url().value;
 
     assert.equal(back1Url, baseUrl + '/test/bar.html');
 
-    var back2Url = browser
-        .back()
-        .url()
-        .value;
+    browser.back();
+    var back2Url = browser.url().value;
 
     assert.equal(back2Url, baseUrl + '/test/foo.html');
 
-    var back3Url = browser
-        .back()
-        .url()
-        .value;
+    browser.back();
+    var back3Url = browser.url().value;
 
     assert.equal(back3Url, baseUrl + '/test/url-change-tracker.html');
 
@@ -158,10 +155,8 @@ describe('urlTracker', function() {
 
     assert.equal(url, baseUrl + '/test/url-change-tracker.html#hash');
 
-    var backUrl = browser
-        .back()
-        .url()
-        .value;
+    browser.back();
+    var backUrl = browser.url().value;
 
     assert.equal(backUrl, baseUrl + '/test/url-change-tracker.html');
 
@@ -186,10 +181,8 @@ describe('urlTracker', function() {
 
     assert.equal(fooUrl, baseUrl + '/test/foo.html');
 
-    var backUrl = browser
-       .back()
-       .url()
-       .value;
+    browser.back();
+    var backUrl = browser.url().value;
 
     assert.equal(backUrl, baseUrl + '/test/url-change-tracker.html');
 
