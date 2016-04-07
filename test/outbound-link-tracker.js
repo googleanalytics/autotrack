@@ -28,14 +28,14 @@ describe('outboundLinkTracker', function() {
   afterEach(stopTracking);
 
 
-  it('should send events on outbound link clicks', function *() {
+  it('should send events on outbound link clicks', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopLinkClickEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 1);
@@ -45,29 +45,29 @@ describe('outboundLinkTracker', function() {
   });
 
 
-  it('should not send events on local link clicks', function *() {
+  it('should not send events on local link clicks', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopLinkClickEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#local-link')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 0);
   });
 
 
-  it('should not send events on non-http(s) protocol links', function*() {
+  it('should not send events on non-http(s) protocol links', function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopLinkClickEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#javascript-protocol')
         .click('#file-protocol')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 0);
@@ -75,55 +75,55 @@ describe('outboundLinkTracker', function() {
 
 
   it('should allow customizing what is considered an outbound link',
-      function*() {
+      function() {
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(utilities.stopLinkClickEvents)
         .execute(utilities.stubBeacon)
         .execute(requireOutboundLinkTrackerWithConditional)
         .click('#outbound-link')
-        .execute(ga.getHitData))
+        .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 0);
   });
 
 
-  it('should navigate to the proper location on outbound clicks', function *() {
+  it('should navigate to the proper location on outbound clicks', function() {
 
-    yield browser
+    browser
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
         .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
 
     // Restores the page state.
-    yield setupPage();
+    setupPage();
   });
 
 
-  it('should navigate to the proper location on local clicks', function *() {
+  it('should navigate to the proper location on local clicks', function() {
 
-    yield browser
+    browser
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#local-link')
         .waitUntil(utilities.urlMatches('/test/blank.html'));
 
     // Restores the page state.
-    yield setupPage();
+    setupPage();
   });
 
 
   it('should set the target to "_blank" when beacon is not supported',
-      function* () {
+      function() {
 
-    var target = (yield browser
+    var target = browser
         .execute(utilities.stubNoBeacon)
         .execute(utilities.stopLinkClickEvents)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
-        .getAttribute('#outbound-link', 'target'));
+        .getAttribute('#outbound-link', 'target');
 
     assert.equal('_blank', target);
   });
@@ -131,7 +131,7 @@ describe('outboundLinkTracker', function() {
 
   it('should include the &did param with all hits', function() {
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
@@ -142,19 +142,17 @@ describe('outboundLinkTracker', function() {
 
 /**
  * Navigates to the outbound link tracker test page.
- * @return {Promise} The webdriverio browser promise object.
  */
 function setupPage() {
-  return browser.url('/test/outbound-link-tracker.html');
+  browser.url('/test/outbound-link-tracker.html');
 }
 
 
 /**
  * Initiates the tracker and capturing hit data.
- * @return {Promise} The webdriverio browser promise object.
  */
 function startTracking() {
-  return browser
+  browser
       .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
       .execute(ga.trackHitData);
 }
@@ -162,10 +160,9 @@ function startTracking() {
 
 /**
  * Stops capturing hit data and remove the plugin and tracker.
- * @return {Promise} The webdriverio browser promise object.
  */
 function stopTracking() {
-  return browser
+  browser
       .execute(utilities.unstopLinkClickEvents)
       .execute(ga.clearHitData)
       .execute(ga.run, 'outboundLinkTracker:remove')

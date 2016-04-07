@@ -50,16 +50,16 @@ var autotrackOpts = {
 
 describe('mediaQueryTracker', function() {
 
-  before(function *() {
-    browserCaps = (yield browser.session()).value;
+  before(function() {
+    browserCaps = browser.session().value;
 
     // Loads the autotrack file since no custom HTML is needed.
-    yield browser.url('/test/autotrack.html');
+    browser.url('/test/autotrack.html');
   });
 
 
   beforeEach(function() {
-    return browser
+    browser
         .setViewportSize({width: 800, height: 600}, false)
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData);
@@ -67,7 +67,7 @@ describe('mediaQueryTracker', function() {
 
 
   afterEach(function () {
-    return browser
+    browser
         .execute(ga.clearHitData)
         .execute(ga.run, 'mediaQueryTracker:remove')
         .execute(ga.run, 'remove');
@@ -78,7 +78,7 @@ describe('mediaQueryTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
         .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'lg'],
@@ -91,13 +91,15 @@ describe('mediaQueryTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
         .setViewportSize({width: 400, height: 400}, false)
         .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'sm'],
           ['dimension2', 'sm']
-        ]))
+        ]));
+
+    browser
         .waitUntil(ga.hitDataMatches([
           ['[0].eventCategory', 'Width'],
           ['[0].eventAction', 'change'],
@@ -109,20 +111,20 @@ describe('mediaQueryTracker', function() {
   });
 
 
-  it('should wait for the timeout to set or send changes', function *() {
+  it('should wait for the timeout to set or send changes', function() {
 
     if (notSupportedInBrowser()) return;
 
-    yield browser
+   browser
         .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
         .setViewportSize({width: 400, height: 400}, false);
 
     var timeoutStart = Date.now();
-    yield browser.waitUntil(ga.trackerDataMatches([
+    browser.waitUntil(ga.trackerDataMatches([
       ['dimension1', 'sm'],
       ['dimension2', 'sm']
-    ]))
-    .waitUntil(ga.hitDataMatches([
+    ]));
+    browser.waitUntil(ga.hitDataMatches([
       ['length', 2]
     ]));
     var timeoutDuration = Date.now() - timeoutStart;
@@ -131,26 +133,26 @@ describe('mediaQueryTracker', function() {
   });
 
 
-  it('should support customizing the timeout period', function *() {
+  it('should support customizing the timeout period', function() {
 
     if (notSupportedInBrowser()) return;
 
-    yield browser
+    browser
         .execute(ga.run, 'require', 'mediaQueryTracker',
             Object.assign({}, autotrackOpts, {mediaQueryChangeTimeout: 0}))
         .setViewportSize({width: 400, height: 400}, false);
 
     var shortTimeoutStart = Date.now();
-    yield browser.waitUntil(ga.trackerDataMatches([
+    browser.waitUntil(ga.trackerDataMatches([
       ['dimension1', 'sm'],
       ['dimension2', 'sm']
-    ]))
-    .waitUntil(ga.hitDataMatches([
+    ]));
+    browser.waitUntil(ga.hitDataMatches([
       ['length', 2]
     ]));
     var shortTimeoutDuration = Date.now() - shortTimeoutStart;
 
-    yield browser
+    browser
         .execute(ga.clearHitData)
         .execute(ga.run, 'mediaQueryTracker:remove')
         .execute(ga.run, 'remove')
@@ -161,11 +163,11 @@ describe('mediaQueryTracker', function() {
         .setViewportSize({width: 400, height: 400}, false);
 
     var longTimeoutStart = Date.now();
-    yield browser.waitUntil(ga.trackerDataMatches([
+    browser.waitUntil(ga.trackerDataMatches([
       ['dimension1', 'sm'],
       ['dimension2', 'sm']
-    ]))
-    .waitUntil(ga.hitDataMatches([
+    ]));
+    browser.waitUntil(ga.hitDataMatches([
       ['length', 2]
     ]));
     var longTimeoutDuration = Date.now() - longTimeoutStart;
@@ -180,7 +182,7 @@ describe('mediaQueryTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    return browser
+    browser
         .execute(requireMediaQueryTrackerWithChangeTemplate)
         .setViewportSize({width: 400, height: 400}, false)
         .waitUntil(ga.hitDataMatches([
@@ -192,7 +194,7 @@ describe('mediaQueryTracker', function() {
 
   it('should include the &did param with all hits', function() {
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
