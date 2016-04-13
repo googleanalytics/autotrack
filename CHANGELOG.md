@@ -1,5 +1,9 @@
 # Changelog
 
+### 0.6.5 (2016-04-13)
+
+- Fix a history change bug in IE11 (#57)
+
 ### 0.6.4 (2016-03-30)
 
 - Ensure only http(s) links are considered outbound (#44)
