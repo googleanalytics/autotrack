@@ -33,6 +33,10 @@ The `autotrack.js` library is small (3K gzipped), and includes the following plu
     <td>Declarative event tracking</td>
   </tr>
   <tr>
+    <td><a href="#maxscrolltracker"><code>maxScrollTracker</code></a></td>
+    <td>Maximum page scroll tracking</td>
+  </tr>
+  <tr>
     <td><a href="#mediaquerytracker"><code>mediaQueryTracker</code></a></td>
     <td>Media query and breakpoint tracking</td>
   </tr>
@@ -155,6 +159,10 @@ The following element would send an event hit to Google Analytics with the categ
 ```html
 <button data-event-category="video" data-event-action="play">Play</button>
 ```
+
+### `maxScrollTracker`
+
+The `maxScrollTracker` automatically fires a nonInteraction event when the user leaves a webpage with the maximum percentage he scrolled.
 
 ### `mediaQueryTracker`
 
