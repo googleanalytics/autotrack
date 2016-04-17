@@ -17,103 +17,53 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var constants = require('../lib/constants');
+var utilities = require('./utilities');
+
+
+var browserCaps;
 
 
 describe('autotrack', function() {
 
+  before(function() {
+    browserCaps = browser.session().value;
+    browser.url('/test/autotrack.html');
+  });
+
+
   afterEach(function() {
     browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'eventTracker:remove')
-        .execute(ga.run, 'mediaQueryTracker:remove')
-        .execute(ga.run, 'outboundFormTracker:remove')
-        .execute(ga.run, 'outboundLinkTracker:remove')
-        .execute(ga.run, 'socialTracker:remove')
-        .execute(ga.run, 'urlChangeTracker:remove')
+        .execute(utilities.untrackConsoleErrors)
         .execute(ga.run, 'remove');
   });
 
-  it('should provide all plugins', function() {
 
-    var gaplugins = browser
-        .url('/test/autotrack.html')
-        .execute(ga.getProvidedPlugins)
-        .value;
-
-    assert(gaplugins.Autotrack);
-    assert(gaplugins.EventTracker);
-    assert(gaplugins.MediaQueryTracker);
-    assert(gaplugins.OutboundFormTracker);
-    assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.SocialTracker);
-    assert(gaplugins.UrlChangeTracker);
-  });
-
-  it('should provide plugins even if sourced before the tracking snippet',
+  it('should log a deprecation error when requiring autotrack directly',
       function() {
 
-    var gaplugins = browser
-        .url('/test/autotrack-reorder.html')
+    if (notSupportedInBrowser()) return;
+
+    var consoleErrors = browser
+        .execute(utilities.trackConsoleErrors)
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
         .execute(ga.run, 'require', 'autotrack')
-        .execute(ga.getProvidedPlugins)
+        .execute(utilities.getConsoleErrors)
         .value;
 
-    assert(gaplugins.Autotrack);
-    assert(gaplugins.EventTracker);
-    assert(gaplugins.MediaQueryTracker);
-    assert(gaplugins.OutboundFormTracker);
-    assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.SocialTracker);
-    assert(gaplugins.UrlChangeTracker);
-
-    var hitData = browser
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-  });
-
-
-  it('should work with renaming the global object', function() {
-
-    var gaplugins = browser
-        .url('/test/autotrack-rename.html')
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-        .execute(ga.run, 'require', 'autotrack')
-        .execute(ga.getProvidedPlugins)
-        .value;
-
-    assert(gaplugins.Autotrack);
-    assert(gaplugins.EventTracker);
-    assert(gaplugins.MediaQueryTracker);
-    assert(gaplugins.OutboundFormTracker);
-    assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.SocialTracker);
-    assert(gaplugins.UrlChangeTracker);
-
-    var hitData = browser
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-  });
-
-
-  it('should include the &did param with all hits', function() {
-
-    browser
-        .url('/test/autotrack.html')
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-        .execute(ga.run, 'require', 'autotrack')
-        .execute(ga.run, 'send', 'pageview')
-        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
+    assert(consoleErrors.length, 1);
+    assert(consoleErrors[0][0].indexOf('https://goo.gl/sZ2WrW') > -1);
   });
 
 });
+
+
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
+function notSupportedInBrowser() {
+  // IE9 doesn't support `console.error`, so it's not tested.
+  return browserCaps.browserName == 'MicrosoftEdge' ||
+      (browserCaps.browserName == 'internet explorer' &&
+          browserCaps.version == '9');
+}
