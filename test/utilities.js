@@ -68,20 +68,20 @@ module.exports = {
    * Prevents the default link click action allowing links to be interacted
    * with without navigating away from the current page.
    */
-  stopLinkClickEvents: function() {
-    window.__stopLinkClicks__ = function(event) {
+  stopClickEvents: function() {
+    window.__stopClicks__ = function(event) {
       event.preventDefault();
     };
 
-    document.addEventListener('click', window.__stopLinkClicks__);
+    document.addEventListener('click', window.__stopClicks__);
   },
 
 
   /**
    * Restores normal link click behavior.
    */
-  unstopLinkClickEvents: function() {
-    document.removeEventListener('click', window.__stopLinkClicks__);
+  unstopClickEvents: function() {
+    document.removeEventListener('click', window.__stopClicks__);
   },
 
 

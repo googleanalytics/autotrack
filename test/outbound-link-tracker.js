@@ -21,6 +21,9 @@ var utilities = require('./utilities');
 var constants = require('../lib/constants');
 
 
+var browserCaps;
+
+
 describe('outboundLinkTracker', function() {
 
   before(setupPage);
@@ -31,7 +34,7 @@ describe('outboundLinkTracker', function() {
   it('should send events on outbound link clicks', function() {
 
     var hitData = browser
-        .execute(utilities.stopLinkClickEvents)
+        .execute(utilities.stopClickEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
@@ -48,7 +51,7 @@ describe('outboundLinkTracker', function() {
   it('should not send events on local link clicks', function() {
 
     var hitData = browser
-        .execute(utilities.stopLinkClickEvents)
+        .execute(utilities.stopClickEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#local-link')
@@ -62,26 +65,11 @@ describe('outboundLinkTracker', function() {
   it('should not send events on non-http(s) protocol links', function() {
 
     var hitData = browser
-        .execute(utilities.stopLinkClickEvents)
+        .execute(utilities.stopClickEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#javascript-protocol')
         .click('#file-protocol')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 0);
-  });
-
-
-  it('should allow customizing what is considered an outbound link',
-      function() {
-
-    var hitData = browser
-        .execute(utilities.stopLinkClickEvents)
-        .execute(utilities.stubBeacon)
-        .execute(requireOutboundLinkTrackerWithConditional)
-        .click('#outbound-link')
         .execute(ga.getHitData)
         .value;
 
@@ -120,12 +108,135 @@ describe('outboundLinkTracker', function() {
 
     var target = browser
         .execute(utilities.stubNoBeacon)
-        .execute(utilities.stopLinkClickEvents)
+        .execute(utilities.stopClickEvents)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
         .getAttribute('#outbound-link', 'target');
 
     assert.equal('_blank', target);
+  });
+
+
+  it('should support customizing the selector used to detect link clicks',
+      function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker', {
+          linkSelector: '.link'
+        })
+        .click('#outbound-link')
+        .click('#outbound-link-with-class')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
+  });
+
+
+  it('should support customizing what is considered an outbound link',
+      function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(requireOutboundLinkTracker_shouldTrackOutboundLink)
+        .click('#outbound-link')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 0);
+  });
+
+
+  it('should support customizing how the href label is determined', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(requireOutboundLinkTracker_getLinkHref)
+        .click('#outbound-link')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'outbound-link');
+  });
+
+
+  it('should support customizing any field via the fieldsObj', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker', {
+          fieldsObj: {
+            eventCategory: 'External Link',
+            eventAction: 'tap',
+            nonInteraction: true
+          }
+        })
+        .click('#outbound-link')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'External Link');
+    assert.equal(hitData[0].eventAction, 'tap');
+    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
+    assert.equal(hitData[0].nonInteraction, true);
+  });
+
+
+  it('should support specifying a hit filter', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(requireOutboundLinkTracker_hitFilter)
+        .click('#outbound-link')
+        .click('#outbound-link-with-class')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
+    assert.equal(hitData[0].nonInteraction, true);
+  });
+
+
+  it('should support custom elements and event retargetting', function() {
+
+    if (notSupportedInBrowser) return;
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(requireOutboundLinkTracker_customElements)
+        .click('#custom-element')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'custom-element');
+
+    browser
+        .execute(utilities.unstopClickEvents)
+        .click('#custom-element')
+        .waitUntil(utilities.urlMatches('https://example.com/'));
+
+    // Restores the page state.
+    setupPage();
   });
 
 
@@ -144,6 +255,7 @@ describe('outboundLinkTracker', function() {
  * Navigates to the outbound link tracker test page.
  */
 function setupPage() {
+  browserCaps = browser.session().value;
   browser.url('/test/outbound-link-tracker.html');
 }
 
@@ -163,10 +275,21 @@ function startTracking() {
  */
 function stopTracking() {
   browser
-      .execute(utilities.unstopLinkClickEvents)
+      .execute(utilities.unstopClickEvents)
       .execute(ga.clearHitData)
       .execute(ga.run, 'outboundLinkTracker:remove')
       .execute(ga.run, 'remove');
+}
+
+
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
+function notSupportedInBrowser() {
+  // Chrome is currently the only browser that supports custom elements
+  // and shadow DOM.
+  return browserCaps.browserName != 'chrome';
 }
 
 
@@ -175,10 +298,64 @@ function stopTracking() {
  * client, this one-off function must be used to set the value for
  * `shouldTrackOutboundLink`.
  */
-function requireOutboundLinkTrackerWithConditional() {
+function requireOutboundLinkTracker_shouldTrackOutboundLink() {
   ga('require', 'outboundLinkTracker', {
     shouldTrackOutboundLink: function(link) {
       return link.hostname != 'google-analytics.com';
+    }
+  });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `getLinkHref`.
+ */
+function requireOutboundLinkTracker_getLinkHref() {
+  ga('require', 'outboundLinkTracker', {
+    getLinkHref: function(link) {
+      return link.id;
+    }
+  });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
+ */
+function requireOutboundLinkTracker_hitFilter() {
+  ga('require', 'outboundLinkTracker', {
+    hitFilter: function(model) {
+      var href = model.get('eventLabel');
+      if (href.indexOf('google-analytics.com') > -1) {
+        throw 'Exclude hits to google-analytics.com';
+      }
+      else {
+        model.set('nonInteraction', true);
+      }
+    }
+  });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `getLinkHref` and `shouldTrackOutboundLink`, which are required to track
+ * custom elements that don't implement `location` properties like `href`,
+ * `hostname`, and `protocol`.
+ */
+function requireOutboundLinkTracker_customElements() {
+  ga('require', 'outboundLinkTracker', {
+    linkSelector: 'super-link',
+    shouldTrackOutboundLink: function() {
+      return true;
+    },
+    getLinkHref: function(link) {
+      return link.id;
     }
   });
 }

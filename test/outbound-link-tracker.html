@@ -9,11 +9,30 @@
 </head>
 <body>
 
-  <a id="outbound-link" href="https://google-analytics.com/collect">Outbound</a>
-  <a id="local-link" href="/test/blank.html">Local</a>
-  <a id="javascript-protocol" href="javascript:console.log('clicked!')">javascript protocol</a>
-  <a id="file-protocol" href="file:///content.txt">file protocol</a>
+  <a id="outbound-link" href="https://google-analytics.com/collect">Outbound link</a>
+  <a id="outbound-link-with-class" class="link" href="https://example.com">Outbound link with Class</a>
+  <a id="local-link" href="/test/blank.html">Local Link</a>
+  <a id="hash-only-link" href="#">Hash-only Link</a>
+  <a id="javascript-protocol" href="javascript:console.log('clicked!')">JavaScript Protocol Link</a>
+  <a id="file-protocol" href="file:///content.txt">File Protocol Link</a>
+  <a id="no-href-attribute">No <code>href</code> Attribute Link</a>
+  <super-link id="custom-element">Custom Element Link</super-link>
+
+  <script>
+  // Creates a <super-link> custom element with an <a> in its shadow DOM.
+  document.registerElement && document.registerElement('super-link', {
+    prototype: Object.create(HTMLElement.prototype, {
+      attachedCallback: {
+        value: function() {
+          this.createShadowRoot().innerHTML =
+              '<a href="https://example.com">' +
+              '  <content></content>' +
+              '</a>';
+        }
+      }
+    })
+  });
+  </script>
 
 </body>
 </html>
-
