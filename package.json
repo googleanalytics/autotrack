@@ -31,8 +31,7 @@
   "homepage": "https://github.com/googleanalytics/autotrack#readme",
   "dependencies": {
     "debounce": "^1.0.0",
-    "delegate": "^3.0.0",
-    "dom-utils": "^0.1.1",
+    "dom-utils": "^0.2.0",
     "object-assign": "^4.0.1"
   },
   "devDependencies": {
