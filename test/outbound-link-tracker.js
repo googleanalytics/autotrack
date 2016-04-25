@@ -315,5 +315,5 @@ function simulateClickFromInsideShadowDom() {
 
   var event = document.createEvent('Event');
   event.initEvent('click', true, true);
-  link.dispatchEvent();
+  link.dispatchEvent(event);
 }
