@@ -213,30 +213,22 @@ describe('outboundLinkTracker', function() {
   });
 
 
-  it('should support custom elements and event retargetting', function() {
+  it('should support links in shadow DOM and event retargetting', function() {
 
-    if (notSupportedInBrowser) return;
+    if (notSupportedInBrowser()) return;
 
     var hitData = browser
         .execute(utilities.stopClickEvents)
         .execute(utilities.stubBeacon)
-        .execute(requireOutboundLinkTracker_customElements)
-        .click('#custom-element')
+        .execute(ga.run, 'require', 'outboundLinkTracker')
+        .execute(simulateClickFromInsideShadowDom)
         .execute(ga.getHitData)
         .value;
 
     assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Outbound Link');
     assert.equal(hitData[0].eventAction, 'click');
-    assert.equal(hitData[0].eventLabel, 'custom-element');
-
-    browser
-        .execute(utilities.unstopClickEvents)
-        .click('#custom-element')
-        .waitUntil(utilities.urlMatches('https://example.com/'));
-
-    // Restores the page state.
-    setupPage();
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
   });
 
 
@@ -287,9 +279,9 @@ function stopTracking() {
  *    required for these tests.
  */
 function notSupportedInBrowser() {
-  // Chrome is currently the only browser that supports custom elements
-  // and shadow DOM.
-  return browserCaps.browserName != 'chrome';
+  return browser.execute(function() {
+    return !Element.prototype.attachShadow;
+  }).value;
 }
 
 
@@ -342,20 +334,14 @@ function requireOutboundLinkTracker_hitFilter() {
 
 
 /**
- * Since function objects can't be passed via parameters from server to
- * client, this one-off function must be used to set the value for
- * `getLinkHref` and `shouldTrackOutboundLink`, which are required to track
- * custom elements that don't implement `location` properties like `href`,
- * `hostname`, and `protocol`.
+ * Webdriver does not currently support selecting elements inside a shadow
+ * tree, so we have to fake it.
  */
-function requireOutboundLinkTracker_customElements() {
-  ga('require', 'outboundLinkTracker', {
-    linkSelector: 'super-link',
-    shouldTrackOutboundLink: function() {
-      return true;
-    },
-    getLinkHref: function(link) {
-      return link.id;
-    }
-  });
+function simulateClickFromInsideShadowDom() {
+  var shadowHost = document.getElementById('shadow-host');
+  var link = shadowHost.shadowRoot.querySelector('a');
+
+  var event = document.createEvent('Event');
+  event.initEvent('click', true, true);
+  link.dispatchEvent();
 }

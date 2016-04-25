@@ -16,22 +16,15 @@
   <a id="javascript-protocol" href="javascript:console.log('clicked!')">JavaScript Protocol Link</a>
   <a id="file-protocol" href="file:///content.txt">File Protocol Link</a>
   <a id="no-href-attribute">No <code>href</code> Attribute Link</a>
-  <super-link id="custom-element">Custom Element Link</super-link>
+  <div id="shadow-host"></div>
 
   <script>
-  // Creates a <super-link> custom element with an <a> in its shadow DOM.
-  document.registerElement && document.registerElement('super-link', {
-    prototype: Object.create(HTMLElement.prototype, {
-      attachedCallback: {
-        value: function() {
-          this.createShadowRoot().innerHTML =
-              '<a href="https://example.com">' +
-              '  <content></content>' +
-              '</a>';
-        }
-      }
-    })
-  });
+  var shadowHost = document.getElementById('shadow-host');
+  if (shadowHost.attachShadow) {
+    shadowHost.attachShadow({mode: 'open'});
+    shadowHost.shadowRoot.innerHTML =
+        '<a href="https://example.com">Shadow Link</a>';
+  }
   </script>
 
 </body>
