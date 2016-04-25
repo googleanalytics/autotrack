@@ -31,26 +31,28 @@ describe('outboundFormTracker', function() {
   it('should send events on outbound form submits', function() {
 
     var hitData = browser
-        .execute(utilities.stopFormSubmitEvents)
+        .execute(utilities.stopSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-1')
+        .click('#outbound-submit')
         .execute(ga.getHitData)
         .value;
 
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
-    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel,
+        'https://www.google-analytics.com/collect');
   });
 
 
   it('should not send events on local form submits', function() {
 
     var hitData = browser
-        .execute(utilities.stopFormSubmitEvents)
+        .execute(utilities.stopSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-2')
+        .click('#local-submit')
         .execute(ga.getHitData)
         .value;
 
@@ -61,31 +63,14 @@ describe('outboundFormTracker', function() {
   it('should work with forms missing the action attribute', function() {
 
     var hitData = browser
-        .execute(utilities.stopFormSubmitEvents)
+        .execute(utilities.stopSubmitEvents)
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-3')
+        .click('#action-less-submit')
         .execute(ga.getHitData)
         .value;
 
     assert(!hitData.length);
-  });
-
-
-  it('should allow customizing what is considered an outbound form',
-      function() {
-
-    var testData = browser
-        .execute(utilities.stopFormSubmitEvents)
-        .execute(utilities.stubBeacon)
-        .execute(requireOutboundFormTrackerWithConditional)
-        .click('#submit-1')
-        .click('#submit-2')
-        .click('#submit-3')
-        .execute(ga.getHitData)
-        .value;
-
-    assert(!testData.length);
   });
 
 
@@ -94,8 +79,9 @@ describe('outboundFormTracker', function() {
     browser
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-1')
-        .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
+        .click('#outbound-submit')
+        .waitUntil(utilities.urlMatches(
+            'https://www.google-analytics.com/collect'));
 
     // Restores the page state.
     setupPage();
@@ -107,7 +93,7 @@ describe('outboundFormTracker', function() {
     browser
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-2')
+        .click('#local-submit')
         .waitUntil(utilities.urlMatches('/test/blank.html'));
 
     // Restores the page state.
@@ -122,14 +108,16 @@ describe('outboundFormTracker', function() {
         .execute(utilities.disableProgramaticFormSubmits)
         .execute(utilities.stubNoBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-1')
+        .click('#outbound-submit')
         .execute(ga.getHitData)
         .value;
 
     // Tests that the hit is sent.
+    assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Outbound Form');
     assert.equal(hitData[0].eventAction, 'submit');
-    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel,
+        'https://www.google-analytics.com/collect');
 
     // Tests that navigation actually happens
     setupPage();
@@ -137,13 +125,118 @@ describe('outboundFormTracker', function() {
     browser
         .execute(utilities.stubNoBeacon)
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .click('#submit-1')
-        .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
+        .click('#outbound-submit')
+        .waitUntil(utilities.urlMatches(
+            'https://www.google-analytics.com/collect'));
 
     // Restores the page state.
     setupPage();
 
     // TODO(philipwalton): figure out a way to test the hitCallback timing out.
+  });
+
+
+  it('should support customizing the selector used to detect form submits',
+      function() {
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker', {
+          formSelector: '.form'
+        })
+        .click('#outbound-submit-with-class')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Form');
+    assert.equal(hitData[0].eventAction, 'submit');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
+  });
+
+
+  it('should support customizing what is considered an outbound form',
+      function() {
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(requireOutboundFormTracker_shouldTrackOutboundForm)
+        .click('#outbound-submit')
+        .click('#outbound-submit-with-class')
+        .click('#local-submit')
+        .click('#action-less-submit')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Form');
+    assert.equal(hitData[0].eventAction, 'submit');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
+  });
+
+
+  it('should support customizing any field via the fieldsObj', function() {
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker', {
+          fieldsObj: {
+            eventCategory: 'External Form',
+            eventAction: 'send',
+            nonInteraction: true
+          }
+        })
+        .click('#outbound-submit')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'External Form');
+    assert.equal(hitData[0].eventAction, 'send');
+    assert.equal(hitData[0].eventLabel,
+        'https://www.google-analytics.com/collect');
+    assert.equal(hitData[0].nonInteraction, true);
+  });
+
+
+  it('should support specifying a hit filter', function() {
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(requireOutboundFormTracker_hitFilter)
+        .click('#outbound-submit')
+        .click('#outbound-submit-with-class')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Form');
+    assert.equal(hitData[0].eventAction, 'submit');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
+    assert.equal(hitData[0].nonInteraction, true);
+  });
+
+
+  it('should support forms in shadow DOM and event retargetting', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
+        .execute(simulateSubmitFromInsideShadowDom)
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Form');
+    assert.equal(hitData[0].eventAction, 'submit');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
   });
 
 
@@ -181,10 +274,21 @@ function startTracking() {
  */
 function stopTracking() {
   browser
-      .execute(utilities.unstopFormSubmitEvents)
+      .execute(utilities.unstopSubmitEvents)
       .execute(ga.clearHitData)
       .execute(ga.run, 'outboundFormTracker:remove')
       .execute(ga.run, 'remove');
+}
+
+
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
+function notSupportedInBrowser() {
+  return browser.execute(function() {
+    return !Element.prototype.attachShadow;
+  }).value;
 }
 
 
@@ -193,13 +297,44 @@ function stopTracking() {
  * client, this one-off function must be used to set the value for
  * `shouldTrackOutboundForm`.
  */
-function requireOutboundFormTrackerWithConditional() {
+function requireOutboundFormTracker_shouldTrackOutboundForm() {
   ga('require', 'outboundFormTracker', {
-    shouldTrackOutboundForm: function(form) {
-      var action = form.getAttribute('action');
-      return action &&
-          action.indexOf('http') === 0 &&
-          action.indexOf('google-analytics.com') < 0;
+    shouldTrackOutboundForm: function(form, parseUrl) {
+      return parseUrl(form.action).hostname == 'example.com';
     }
   });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
+ */
+function requireOutboundFormTracker_hitFilter() {
+  ga('require', 'outboundFormTracker', {
+    hitFilter: function(model) {
+      var href = model.get('eventLabel');
+      if (href.indexOf('www.google-analytics.com') > -1) {
+        throw 'Exclude hits to www.google-analytics.com';
+      }
+      else {
+        model.set('nonInteraction', true);
+      }
+    }
+  });
+}
+
+
+/**
+ * Webdriver does not currently support selecting elements inside a shadow
+ * tree, so we have to fake it.
+ */
+function simulateSubmitFromInsideShadowDom() {
+  var shadowHost = document.getElementById('shadow-host');
+  var form = shadowHost.shadowRoot.querySelector('form');
+
+  var event = document.createEvent('Event');
+  event.initEvent('submit', true, true);
+  form.dispatchEvent(event);
 }

@@ -35,7 +35,7 @@ describe('eventTracker', function() {
 
   afterEach(function () {
     browser
-        .execute(utilities.unstopFormSubmitEvents)
+        .execute(utilities.unstopSubmitEvents)
         .execute(ga.clearHitData)
         .execute(ga.run, 'eventTracker:remove')
         .execute(ga.run, 'remove');
@@ -97,7 +97,7 @@ describe('eventTracker', function() {
   it('should support customizing what events to listen for', function() {
 
     var hitData = browser
-        .execute(utilities.stopFormSubmitEvents)
+        .execute(utilities.stopSubmitEvents)
         .execute(ga.run, 'require', 'eventTracker', {
           events: ['focus', 'submit']
         })
@@ -118,7 +118,7 @@ describe('eventTracker', function() {
   it('should support specifying a fields object for all hits', function() {
 
     var hitData = browser
-        .execute(utilities.stopFormSubmitEvents)
+        .execute(utilities.stopSubmitEvents)
         .execute(ga.run, 'require', 'eventTracker', {
           fieldsObj: {
             nonInteraction: true,
@@ -140,7 +140,7 @@ describe('eventTracker', function() {
   it('should support specifying a hit filter', function() {
 
     var hitData = browser
-        .execute(utilities.stopFormSubmitEvents)
+        .execute(utilities.stopSubmitEvents)
         .execute(requireEventTrackerWithHitFilter)
         .click('#click-test')
         .click('#pageview-hit-type')

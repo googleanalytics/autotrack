@@ -37,7 +37,7 @@ module.exports = {
    * Prevents the default form submit action allowing forms to be interacted
    * with without navigating away from the current page.
    */
-  stopFormSubmitEvents: function() {
+  stopSubmitEvents: function() {
     window.__stopFormSubmits__ = function(event) {
       event.preventDefault();
     };
@@ -49,7 +49,7 @@ module.exports = {
   /**
    * Restores normal form submit behavior.
    */
-  unstopFormSubmitEvents: function() {
+  unstopSubmitEvents: function() {
     document.removeEventListener('submit', window.__stopFormSubmits__);
   },
 
