@@ -21,9 +21,6 @@ var utilities = require('./utilities');
 var constants = require('../lib/constants');
 
 
-var browserCaps;
-
-
 describe('outboundLinkTracker', function() {
 
   before(setupPage);
@@ -230,7 +227,6 @@ describe('outboundLinkTracker', function() {
  * Navigates to the outbound link tracker test page.
  */
 function setupPage() {
-  browserCaps = browser.session().value;
   browser.url('/test/outbound-link-tracker.html');
 }
 
