@@ -23,7 +23,6 @@
     // style
     "comma-spacing": [2, {"before": false, "after": true}],
     "eol-last": [0],
-    "jsx-quotes": [2, "prefer-double"],
     "key-spacing": [2, {"beforeColon": false, "afterColon": true}],
     "linebreak-style": [2, "unix"],
     "max-len": [2, 80, {"ignoreUrls": true}],
