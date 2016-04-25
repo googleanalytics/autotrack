@@ -45,7 +45,7 @@ The `autotrack.js` library is small (3K gzipped), and includes the following plu
     <td>Automatic outbound link tracking</td>
   </tr>
   <tr>
-    <td><a href="#socialtracker"><code>socialTracker</code></a></td>
+    <td><a href="#socialwidgettracker"><code>socialWidgetTracker</code></a></td>
     <td>Automatic and enhanced declarative social tracking</td>
   </tr>
   <tr>
@@ -194,11 +194,11 @@ By default a link is considered outbound if its `hostname` property is not equal
 
 * [`shouldTrackOutboundLink`](#shouldtrackoutboundlink)
 
-### `socialTracker`
+### `socialWidgetTracker`
 
-The `socialTracker` plugin adds declarative social interaction tracking for click events on any element with the `data-social-network`, `data-social-action`, and `data-social-target` attributes, similar to the `eventTracking` plugin.
+The `socialWidgetTracker` plugin adds declarative social interaction tracking for click events on any element with the `data-social-network`, `data-social-action`, and `data-social-target` attributes, similar to the `eventTracking` plugin.
 
-It also automatically adds social tracking for the official Twitter tweet/follow buttons and the Facebook like button. In other words, if you include official Twitter or Facebook buttons on your page and you're using autotrack (or even just the `socialTracker` plugin), user interactions with those buttons will be automatically tracked.
+It also automatically adds social tracking for the official Twitter tweet/follow buttons and the Facebook like button. In other words, if you include official Twitter or Facebook buttons on your page and you're using autotrack (or even just the `socialWidgetTracker` plugin), user interactions with those buttons will be automatically tracked.
 
 The following table outlines the social fields captured:
 

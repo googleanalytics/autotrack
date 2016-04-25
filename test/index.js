@@ -28,7 +28,7 @@ describe('index', function() {
         .execute(ga.run, 'mediaQueryTracker:remove')
         .execute(ga.run, 'outboundFormTracker:remove')
         .execute(ga.run, 'outboundLinkTracker:remove')
-        .execute(ga.run, 'socialTracker:remove')
+        .execute(ga.run, 'socialWidgetTracker:remove')
         .execute(ga.run, 'urlChangeTracker:remove')
         .execute(ga.run, 'remove');
   });
@@ -46,7 +46,7 @@ describe('index', function() {
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
     assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.SocialTracker);
+    assert(gaplugins.SocialWidgetTracker);
     assert(gaplugins.UrlChangeTracker);
   });
 
@@ -64,7 +64,7 @@ describe('index', function() {
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
     assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.SocialTracker);
+    assert(gaplugins.SocialWidgetTracker);
     assert(gaplugins.UrlChangeTracker);
   });
 
@@ -79,7 +79,7 @@ describe('index', function() {
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .execute(ga.run, 'require', 'socialTracker')
+        .execute(ga.run, 'require', 'socialWidgetTracker')
         .execute(ga.run, 'require', 'urlChangeTracker')
         .execute(ga.run, 'send', 'pageview')
         .execute(ga.getHitData)
@@ -99,7 +99,7 @@ describe('index', function() {
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'require', 'outboundFormTracker')
-        .execute(ga.run, 'require', 'socialTracker')
+        .execute(ga.run, 'require', 'socialWidgetTracker')
         .execute(ga.run, 'require', 'urlChangeTracker')
         .execute(ga.run, 'send', 'pageview')
         .execute(ga.getHitData)

@@ -22,12 +22,12 @@ var constants = require('../lib/constants');
 var browserCaps;
 
 
-describe('socialTracker', function() {
+describe('socialWidgetTracker', function() {
 
   before(function() {
     browserCaps = browser.session().value;
 
-    browser.url('/test/social-tracker.html');
+    browser.url('/test/social-widget-tracker.html');
   });
 
 
@@ -41,7 +41,7 @@ describe('socialTracker', function() {
   afterEach(function () {
     browser
         .execute(ga.clearHitData)
-        .execute(ga.run, 'socialTracker:remove')
+        .execute(ga.run, 'socialWidgetTracker:remove')
         .execute(ga.run, 'remove');
   });
 
@@ -51,7 +51,7 @@ describe('socialTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    browser.execute(ga.run, 'require', 'socialTracker');
+    browser.execute(ga.run, 'require', 'socialWidgetTracker');
 
     browser.waitForVisible('iframe.twitter-share-button');
     var tweetFrame = browser.element('iframe.twitter-share-button').value;
@@ -81,7 +81,7 @@ describe('socialTracker', function() {
   // it('should support likes from the official facebook widget', function() {
 
   //   var mainWindow = browser
-  //       .url('/test/social-tracker-widgets.html')
+  //       .url('/test/social-widget-tracker-widgets.html')
   //       .windowHandle().value;
 
   //   var likeFrame = browser
@@ -99,7 +99,7 @@ describe('socialTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    browser.execute(ga.run, 'require', 'socialTracker', {
+    browser.execute(ga.run, 'require', 'socialWidgetTracker', {
       fieldsObj: {
         nonInteraction: true
       }
@@ -133,7 +133,7 @@ describe('socialTracker', function() {
 
   it('should support specifying a hit filter', function() {
 
-    browser.execute(requireSocialTracker_hitFilter);
+    browser.execute(requireSocialWidgetTracker_hitFilter);
 
     browser.waitForVisible('iframe.twitter-share-button');
     var tweetFrame = browser.element('iframe.twitter-share-button').value;
@@ -160,7 +160,7 @@ describe('socialTracker', function() {
   it('should include the &did param with all hits', function() {
 
     browser
-        .execute(ga.run, 'require', 'socialTracker')
+        .execute(ga.run, 'require', 'socialWidgetTracker')
         .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
   });
@@ -185,8 +185,8 @@ function notSupportedInBrowser() {
  * client, this one-off function must be used to set the value for
  * `hitFilter`.
  */
-function requireSocialTracker_hitFilter() {
-  ga('require', 'socialTracker', {
+function requireSocialWidgetTracker_hitFilter() {
+  ga('require', 'socialWidgetTracker', {
     hitFilter: function(model) {
       var action = model.get('socialAction');
       if (action == 'tweet') {
