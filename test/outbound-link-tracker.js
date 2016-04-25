@@ -41,7 +41,8 @@ describe('outboundLinkTracker', function() {
     assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Outbound Link');
     assert.equal(hitData[0].eventAction, 'click');
-    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel,
+        'https://www.google-analytics.com/collect');
   });
 
 
@@ -80,7 +81,8 @@ describe('outboundLinkTracker', function() {
         .execute(utilities.stubBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
-        .waitUntil(utilities.urlMatches('https://google-analytics.com/collect'));
+        .waitUntil(utilities.urlMatches(
+            'https://www.google-analytics.com/collect'));
 
     // Restores the page state.
     setupPage();
@@ -143,10 +145,14 @@ describe('outboundLinkTracker', function() {
         .execute(utilities.stubBeacon)
         .execute(requireOutboundLinkTracker_shouldTrackOutboundLink)
         .click('#outbound-link')
+        .click('#outbound-link-with-class')
         .execute(ga.getHitData)
         .value;
 
-    assert.equal(hitData.length, 0);
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/');
   });
 
 
@@ -169,7 +175,8 @@ describe('outboundLinkTracker', function() {
     assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'External Link');
     assert.equal(hitData[0].eventAction, 'tap');
-    assert.equal(hitData[0].eventLabel, 'https://google-analytics.com/collect');
+    assert.equal(hitData[0].eventLabel,
+        'https://www.google-analytics.com/collect');
     assert.equal(hitData[0].nonInteraction, true);
   });
 
@@ -271,8 +278,8 @@ function notSupportedInBrowser() {
  */
 function requireOutboundLinkTracker_shouldTrackOutboundLink() {
   ga('require', 'outboundLinkTracker', {
-    shouldTrackOutboundLink: function(link) {
-      return link.hostname != 'google-analytics.com';
+    shouldTrackOutboundLink: function(link, parseUrl) {
+      return parseUrl(link.href).hostname == 'example.com';
     }
   });
 }
@@ -287,8 +294,8 @@ function requireOutboundLinkTracker_hitFilter() {
   ga('require', 'outboundLinkTracker', {
     hitFilter: function(model) {
       var href = model.get('eventLabel');
-      if (href.indexOf('google-analytics.com') > -1) {
-        throw 'Exclude hits to google-analytics.com';
+      if (href.indexOf('www.google-analytics.com') > -1) {
+        throw 'Exclude hits to www.google-analytics.com';
       }
       else {
         model.set('nonInteraction', true);
