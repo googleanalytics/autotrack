@@ -153,23 +153,6 @@ describe('outboundLinkTracker', function() {
   });
 
 
-  it('should support customizing how the href label is determined', function() {
-
-    var hitData = browser
-        .execute(utilities.stopClickEvents)
-        .execute(utilities.stubBeacon)
-        .execute(requireOutboundLinkTracker_getLinkHref)
-        .click('#outbound-link')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].eventCategory, 'Outbound Link');
-    assert.equal(hitData[0].eventAction, 'click');
-    assert.equal(hitData[0].eventLabel, 'outbound-link');
-  });
-
-
   it('should support customizing any field via the fieldsObj', function() {
 
     var hitData = browser
@@ -294,20 +277,6 @@ function requireOutboundLinkTracker_shouldTrackOutboundLink() {
   ga('require', 'outboundLinkTracker', {
     shouldTrackOutboundLink: function(link) {
       return link.hostname != 'google-analytics.com';
-    }
-  });
-}
-
-
-/**
- * Since function objects can't be passed via parameters from server to
- * client, this one-off function must be used to set the value for
- * `getLinkHref`.
- */
-function requireOutboundLinkTracker_getLinkHref() {
-  ga('require', 'outboundLinkTracker', {
-    getLinkHref: function(link) {
-      return link.id;
     }
   });
 }
