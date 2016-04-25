@@ -15,7 +15,6 @@
  */
 
 
-var assert = require('assert');
 var ga = require('./analytics');
 var constants = require('../lib/constants');
 
@@ -44,48 +43,6 @@ describe('socialTracker', function() {
         .execute(ga.clearHitData)
         .execute(ga.run, 'socialTracker:remove')
         .execute(ga.run, 'remove');
-  });
-
-
-  it('should support declarative event binding to DOM elements', function() {
-
-    var hitData = browser
-        .execute(ga.run, 'require', 'socialTracker')
-        .click('#social-button')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].socialNetwork, 'Twitter');
-    assert.equal(hitData[0].socialAction, 'tweet');
-    assert.equal(hitData[0].socialTarget, 'foo');
-  });
-
-  it('should not capture clicks without the network, action, and target fields',
-      function() {
-
-    var hitData = browser
-        .execute(ga.run, 'require', 'socialTracker')
-        .click('#social-button-missing-fields')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 0);
-  });
-
-
-  it('should support customizing the attribute prefix', function() {
-
-    var hitData = browser
-        .execute(ga.run, 'require', 'socialTracker', {attributePrefix: ''})
-        .click('#social-button-custom-prefix')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].socialNetwork, 'Twitter');
-    assert.equal(hitData[0].socialAction, 'tweet');
-    assert.equal(hitData[0].socialTarget, 'foo');
   });
 
 
@@ -138,6 +95,68 @@ describe('socialTracker', function() {
   // });
 
 
+  it('should support customizing any field via the fieldsObj', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser.execute(ga.run, 'require', 'socialTracker', {
+      fieldsObj: {
+        nonInteraction: true
+      }
+    });
+
+    browser.waitForVisible('iframe.twitter-share-button');
+    var tweetFrame = browser.element('iframe.twitter-share-button').value;
+
+    browser.waitForVisible('iframe.twitter-follow-button');
+    var followFrame = browser.element('iframe.twitter-follow-button').value;
+
+    browser
+        .frame(tweetFrame)
+        .click('a')
+        .frame()
+        .frame(followFrame)
+        .click('a')
+        .frame()
+        .waitUntil(ga.hitDataMatches([
+          ['[0].socialNetwork', 'Twitter'],
+          ['[0].socialAction', 'tweet'],
+          ['[0].socialTarget', 'https://example.com'],
+          ['[0].nonInteraction', true],
+          ['[1].socialNetwork', 'Twitter'],
+          ['[1].socialAction', 'follow'],
+          ['[1].socialTarget', 'twitter'],
+          ['[1].nonInteraction', true]
+        ]));
+  });
+
+
+  it('should support specifying a hit filter', function() {
+
+    browser.execute(requireSocialTracker_hitFilter);
+
+    browser.waitForVisible('iframe.twitter-share-button');
+    var tweetFrame = browser.element('iframe.twitter-share-button').value;
+
+    browser.waitForVisible('iframe.twitter-follow-button');
+    var followFrame = browser.element('iframe.twitter-follow-button').value;
+
+    browser
+        .frame(tweetFrame)
+        .click('a')
+        .frame()
+        .frame(followFrame)
+        .click('a')
+        .frame()
+        .waitUntil(ga.hitDataMatches([
+          ['[0].socialNetwork', 'Twitter'],
+          ['[0].socialAction', 'follow'],
+          ['[0].socialTarget', 'twitter'],
+          ['[0].nonInteraction', true]
+        ]));
+  });
+
+
   it('should include the &did param with all hits', function() {
 
     browser
@@ -158,4 +177,24 @@ function notSupportedInBrowser() {
   // though they work when manually testing.
   return browserCaps.browserName == 'MicrosoftEdge' ||
       browserCaps.browserName == 'internet explorer';
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
+ */
+function requireSocialTracker_hitFilter() {
+  ga('require', 'socialTracker', {
+    hitFilter: function(model) {
+      var action = model.get('socialAction');
+      if (action == 'tweet') {
+        throw 'Exclude tweet actions';
+      }
+      else {
+        model.set('nonInteraction', true);
+      }
+    }
+  });
 }
