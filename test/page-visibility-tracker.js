@@ -31,38 +31,40 @@ var command;
 
 describe('pageVisibilityTracker', function() {
 
-  before(function *() {
-    browserCaps = (yield browser.session()).value;
+  before(function() {
+    browserCaps = browser.session().value;
     command = browserCaps.platform.indexOf('OS X') < 0 ? META : CTRL;
 
     // Loads the autotrack file since no custom HTML is needed.
-    yield browser.url('/test/autotrack.html');
+    browser.url('/test/autotrack.html');
   });
 
 
   beforeEach(function() {
-    return browser
+    browser
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData);
   });
 
 
   afterEach(function () {
-    return browser
+    browser
         .execute(ga.clearHitData)
         .execute(ga.run, 'pageVisibilityTracker:remove')
         .execute(ga.run, 'remove');
   });
 
-  it('should send events when the visibility state changes', function *() {
+
+  it('should send events when the visibility state changes', function() {
 
     if (notSupportedInBrowser()) return;
 
-    var hitData = (yield browser
+    var hitData = browser
         .execute(ga.run, 'require', 'pageVisibilityTracker')
         .element('body').keys(command + 't' + command) // Opens a new tab.
         .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     assert.equal(hitData.length, 2);
     assert.equal(hitData[0].eventCategory, 'Page Visibility');
@@ -75,37 +77,43 @@ describe('pageVisibilityTracker', function() {
 
 
   it('should not send any hidden events if the session has timed out',
-      function *() {
+      function() {
 
     if (notSupportedInBrowser()) return;
 
-    var hitData = (yield browser
+    browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
           sessionTimeout: 1/60
         })
-        .pause(SESSION_TIMEOUT)
+        .pause(SESSION_TIMEOUT);
+
+    var hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     assert.equal(hitData.length, 0);
 
     // Closes the new tab.
-    yield browser.element('body').keys(command + 'w' + command);
+    browser.element('body').keys(command + 'w' + command);
   });
 
 
   it('should preemptively start all new session hits with a pageview',
-      function *() {
+      function() {
 
     if (notSupportedInBrowser()) return;
 
-    var hitData = (yield browser
+    browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
           sessionTimeout: 1/60
         })
-        .pause(SESSION_TIMEOUT)
+        .pause(SESSION_TIMEOUT);
+
+    var hitData = browser
         .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
@@ -117,18 +125,21 @@ describe('pageVisibilityTracker', function() {
 
 
   it('should not send visible events when starting a new session',
-      function *() {
+      function() {
 
     if (notSupportedInBrowser()) return;
 
-    var hitData = (yield browser
+    browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
           sessionTimeout: 1/60
         })
-        .pause(SESSION_TIMEOUT)
+        .pause(SESSION_TIMEOUT);
+
+    var hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
         .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     // Expects a pageview in lieu of a visible event because the session
     // has timed out.
@@ -137,57 +148,86 @@ describe('pageVisibilityTracker', function() {
   });
 
 
-  it('should allow setting additional fields for virtual pageviews',
-      function *() {
+  it('should support customizing any field via the fieldsObj', function() {
 
     if (notSupportedInBrowser()) return;
 
-    var hitData = (yield browser
+    browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
           sessionTimeout: 1/60,
-          virtualPageviewFields: {
+          fieldsObj: {
             dimension1: 'pageVisibilityTracker'
           }
         })
-        .pause(SESSION_TIMEOUT)
+        .pause(SESSION_TIMEOUT);
+
+    var hitData = browser
         .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
     assert.equal(hitData.length, 2);
     assert.equal(hitData[0].hitType, 'pageview');
-    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker')
+    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
     assert.equal(hitData[1].eventCategory, 'Uncategorized');
     assert.equal(hitData[1].eventAction, 'inactive');
 
-    hitData = (yield browser.pause(SESSION_TIMEOUT)
+    browser.pause(SESSION_TIMEOUT);
+
+    hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
         .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
     assert.equal(hitData.length, 3);
     assert.equal(hitData[2].hitType, 'pageview');
-    assert.equal(hitData[2].dimension1, 'pageVisibilityTracker')
+    assert.equal(hitData[2].dimension1, 'pageVisibilityTracker');
   });
 
 
-  it('should reset the session timeout when other hits are sent', function *() {
+  it('should support specifying a hit filter', function() {
 
     if (notSupportedInBrowser()) return;
 
-    var hitData = (yield browser
+    var hitData = browser
+        .execute(requirePageVisibilityTracker_hitFilter)
+        .element('body').keys(command + 't' + command) // Opens a new tab.
+        .element('body').keys(command + 'w' + command) // Closes the new tab.
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Page Visibility');
+    assert.equal(hitData[0].eventAction, 'change');
+    assert.equal(hitData[0].eventLabel, 'hidden');
+    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
+  });
+
+
+  it('should reset the session timeout when other hits are sent', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
           sessionTimeout: 1/60
         })
-        .pause(SESSION_TIMEOUT / 2)
+        .pause(SESSION_TIMEOUT / 2);
+
+    browser
         .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .pause(SESSION_TIMEOUT / 2)
+        .pause(SESSION_TIMEOUT / 2);
+
+    var hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
         .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)).value;
+        .execute(ga.getHitData)
+        .value;
 
     assert.equal(hitData.length, 3);
     assert.equal(hitData[0].eventCategory, 'Uncategorized');
@@ -206,7 +246,7 @@ describe('pageVisibilityTracker', function() {
 
   it('should include the &did param with all hits', function() {
 
-    return browser
+    browser
         .execute(ga.run, 'require', 'pageVisibilityTracker')
         .execute(ga.run, 'send', 'pageview')
         .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
@@ -215,13 +255,33 @@ describe('pageVisibilityTracker', function() {
 });
 
 
-function isFirefox() {
-  return browserCaps.browserName == 'firefox';
-}
-
-
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
 function notSupportedInBrowser() {
   // TODO(philipwalton): Opening and switching between tabs is not very well
   // supported in webdriver, so we currently only test in Firefox.
-  return !isFirefox();
+  return browserCaps.browserName != 'firefox';
 }
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
+ */
+function requirePageVisibilityTracker_hitFilter() {
+  ga('require', 'pageVisibilityTracker', {
+    hitFilter: function(model) {
+      var visibilityState = model.get('eventLabel');
+      if (visibilityState == 'visible') {
+        throw 'Exclude visible events';
+      }
+      else {
+        model.set('dimension1', 'pageVisibilityTracker');
+      }
+    }
+  });
+}
+
