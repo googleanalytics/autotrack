@@ -97,6 +97,7 @@ describe('urlTracker', function() {
         .execute(ga.getHitData)
         .value;
 
+    assert.equal(hitData.length, 6);
     assert.equal(hitData[0].page, '/test/foo.html');
     assert.equal(hitData[0].title, 'Foo');
     assert.equal(hitData[1].page, '/test/bar.html');
@@ -172,7 +173,7 @@ describe('urlTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    browser.execute(requireUrlChangeTrackerTrackerWithConditional);
+    browser.execute(requireUrlChangeTrackerTracker_shouldTrackUrlChange);
 
     var fooUrl = browser
         .click('#foo')
@@ -194,6 +195,53 @@ describe('urlTracker', function() {
   });
 
 
+  it('should support customizing any field via the fieldsObj', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser.execute(ga.run, 'require', 'urlChangeTracker', {
+      fieldsObj: {
+        dimension1: 'urlChangeTracker'
+      }
+    });
+
+    browser.click('#foo');
+    browser.back();
+
+    var hitData = browser
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 2);
+    assert.equal(hitData[0].page, '/test/foo.html');
+    assert.equal(hitData[0].title, 'Foo');
+    assert.equal(hitData[0].dimension1, 'urlChangeTracker');
+    assert.equal(hitData[1].page, '/test/url-change-tracker.html');
+    assert.equal(hitData[1].title, 'Home');
+    assert.equal(hitData[1].dimension1, 'urlChangeTracker');
+  });
+
+
+  it('should support specifying a hit filter', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser.execute(requireUrlChangeTrackerTracker_hitFilter);
+
+    browser.click('#foo');
+    browser.back();
+
+    var hitData = browser
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].page, '/test/url-change-tracker.html');
+    assert.equal(hitData[0].title, 'Home');
+    assert.equal(hitData[0].dimension1, 'urlChangeTracker');
+  });
+
+
   it('should include the &did param with all hits', function() {
 
     browser
@@ -206,11 +254,22 @@ describe('urlTracker', function() {
 
 
 /**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
+function notSupportedInBrowser() {
+  // IE9 doesn't support the HTML5 History API.
+  return browserCaps.browserName == 'internet explorer' &&
+      browserCaps.version == '9';
+}
+
+
+/**
  * Since function objects can't be passed via parameters from server to
  * client, this one-off function must be used to set the value for
  * `shouldTrackOutboundForm`.
  */
-function requireUrlChangeTrackerTrackerWithConditional() {
+function requireUrlChangeTrackerTracker_shouldTrackUrlChange() {
   ga('require', 'urlChangeTracker', {
     shouldTrackUrlChange: function() {
       return false;
@@ -220,11 +279,20 @@ function requireUrlChangeTrackerTrackerWithConditional() {
 
 
 /**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
  */
-function notSupportedInBrowser() {
-  // IE9 doesn't support the HTML5 History API.
-  return browserCaps.browserName == 'internet explorer' &&
-      browserCaps.version == '9';
+function requireUrlChangeTrackerTracker_hitFilter() {
+  ga('require', 'urlChangeTracker', {
+    hitFilter: function(model) {
+      var title = model.get('title');
+      if (title == 'Foo') {
+        throw 'Exclude Foo pages';
+      }
+      else {
+        model.set('dimension1', 'urlChangeTracker');
+      }
+    }
+  });
 }
