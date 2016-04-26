@@ -133,6 +133,8 @@ describe('socialWidgetTracker', function() {
 
   it('should support specifying a hit filter', function() {
 
+    if (notSupportedInBrowser()) return;
+
     browser.execute(requireSocialWidgetTracker_hitFilter);
 
     browser.waitForVisible('iframe.twitter-share-button');

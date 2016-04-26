@@ -99,19 +99,16 @@ describe('eventTracker', function() {
     var hitData = browser
         .execute(utilities.stopSubmitEvents)
         .execute(ga.run, 'require', 'eventTracker', {
-          events: ['focus', 'submit']
+          events: ['submit']
         })
         .click('#click-test')
-        .click('#focus-test')
         .click('#submit-test')
         .execute(ga.getHitData)
         .value;
 
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].eventCategory, 'Input');
-    assert.equal(hitData[0].eventAction, 'focus');
-    assert.equal(hitData[1].eventCategory, 'Forms');
-    assert.equal(hitData[1].eventAction, 'submit');
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Forms');
+    assert.equal(hitData[0].eventAction, 'submit');
   });
 
 
