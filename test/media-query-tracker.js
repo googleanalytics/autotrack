@@ -24,8 +24,8 @@ var browserCaps;
 var TIMEOUT = 1000;
 
 
-var autotrackOpts = {
-  mediaQueryDefinitions: [
+var opts = {
+  definitions: [
     {
       name: 'Width',
       dimensionIndex: 1,
@@ -79,7 +79,7 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
+        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
         .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'lg'],
           ['dimension2', 'md']
@@ -92,7 +92,7 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
+        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
         .setViewportSize({width: 400, height: 400}, false)
         .waitUntil(ga.trackerDataMatches([
           ['dimension1', 'sm'],
@@ -116,7 +116,7 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
    browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
+        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
         .setViewportSize({width: 400, height: 400}, false);
 
     var timeoutStart = Date.now();
@@ -139,7 +139,7 @@ describe('mediaQueryTracker', function() {
 
     browser
         .execute(ga.run, 'require', 'mediaQueryTracker',
-            Object.assign({}, autotrackOpts, {mediaQueryChangeTimeout: 0}))
+            Object.assign({}, opts, {changeTimeout: 0}))
         .setViewportSize({width: 400, height: 400}, false);
 
     var shortTimeoutStart = Date.now();
@@ -159,7 +159,7 @@ describe('mediaQueryTracker', function() {
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
         .setViewportSize({width: 800, height: 600}, false)
-        .execute(ga.run, 'require', 'mediaQueryTracker', autotrackOpts)
+        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
         .setViewportSize({width: 400, height: 400}, false);
 
     var longTimeoutStart = Date.now();
@@ -183,11 +183,52 @@ describe('mediaQueryTracker', function() {
     if (notSupportedInBrowser()) return;
 
     browser
-        .execute(requireMediaQueryTrackerWithChangeTemplate)
+        .execute(requireMediaQueryTracker_changeTemplate)
         .setViewportSize({width: 400, height: 400}, false)
         .waitUntil(ga.hitDataMatches([
           ['[0].eventLabel', 'lg:sm'],
           ['[1].eventLabel', 'md:sm']
+        ]));
+  });
+
+  it('should support customizing any field via the fieldsObj', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser
+        .execute(ga.run, 'require', 'mediaQueryTracker',
+            Object.assign({}, opts, {
+              changeTimeout: 0,
+              fieldsObj: {
+                nonInteraction: true
+              }
+            }))
+        .setViewportSize({width: 400, height: 400}, false)
+        .waitUntil(ga.hitDataMatches([
+          ['[0].eventCategory', 'Width'],
+          ['[0].eventAction', 'change'],
+          ['[0].eventLabel', 'lg => sm'],
+          ['[0].nonInteraction', true],
+          ['[1].eventCategory', 'Height'],
+          ['[1].eventAction', 'change'],
+          ['[1].eventLabel', 'md => sm'],
+          ['[1].nonInteraction', true]
+        ]));
+  });
+
+
+  it('should support specifying a hit filter', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser
+        .execute(requireMediaQueryTracker_hitFilter)
+        .setViewportSize({width: 400, height: 400}, false)
+        .waitUntil(ga.hitDataMatches([
+          ['[0].eventCategory', 'Height'],
+          ['[0].eventAction', 'change'],
+          ['[0].eventLabel', 'md => sm'],
+          ['[0].nonInteraction', true]
         ]));
   });
 
@@ -204,13 +245,29 @@ describe('mediaQueryTracker', function() {
 
 
 /**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
+function notSupportedInBrowser() {
+  // TODO(philipwalton): Some capabilities aren't implemented, so we can't test
+  // against Edge right now. Wait for build 10532 to support setViewportSize
+  // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
+
+  // IE9 doesn't support matchMedia, so it's not tested.
+  return browserCaps.browserName == 'MicrosoftEdge' ||
+      (browserCaps.browserName == 'internet explorer' &&
+          browserCaps.version == '9');
+}
+
+
+/**
  * Since function objects can't be passed via parameters from server to
  * client, this one-off function must be used to set the value for
- * `mediaQueryChangeTemplate`.
+ * `changeTemplate`.
  */
-function requireMediaQueryTrackerWithChangeTemplate() {
+function requireMediaQueryTracker_changeTemplate() {
   ga('require', 'mediaQueryTracker', {
-    mediaQueryDefinitions: [
+    definitions: [
       {
         name: 'Width',
         dimensionIndex: 1,
@@ -230,7 +287,7 @@ function requireMediaQueryTrackerWithChangeTemplate() {
         ]
       }
     ],
-    mediaQueryChangeTemplate: function(oldValue, newValue) {
+    changeTemplate: function(oldValue, newValue) {
       return oldValue + ':' + newValue;
     }
   });
@@ -238,16 +295,41 @@ function requireMediaQueryTrackerWithChangeTemplate() {
 
 
 /**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
  */
-function notSupportedInBrowser() {
-  // TODO(philipwalton): Some capabilities aren't implemented, so we can't test
-  // against Edge right now. Wait for build 10532 to support setViewportSize
-  // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
-
-  // IE9 doesn't support matchMedia, so it's not tested.
-  return browserCaps.browserName == 'MicrosoftEdge' ||
-      (browserCaps.browserName == 'internet explorer' &&
-          browserCaps.version == '9');
+function requireMediaQueryTracker_hitFilter() {
+  ga('require', 'mediaQueryTracker', {
+    definitions: [
+      {
+        name: 'Width',
+        dimensionIndex: 1,
+        items: [
+          {name: 'sm', media: 'all'},
+          {name: 'md', media: '(min-width: 480px)'},
+          {name: 'lg', media: '(min-width: 640px)'}
+        ]
+      },
+      {
+        name: 'Height',
+        dimensionIndex: 2,
+        items: [
+          {name: 'sm', media: 'all'},
+          {name: 'md', media: '(min-height: 480px)'},
+          {name: 'lg', media: '(min-height: 640px)'}
+        ]
+      }
+    ],
+    hitFilter: function(model) {
+      var category = model.get('eventCategory');
+      if (category == 'Width') {
+        throw 'Exclude width changes';
+      }
+      else {
+        model.set('nonInteraction', true);
+      }
+    }
+  });
 }
+

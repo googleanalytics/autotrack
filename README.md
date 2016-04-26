@@ -160,19 +160,21 @@ The following element would send an event hit to Google Analytics with the categ
 
 The `mediaQueryTracker` plugin allows you to track what media query is active as well as how often the matching media query changes.
 
-You can tell the `mediaQueryTracker` plugin what media query data to look for via the [`mediaQueryDefinitions`](#mediaquerydefinitions) configuration option.
+You can tell the `mediaQueryTracker` plugin what media query data to look for via the [`definitions`](#definitions) configuration option.
 
 **Important: unlike the other autotrack plugins, to use the `mediaQueryTracker` plugin you have to first make a few changes to your property settings in Google Analytics. Here's what needs to be done:**
 
 1. Log in to Google Analytics, choose the [account and property](https://support.google.com/analytics/answer/1009618) you're sending data too, and [create a custom dimension](https://support.google.com/analytics/answer/2709829) for each set of media queries you want to track (e.g. Breakpoints, Resolution/DPI, Device Orientation)
 2. Give each dimension a name (e.g. Breakpoints), select a scope of [hit](https://support.google.com/analytics/answer/2709828#example-hit), and make sure the "active" checkbox is checked.
-3. In the [`mediaQueryDefinitions`](#mediaquerydefinitions) config object, set the `name` and `dimensionIndex` values to be the same as the name and index shown in Google Analytics.
+3. In the [`definitions`](#definitions) config object, set the `name` and `dimensionIndex` values to be the same as the name and index shown in Google Analytics.
 
-Refer to the [`mediaQueryDefinitions`](#mediaquerydefinitions) configuration option documentation for an example definition that will track breakpoint, device resolution, and device orientation data.
+Refer to the [`definitions`](#definitions) configuration option documentation for an example definition that will track breakpoint, device resolution, and device orientation data.
 
 #### Options
 
-* [`mediaQueryDefinitions`](#mediaquerydefinitions)
+* [`definitions`](#definitions)
+* [`changeTemplate`](#changetemplate)
+* [`changeTimeout`](#changetimeout)
 
 ### `outboundFormTracker`
 
@@ -252,7 +254,7 @@ The following options can be passed to the `autotrack` plugin or individual sub-
 
 The attribute prefix for declarative event and social tracking. The value used after the prefix is a kebab-case version of the field name, for example: the field `eventCategory` with the prefix `'data-ga-'` would be `data-ga-event-category`.
 
-### `mediaQueryDefinitions`
+### `definitions`
 
 **Type**: `Object|Array|null`
 
@@ -270,7 +272,7 @@ The following array is an example of three media query object definitions:
 
 ```js
 ga('require', 'autotrack', {
-  mediaQueryDefinitions: [
+  definitions: [
     {
       name: 'Breakpoint',
       dimensionIndex: 1,
@@ -303,7 +305,7 @@ ga('require', 'autotrack', {
 
 If multiple `media` values match at the same time, the one specified later in the `items` array will take precedence. For example, in the "Breakpoint" example above, the item `sm` is set to `all`, so it will always match unless `md` or `lg` matches.
 
-### `mediaQueryChangeTemplate`
+### `changeTemplate`
 
 **Type**: `Function`
 
@@ -317,7 +319,7 @@ function(newValue, oldValue) {
 
 A function used to format the `eventLabel` of media query change events. For example, if the matched media changes from `lg` to `md`, by default the result will be `lg => md`.
 
-### `mediaQueryChangeTimeout`
+### `changeTimeout`
 
 **Type**: `number`
 
