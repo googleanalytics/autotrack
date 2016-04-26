@@ -22,7 +22,9 @@ var constants = require('../lib/constants');
 
 var CTRL = '\uE009';
 var META = '\uE03D';
-var SESSION_TIMEOUT = 1000;
+var SESSION_TIMEOUT_IN_MILLISECONDS = 2000; // 2 seconds
+var SESSION_TIMEOUT_IN_MINUTES = (1/60) * 2; // 2 seconds
+var BUFFER = 500; // An extra wait time to avoid flakiness
 
 
 var browserCaps;
@@ -83,9 +85,9 @@ describe('pageVisibilityTracker', function() {
 
     browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: 1/60
+          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
         })
-        .pause(SESSION_TIMEOUT);
+        .pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
 
     var hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
@@ -106,9 +108,9 @@ describe('pageVisibilityTracker', function() {
 
     browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: 1/60
+          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
         })
-        .pause(SESSION_TIMEOUT);
+        .pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
 
     var hitData = browser
         .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
@@ -124,16 +126,15 @@ describe('pageVisibilityTracker', function() {
   });
 
 
-  it('should not send visible events when starting a new session',
-      function() {
+  it('should not send visible events when starting a new session', function() {
 
     if (notSupportedInBrowser()) return;
 
     browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: 1/60
+          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
         })
-        .pause(SESSION_TIMEOUT);
+        .pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
 
     var hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
@@ -152,41 +153,26 @@ describe('pageVisibilityTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: 1/60,
-          fieldsObj: {
-            dimension1: 'pageVisibilityTracker'
-          }
-        })
-        .pause(SESSION_TIMEOUT);
+      var hitData = browser
+          .execute(ga.run, 'require', 'pageVisibilityTracker', {
+            fieldsObj: {
+              dimension1: 'pageVisibilityTracker'
+            }
+          })
+          .element('body').keys(command + 't' + command) // Opens a new tab.
+          .element('body').keys(command + 'w' + command) // Closes the new tab.
+          .execute(ga.getHitData)
+          .value;
 
-    var hitData = browser
-        .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .execute(ga.getHitData)
-        .value;
-
-    // Expects non-pageview hits queued to be sent after the session has timed
-    // out to include a pageview immediately before them.
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].hitType, 'pageview');
-    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
-    assert.equal(hitData[1].eventCategory, 'Uncategorized');
-    assert.equal(hitData[1].eventAction, 'inactive');
-
-    browser.pause(SESSION_TIMEOUT);
-
-    hitData = browser
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
-
-    // Expects non-pageview hits queued to be sent after the session has timed
-    // out to include a pageview immediately before them.
-    assert.equal(hitData.length, 3);
-    assert.equal(hitData[2].hitType, 'pageview');
-    assert.equal(hitData[2].dimension1, 'pageVisibilityTracker');
+      assert.equal(hitData.length, 2);
+      assert.equal(hitData[0].eventCategory, 'Page Visibility');
+      assert.equal(hitData[0].eventAction, 'change');
+      assert.equal(hitData[0].eventLabel, 'hidden');
+      assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
+      assert.equal(hitData[1].eventCategory, 'Page Visibility');
+      assert.equal(hitData[1].eventAction, 'change');
+      assert.equal(hitData[1].eventLabel, 'visible');
+      assert.equal(hitData[1].dimension1, 'pageVisibilityTracker');
   });
 
 
@@ -215,13 +201,13 @@ describe('pageVisibilityTracker', function() {
 
     browser
         .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: 1/60
+          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
         })
-        .pause(SESSION_TIMEOUT / 2);
+        .pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
 
     browser
         .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .pause(SESSION_TIMEOUT / 2);
+        .pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
 
     var hitData = browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
@@ -284,4 +270,3 @@ function requirePageVisibilityTracker_hitFilter() {
     }
   });
 }
-
