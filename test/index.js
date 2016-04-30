@@ -24,10 +24,12 @@ describe('index', function() {
   afterEach(function() {
     browser
         .execute(ga.clearHitData)
+        .execute(ga.run, 'cleanUrlTracker:remove')
         .execute(ga.run, 'eventTracker:remove')
         .execute(ga.run, 'mediaQueryTracker:remove')
         .execute(ga.run, 'outboundFormTracker:remove')
         .execute(ga.run, 'outboundLinkTracker:remove')
+        .execute(ga.run, 'pageVisibilityTracker:remove')
         .execute(ga.run, 'socialWidgetTracker:remove')
         .execute(ga.run, 'urlChangeTracker:remove')
         .execute(ga.run, 'remove');
@@ -42,10 +44,12 @@ describe('index', function() {
         .value;
 
     assert(gaplugins.Autotrack);
+    assert(gaplugins.CleanUrlTracker);
     assert(gaplugins.EventTracker);
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
     assert(gaplugins.OutboundLinkTracker);
+    assert(gaplugins.PageVisibilityTracker);
     assert(gaplugins.SocialWidgetTracker);
     assert(gaplugins.UrlChangeTracker);
   });
@@ -60,10 +64,12 @@ describe('index', function() {
         .value;
 
     assert(gaplugins.Autotrack);
+    assert(gaplugins.CleanUrlTracker);
     assert(gaplugins.EventTracker);
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
     assert(gaplugins.OutboundLinkTracker);
+    assert(gaplugins.PageVisibilityTracker);
     assert(gaplugins.SocialWidgetTracker);
     assert(gaplugins.UrlChangeTracker);
   });
@@ -75,10 +81,12 @@ describe('index', function() {
         .url('/test/autotrack.html')
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
+        .execute(ga.run, 'require', 'cleanUrlTracker')
         .execute(ga.run, 'require', 'eventTracker')
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'require', 'outboundFormTracker')
+        .execute(ga.run, 'require', 'pageVisibilityTracker')
         .execute(ga.run, 'require', 'socialWidgetTracker')
         .execute(ga.run, 'require', 'urlChangeTracker')
         .execute(ga.run, 'send', 'pageview')
@@ -95,10 +103,12 @@ describe('index', function() {
         .url('/test/autotrack-rename.html')
         .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
         .execute(ga.trackHitData)
+        .execute(ga.run, 'require', 'cleanUrlTracker')
         .execute(ga.run, 'require', 'eventTracker')
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'require', 'outboundFormTracker')
+        .execute(ga.run, 'require', 'pageVisibilityTracker')
         .execute(ga.run, 'require', 'socialWidgetTracker')
         .execute(ga.run, 'require', 'urlChangeTracker')
         .execute(ga.run, 'send', 'pageview')

@@ -39,6 +39,7 @@ module.exports =  {
     ga('set', 'sendHitTask', function(model) {
       window.hitData.push({
         hitType: model.get('hitType'),
+        location: model.get('location'),
         page: model.get('page'),
         title: model.get('title'),
         eventCategory: model.get('eventCategory'),
