@@ -78,6 +78,36 @@ describe('pageVisibilityTracker', function() {
   });
 
 
+  it('should track the elapsed time between events', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser
+        .execute(ga.run, 'require', 'pageVisibilityTracker')
+        .pause(2000);
+
+    browser
+        .element('body').keys(command + 't' + command) // Opens a new tab.
+        .pause(1000);
+
+    var hitData = browser
+        .element('body').keys(command + 'w' + command) // Closes the new tab.
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 2);
+    assert.equal(hitData[0].eventCategory, 'Page Visibility');
+    assert.equal(hitData[0].eventAction, 'change');
+    assert.equal(hitData[0].eventLabel, 'hidden');
+    assert(hitData[0].eventValue > 2000 && hitData[0].eventValue < 3000);
+
+    assert.equal(hitData[1].eventCategory, 'Page Visibility');
+    assert.equal(hitData[1].eventAction, 'change');
+    assert.equal(hitData[1].eventLabel, 'visible');
+    assert(hitData[1].eventValue > 1000 && hitData[1].eventValue < 2000);
+  });
+
+
   it('should not send any hidden events if the session has timed out',
       function() {
 
