@@ -51,6 +51,8 @@ module.exports =  {
         socialTarget: model.get('socialTarget'),
         dimension1: model.get('dimension1'),
         dimension2: model.get('dimension2'),
+        metric1: model.get('metric1'),
+        metric2: model.get('metric2'),
         nonInteraction: model.get('nonInteraction'),
         devId: model.get('&did')
       });

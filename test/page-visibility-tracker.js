@@ -71,10 +71,10 @@ describe('pageVisibilityTracker', function() {
     assert.equal(hitData.length, 2);
     assert.equal(hitData[0].eventCategory, 'Page Visibility');
     assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'hidden');
+    assert.equal(hitData[0].eventLabel, 'visible => hidden');
     assert.equal(hitData[1].eventCategory, 'Page Visibility');
     assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'visible');
+    assert.equal(hitData[1].eventLabel, 'hidden => visible');
   });
 
 
@@ -84,11 +84,11 @@ describe('pageVisibilityTracker', function() {
 
     browser
         .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .pause(2000);
+        .pause(1500);
 
     browser
         .element('body').keys(command + 't' + command) // Opens a new tab.
-        .pause(1000);
+        .pause(500);
 
     var hitData = browser
         .element('body').keys(command + 'w' + command) // Closes the new tab.
@@ -98,13 +98,48 @@ describe('pageVisibilityTracker', function() {
     assert.equal(hitData.length, 2);
     assert.equal(hitData[0].eventCategory, 'Page Visibility');
     assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'hidden');
-    assert(hitData[0].eventValue > 2000 && hitData[0].eventValue < 3000);
+    assert.equal(hitData[0].eventLabel, 'visible => hidden');
+    assert(hitData[0].eventValue == 2); // 1500-2499 ms rounds to 2 seconds.
 
     assert.equal(hitData[1].eventCategory, 'Page Visibility');
     assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'visible');
-    assert(hitData[1].eventValue > 1000 && hitData[1].eventValue < 2000);
+    assert.equal(hitData[1].eventLabel, 'hidden => visible');
+    assert(hitData[1].eventValue == 1); // 500-1499 ms rounds to 1 second.
+  });
+
+
+  it('should use custom metric values if specified', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser
+        .execute(ga.run, 'require', 'pageVisibilityTracker', {
+          visibleMetricIndex: 1,
+          hiddenMetricIndex: 2
+        })
+        .pause(1500);
+
+    browser
+        .element('body').keys(command + 't' + command) // Opens a new tab.
+        .pause(500);
+
+    var hitData = browser
+        .element('body').keys(command + 'w' + command) // Closes the new tab.
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 2);
+    assert.equal(hitData[0].eventCategory, 'Page Visibility');
+    assert.equal(hitData[0].eventAction, 'change');
+    assert.equal(hitData[0].eventLabel, 'visible => hidden');
+    assert(hitData[0].eventValue == 2); // 1500-2499 ms rounds to 2 seconds.
+    assert(hitData[0].metric1 == 2); // 1500-2499 ms rounds to 2 seconds.
+
+    assert.equal(hitData[1].eventCategory, 'Page Visibility');
+    assert.equal(hitData[1].eventAction, 'change');
+    assert.equal(hitData[1].eventLabel, 'hidden => visible');
+    assert(hitData[1].eventValue == 1); // 500-1499 ms rounds to 1 second.
+    assert(hitData[1].metric2 == 1); // 500-1499 ms rounds to 1 second.
   });
 
 
@@ -179,6 +214,23 @@ describe('pageVisibilityTracker', function() {
   });
 
 
+  it('should support customizing the change template', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    var hitData = browser
+        .execute(requirePageVisibilityTracker_changeTemplate)
+        .element('body').keys(command + 't' + command) // Opens a new tab.
+        .element('body').keys(command + 'w' + command) // Closes the new tab.
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 2);
+    assert.equal(hitData[0].eventLabel, 'visible >> hidden');
+    assert.equal(hitData[1].eventLabel, 'hidden >> visible');
+  });
+
+
   it('should support customizing any field via the fieldsObj', function() {
 
     if (notSupportedInBrowser()) return;
@@ -197,11 +249,11 @@ describe('pageVisibilityTracker', function() {
       assert.equal(hitData.length, 2);
       assert.equal(hitData[0].eventCategory, 'Page Visibility');
       assert.equal(hitData[0].eventAction, 'change');
-      assert.equal(hitData[0].eventLabel, 'hidden');
+      assert.equal(hitData[0].eventLabel, 'visible => hidden');
       assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
       assert.equal(hitData[1].eventCategory, 'Page Visibility');
       assert.equal(hitData[1].eventAction, 'change');
-      assert.equal(hitData[1].eventLabel, 'visible');
+      assert.equal(hitData[1].eventLabel, 'hidden => visible');
       assert.equal(hitData[1].dimension1, 'pageVisibilityTracker');
   });
 
@@ -220,7 +272,7 @@ describe('pageVisibilityTracker', function() {
     assert.equal(hitData.length, 1);
     assert.equal(hitData[0].eventCategory, 'Page Visibility');
     assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'hidden');
+    assert.equal(hitData[0].eventLabel, 'visible => hidden');
     assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
   });
 
@@ -253,10 +305,10 @@ describe('pageVisibilityTracker', function() {
     // tab will still be considered within the session timeout.
     assert.equal(hitData[1].eventCategory, 'Page Visibility');
     assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'hidden');
+    assert.equal(hitData[1].eventLabel, 'visible => hidden');
     assert.equal(hitData[2].eventCategory, 'Page Visibility');
     assert.equal(hitData[2].eventAction, 'change');
-    assert.equal(hitData[2].eventLabel, 'visible');
+    assert.equal(hitData[2].eventLabel, 'hidden => visible');
   });
 
 
@@ -285,14 +337,28 @@ function notSupportedInBrowser() {
 /**
  * Since function objects can't be passed via parameters from server to
  * client, this one-off function must be used to set the value for
+ * `changeTemplate`.
+ */
+function requirePageVisibilityTracker_changeTemplate() {
+  ga('require', 'pageVisibilityTracker', {
+    changeTemplate: function(oldValue, newValue) {
+      return oldValue + ' >> ' + newValue;
+    }
+  });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
  * `hitFilter`.
  */
 function requirePageVisibilityTracker_hitFilter() {
   ga('require', 'pageVisibilityTracker', {
     hitFilter: function(model) {
       var visibilityState = model.get('eventLabel');
-      if (visibilityState == 'visible') {
-        throw 'Exclude visible events';
+      if (visibilityState == 'hidden => visible') {
+        throw 'Exclude changes to visible';
       }
       else {
         model.set('dimension1', 'pageVisibilityTracker');
