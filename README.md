@@ -335,7 +335,7 @@ The debounce timeout, i.e., the amount of time to wait before sending the change
 function(form) {
   var action = form.getAttribute('action');
   return action &&
-      action.indexOf('http') === 0 &&
+      (action.indexOf('http') === 0 || action.indexOf('//') === 0) &&
       action.indexOf(location.hostname) < 0;
 };
 ```
@@ -351,7 +351,7 @@ ga('require', 'autotrack', {
     // Checks that the action is set and starts with "http" to exclude relative
     // paths, then checks that it does not contain the string "example.com".
     return action &&
-        action.indexOf('http') === 0 &&
+        (action.indexOf('http') === 0 || action.indexOf('//') === 0) &&
         action.indexOf('example.com') < 0;
   }
 }
@@ -366,7 +366,7 @@ ga('require', 'autotrack', {
 ```js
 function(link) {
   return link.hostname != location.hostname &&
-      link.protocol.indexOf('http') === 0;
+      (link.protocol.indexOf('http') === 0 || link.protocol.indexOf('//') === 0);
 };
 ```
 
@@ -379,7 +379,7 @@ ga('require', 'autotrack', {
   shouldTrackOutboundLink: function(link) {
     // Checks that the link's hostname does not contain "example.com".
     return link.hostname.indexOf('example.com') < 0 &&
-        link.protocol.indexOf('http') === 0;
+        (link.protocol.indexOf('http') === 0 || link.protocol.indexOf('//') === 0);
   }
 }
 ```

@@ -198,7 +198,7 @@ function requireOutboundFormTrackerWithConditional() {
     shouldTrackOutboundForm: function(form) {
       var action = form.getAttribute('action');
       return action &&
-          action.indexOf('http') === 0 &&
+          (action.indexOf('http') === 0 || action.indexOf('//') === 0) &&
           action.indexOf('google-analytics.com') < 0;
     }
   });
