@@ -170,8 +170,8 @@ describe('eventTracker', function() {
  */
 function requireEventTrackerWithHitFilter() {
   ga('require', 'eventTracker', {
-    hitFilter: function(model) {
-      if (model.get('hitType') != 'social') {
+    hitFilter: function(model, element) {
+      if (element.id != 'social-hit-type') {
         throw 'Aborting non-social hits';
       }
       else {

@@ -292,9 +292,8 @@ function requireOutboundLinkTracker_shouldTrackOutboundLink() {
  */
 function requireOutboundLinkTracker_hitFilter() {
   ga('require', 'outboundLinkTracker', {
-    hitFilter: function(model) {
-      var href = model.get('eventLabel');
-      if (href.indexOf('www.google-analytics.com') > -1) {
+    hitFilter: function(model, link) {
+      if (link.href.indexOf('www.google-analytics.com') > -1) {
         throw 'Exclude hits to www.google-analytics.com';
       }
       else {
