@@ -313,9 +313,8 @@ function requireOutboundFormTracker_shouldTrackOutboundForm() {
  */
 function requireOutboundFormTracker_hitFilter() {
   ga('require', 'outboundFormTracker', {
-    hitFilter: function(model) {
-      var href = model.get('eventLabel');
-      if (href.indexOf('www.google-analytics.com') > -1) {
+    hitFilter: function(model, form) {
+      if (form.action.indexOf('www.google-analytics.com') > -1) {
         throw 'Exclude hits to www.google-analytics.com';
       }
       else {
