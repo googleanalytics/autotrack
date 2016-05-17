@@ -15,11 +15,15 @@
         },
         'bar',
         'qux'
-      ],
-      hitFilter: function(model, element) {
-        console.log(element);
-      }
+      ]
     });
+
+    setTimeout(function() {
+      var qux = document.createElement('div');
+      qux.id = qux.innerHTML = 'qux';
+      document.body.insertBefore(qux, document.body.firstChild);
+    }, 2000);
+
 
   </script>
   <script async src='https://www.google-analytics.com/analytics.js'></script>
@@ -28,7 +32,6 @@
   <style>
   body {
     margin: 0;
-    /*width: 3000px;*/
   }
   #foo {
     background: hsla(0,100%,50%,.1);
@@ -53,6 +56,9 @@
 <h1>h1</h1>
 <h1>h1</h1>
 <h1>h1</h1>
+<h1>h1</h1>
+<h1>h1</h1>
+<h1>h1</h1>
 
 <div id="foo" ga-event-label="omg!">foo</div>
 
@@ -63,19 +69,15 @@
 <h1>h1</h1>
 <h1>h1</h1>
 <h1>h1</h1>
-
-<div id="bar">foo</div>
-
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
 <h1>h1</h1>
 <h1>h1</h1>
 <h1>h1</h1>
 
-<div id="qux">foo</div>
+<div id="bar">bar</div>
 
+<h1>h1</h1>
+<h1>h1</h1>
+<h1>h1</h1>
 <h1>h1</h1>
 <h1>h1</h1>
 <h1>h1</h1>
