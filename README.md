@@ -480,6 +480,7 @@ All autotrack plugins are [tested via Sauce Labs](https://saucelabs.com/u/autotr
 The following translations have been graciously provided by the community. Please note that these translations are unofficial and may be inaccurate or out of date:
 
 * [Japanese](https://github.com/nebosuker/autotrack)
+* [Chinese](https://github.com/stevezhuang/autotrack)
 
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
