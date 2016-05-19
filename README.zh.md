@@ -480,7 +480,7 @@ Autotrack在任何浏览器可以没有错误安全地运行，因为特征检�
 下面的翻译来自这个社区的贡献。请注意下面的翻译不是官方所有而且可能会有一些不精准的地方或者过时：
 
 * [日语](https://github.com/nebosuker/autotrack)
-* [汉语](https://github.com/stevezhuang/autotrack)
+* [汉语](https://github.com/stevezhuang/autotrack/blob/master/README.zh.md)
 
 如果你发现翻译有什么问题，请创建或修改到对应的仓库里面去。按照下面的步骤提交你自己的翻译：
 
