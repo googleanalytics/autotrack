@@ -204,28 +204,28 @@ ga('require', 'outboundLinkTracker', opts);
 
 <table>
   <tr>
-    <th align="left">Widget</th>
-    <th align="left">Social Network</th>
-    <th align="left">Social Action</th>
-    <th align="left">Social Target</th>
+    <th align="left">小部件</th>
+    <th align="left">社交网络</th>
+    <th align="left">社交行为</th>
+    <th align="left">社交目标</th>
   </tr>
   <tr>
     <td>Like button</td>
     <td><code>Facebook</code></td>
     <td><code>like</code> or <code>unlike</code></td>
-    <td>The URL of the current page.</td>
+    <td>当前页面的URL。</td>
   </tr>
   <tr>
     <td>Tweet button</td>
     <td><code>Twitter</code></td>
     <td><code>tweet</code></td>
-    <td>The widget's <code>data-url</code> attribute or the URL of the current page.</td>
+    <td>这个小部件<code>data-url</code>属性或者当前页面的URL。</td>
   </tr>
   <tr>
     <td>Follow button</td>
     <td><code>Twitter</code></td>
     <td><code>follow</code></td>
-    <td>The widget's <code>data-screen-name</code> attribute.</td>
+    <td>这个小部件<code>data-screen-name</code>的属性。</td>
   </tr>
 </table>
 
@@ -414,8 +414,7 @@ function(newPath, oldPath) {
 browserify lib/plugins/event-tracker lib/plugins/outbound-link-tracker
 ```
 
-When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will prevent any subsequent `analytics.js` commands from running.
-当进行自定义构建的时候，一定保证更新跟踪代码，只需要引入插件包含在你的构建中。引入一个没有在创建里面的插件将会防止`analytics.js`
+当进行自定义构建的时候，一定保证更新跟踪代码保证只需要引入插件包含在你的构建中。引入一个没有在创建里面的插件将会防止运行后续`analytics.js`的命令。
 
 如果你已经正在使用模块加载器像[Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), 或者 [SystemJS](https://github.com/systemjs/systemjs)来建立你的JavaScript，你可以跳过上面的步骤然后只要直接在你的代码文件里面引入你想要的插件:
 
