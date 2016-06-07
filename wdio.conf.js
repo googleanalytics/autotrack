@@ -31,7 +31,8 @@ exports.config = {
   ],
   // Patterns to exclude.
   exclude: [
-    // 'path/to/excluded/files'
+    './test/analytics.js',
+    './test/utilities.js'
   ],
   //
   // ============
@@ -50,7 +51,7 @@ exports.config = {
   // from the same test should run tests.
   //
   //
-  maxInstances: 5,
+  maxInstances: process.env.CI ? 5 : 2,
   //
   // If you have trouble getting all important capabilities together, check out the
   // Sauce Labs platform configurator - a great tool to configure your capabilities:

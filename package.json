@@ -37,6 +37,7 @@
   "devDependencies": {
     "browserify": "^13.0.0",
     "connect": "^3.4.0",
+    "eslint": "^2.11.1",
     "gulp": "^3.9.0",
     "gulp-eslint": "^2.0.0",
     "gulp-sourcemaps": "^1.6.0",

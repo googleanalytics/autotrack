@@ -1,90 +1,61 @@
 <!doctype html>
 <html>
 <head>
-
   <script>
     window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
-
-    ga('create', 'UA-12345-1', 'auto');
-    ga('require', 'impressionTracker', {
-      elements: [
-        {
-          id: 'foo',
-          threshold: 1,
-          trackFirstImpressionOnly: false
-        },
-        'bar',
-        'qux'
-      ]
-    });
-
-    setTimeout(function() {
-      var qux = document.createElement('div');
-      qux.id = qux.innerHTML = 'qux';
-      document.body.insertBefore(qux, document.body.firstChild);
-    }, 2000);
-
-
   </script>
-  <script async src='https://www.google-analytics.com/analytics.js'></script>
+  <script src="https://cdn.rawgit.com/philipwalton/IntersectionObserver/b6c40aa/polyfill/intersection-observer.js"></script>
+  <script async src="https://www.google-analytics.com/analytics.js"></script>
   <script aysnc src="/autotrack.js"></script>
-
   <style>
-  body {
-    margin: 0;
-  }
-  #foo {
-    background: hsla(0,100%,50%,.1);
-    padding: 3em;
-  }
-  #bar {
-    background: hsla(120,100%,50%,.1);
-    padding: 3em;
-  }
-  #qux {
-    background: hsla(240,100%,50%,.1);
-    padding: 3em;
-  }
+    html, body { margin: 0; overflow: auto; }
+    .spacer { height: 900px; }
+    .container { overflow: hidden; height: 100px; }
+    .box { background: #eee; float: left; height: 100%; width: 50%; }
   </style>
 </head>
 <body>
 
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-
-<div id="foo" ga-event-label="omg!">foo</div>
-
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-
-<div id="bar">bar</div>
-
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
-<h1>h1</h1>
+<div id="container">
+  <div class="spacer"></div>
+  <div class="container" id="foo">
+    <div class="box" id="foo-1">
+      <div class="box" id="foo-1-1"></div>
+      <div class="box" id="foo-1-2"></div>
+    </div>
+    <div class="box" id="foo-2">
+      <div class="box" id="foo-2-1"></div>
+      <div class="box" id="foo-2-2"></div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="container" id="bar">
+    <div class="box" id="bar-1">
+      <div class="box" id="bar-1-1"></div>
+      <div class="box" id="bar-1-2"></div>
+    </div>
+    <div class="box" id="bar-2">
+      <div class="box" id="bar-2-1"></div>
+      <div class="box" id="bar-2-2"></div>
+    </div>
+  </div>
+  <div class="spacer"></div>
+  <div class="container" id="attrs">
+    <div
+      class="box"
+      id="attrs-1"
+      ga-event-category="Element"
+      ga-event-action="visible">
+    </div>
+    <div
+      class="box"
+      id="attrs-2"
+      data-ga-event-category="Window"
+      data-ga-non-interaction="true">
+    </div>
+  </div>
+  <div class="spacer"></div>
+</div>
 
 </body>
 </html>
