@@ -19,9 +19,14 @@ var ga = require('./analytics');
 var constants = require('../lib/constants');
 
 
+var browserCaps;
+
+
 describe('impressionTracker', function() {
 
   before(function() {
+    browserCaps = browser.session().value;
+
     browser
         .url('/test/impression-tracker.html')
         .setViewportSize({width: 500, height: 500}, true);
@@ -43,6 +48,8 @@ describe('impressionTracker', function() {
 
 
   it('tracks when elements are visible in the viewport', function() {
+
+    if (notSupportedInBrowser()) return;
 
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
@@ -119,6 +126,9 @@ describe('impressionTracker', function() {
 
 
   it('tracks elements initially not in the DOM', function() {
+
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
           elements: [
@@ -163,6 +173,9 @@ describe('impressionTracker', function() {
 
 
   it('uses a default threshold of 0', function() {
+
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
           elements: ['foo']
@@ -179,6 +192,8 @@ describe('impressionTracker', function() {
 
 
   it('supports tracking an element either once or every time', function() {
+
+    if (notSupportedInBrowser()) return;
 
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
@@ -234,6 +249,8 @@ describe('impressionTracker', function() {
 
   it('supports changing the default threshold per element', function() {
 
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
           elements: [
@@ -277,6 +294,9 @@ describe('impressionTracker', function() {
 
 
   it('supports setting a rootMargin', function() {
+
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
           rootMargin: '-50px 0px',
@@ -303,6 +323,8 @@ describe('impressionTracker', function() {
 
   it('supports declarative event binding to DOM elements', function() {
 
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
           elements: ['attrs-1']
@@ -318,6 +340,8 @@ describe('impressionTracker', function() {
 
 
   it('supports customizing the attribute prefix', function() {
+
+    if (notSupportedInBrowser()) return;
 
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
@@ -339,6 +363,8 @@ describe('impressionTracker', function() {
 
 
   it('supports specifying a fields object for all hits', function() {
+
+    if (notSupportedInBrowser()) return;
 
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
@@ -372,6 +398,8 @@ describe('impressionTracker', function() {
 
   it('supports specifying a hit filter', function() {
 
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(requireImpressionTracker_hitFilter)
         .scroll('#foo')
@@ -389,6 +417,8 @@ describe('impressionTracker', function() {
 
   it('includes the &did param with all hits', function() {
 
+    if (notSupportedInBrowser()) return;
+
     browser
         .execute(ga.run, 'require', 'impressionTracker')
         .execute(ga.run, 'send', 'pageview')
@@ -396,6 +426,17 @@ describe('impressionTracker', function() {
   });
 
 });
+
+
+/**
+ * @return {boolean} True if the current browser doesn't support all features
+ *    required for these tests.
+ */
+function notSupportedInBrowser() {
+  // IE9 doesn't support the HTML5 History API.
+  return browserCaps.browserName == 'internet explorer' &&
+      (browserCaps.version == '9' || browserCaps.version == '10');
+}
 
 
 /**

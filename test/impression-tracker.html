@@ -4,9 +4,35 @@
   <script>
     window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
   </script>
-  <script src="https://cdn.rawgit.com/philipwalton/IntersectionObserver/b6c40aa/polyfill/intersection-observer.js"></script>
+  <script src="https://cdn.rawgit.com/philipwalton/IntersectionObserver/cb07b8e/polyfill/intersection-observer.js"></script>
+
+  <!--
+  // Loads autotrack sync so the following bug-fixing logic can be run
+  // prior to analytics.js loading the impressionTracker plugin.
+  -->
+  <script src="/autotrack.js"></script>
+  <script>
+  // Fixes the records ordering of the IntersectionObserver callback.
+  // This is nessary to do here until https://crbug.com/613679 is live.
+  var originalHandleIntersectionChanges =
+      gaplugins.ImpressionTracker.prototype.handleIntersectionChanges;
+
+  gaplugins.ImpressionTracker.prototype.handleIntersectionChanges =
+      function(records) {
+
+    var sortedRecords = [];
+    for (var i = 0, item; item = this.items[i]; i++) {
+      for (var j = 0, record; record = records[j]; j++) {
+        if (record.target.id === item.id) {
+          sortedRecords.push(record);
+          continue;
+        }
+      }
+    }
+    originalHandleIntersectionChanges.call(this, sortedRecords);
+  }
+  </script>
   <script async src="https://www.google-analytics.com/analytics.js"></script>
-  <script aysnc src="/autotrack.js"></script>
   <style>
     html, body { margin: 0; overflow: auto; }
     .spacer { height: 900px; }
