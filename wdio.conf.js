@@ -51,7 +51,7 @@ exports.config = {
   // from the same test should run tests.
   //
   //
-  maxInstances: process.env.CI ? 5 : 2,
+  maxInstances: process.env.CI ? 5 : 1,
   //
   // If you have trouble getting all important capabilities together, check out the
   // Sauce Labs platform configurator - a great tool to configure your capabilities:
