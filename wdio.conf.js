@@ -31,7 +31,8 @@ exports.config = {
   ],
   // Patterns to exclude.
   exclude: [
-    // 'path/to/excluded/files'
+    './test/analytics.js',
+    './test/utilities.js'
   ],
   //
   // ============

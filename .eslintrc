@@ -5,6 +5,7 @@
     "mocha": true
   },
   "globals": {
+    // Used by webdriver.io
     "browser": false
   },
   "extends": [
