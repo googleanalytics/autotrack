@@ -116,6 +116,30 @@ describe('outboundLinkTracker', function() {
   });
 
 
+  it('supports events other than click', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker', {
+          events: ['mousedown', 'contextmenu']
+        })
+        .rightClick('#outbound-link')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 2);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'mousedown');
+    assert.equal(hitData[0].eventLabel,
+        'https://www.google-analytics.com/collect');
+    assert.equal(hitData[1].eventCategory, 'Outbound Link');
+    assert.equal(hitData[1].eventAction, 'contextmenu');
+    assert.equal(hitData[1].eventLabel,
+        'https://www.google-analytics.com/collect');
+  });
+
+
   it('should support customizing the selector used to detect link clicks',
       function() {
 
