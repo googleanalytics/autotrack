@@ -1,6 +1,7 @@
 # Autotrack [![Build Status](https://travis-ci.org/googleanalytics/autotrack.svg?branch=master)](https://travis-ci.org/googleanalytics/autotrack)
 
 - [Overview](#overview)
+- [Plugins](#plugins)
 - [Installation and usage](#installation-and-usage)
   - [Loading autotrack via npm](#loading-autotrack-via-npm)
   - [Passing configuration options](#passing-configuration-options)
@@ -18,7 +19,9 @@ Since most website owners care about most of the same types of user interactions
 
 Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are using your site.
 
-The `autotrack.js` library is small (6K gzipped), and includes the following plugins. By default all plugins are bundled together, but they can be included and configured separately as well:
+## Plugins
+
+The `autotrack.js` library is small (6K gzipped), and includes the following plugins. By default all plugins are bundled together, but they can be included and configured separately as well. This table includes a brief description of each plugin; you can click on the plugin name to see the full documentation and usage instructions:
 
 <table>
   <tr>
