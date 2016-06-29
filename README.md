@@ -26,39 +26,39 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
     <th align="left">Description</th>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/clean-url-tracker.md"><code>cleanUrlTracker</code></a></td>
+    <td><a href="/docs/plugins/clean-url-tracker.md"><code>cleanUrlTracker</code></a></td>
     <td>Prevents mutliple different URL paths that point to the same page from appearing in your Google Analytics reports.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/event-tracker.md"><code>eventTracker</code></a></td>
+    <td><a href="/docs/plugins/event-tracker.md"><code>eventTracker</code></a></td>
     <td>Enables declarative event tracking, via HTML attributes in the markup.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/impression-tracker.md"><code>impressionTracker</code></a></td>
+    <td><a href="/docs/plugins/impression-tracker.md"><code>impressionTracker</code></a></td>
     <td>Allows you to track when elements are visible within the viewport.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/media-query-tracker.md"><code>mediaQueryTracker</code></a></td>
+    <td><a href="/docs/plugins/media-query-tracker.md"><code>mediaQueryTracker</code></a></td>
     <td>Enables tracking media query matching and media query changes.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/outbound-form-tracker.md"><code>outboundFormTracker</code></a></td>
+    <td><a href="/docs/plugins/outbound-form-tracker.md"><code>outboundFormTracker</code></a></td>
     <td>Automatically tracks form submits to external domains.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/outbound-link-tracker.md"><code>outboundLinkTracker</code></a></td>
+    <td><a href="/docs/plugins/outbound-link-tracker.md"><code>outboundLinkTracker</code></a></td>
     <td>Automatically tracks link clicks to external domains.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/page-visibility-tracker.md"><code>pageVisibilityTracker</code></a></td>
+    <td><a href="/docs/plugins/page-visibility-tracker.md"><code>pageVisibilityTracker</code></a></td>
     <td>Tracks page visibility state changes, which enables much more accurate session, session duration, and pageview metrics</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/social-widget-tracker.md"><code>socialWidgetTracker</code></a></td>
+    <td><a href="/docs/plugins/social-widget-tracker.md"><code>socialWidgetTracker</code></a></td>
     <td>Automatically tracks user interactions with the official Facebook and Twitter widgets.</td>
   </tr>
   <tr>
-    <td><a href="https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/url-change-tracker.md"><code>urlChangeTracker</code></a></td>
+    <td><a href="/docs/plugins/url-change-tracker.md"><code>urlChangeTracker</code></a></td>
     <td>Automatically tracks URL changes for single page applications.</td>
   </tr>
 </table>

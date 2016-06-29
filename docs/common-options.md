@@ -44,7 +44,7 @@ ga('send', 'pageview', {
 
 ## `attributePrefix`
 
-All plugins that send hits to Google Analytics as a result of user interactions with DOM elements support declarative attribute binding (see the [`eventTracker`](https://github.com/googleanalytics/autotrack/blob/master/docs/plugins/event-tracker.md) plugin to see how this works). As such, each of these plugins accept an `attributePrefix` option to customize what attribute prefix to use.
+All plugins that send hits to Google Analytics as a result of user interactions with DOM elements support declarative attribute binding (see the [`eventTracker`](/docs/plugins/event-tracker.md) plugin to see how this works). As such, each of these plugins accept an `attributePrefix` option to customize what attribute prefix to use.
 
 By default, the `attributePrefix` value used by each plugin is the string `'ga-'`, though that value can be customized on a per-plugin basis.
 

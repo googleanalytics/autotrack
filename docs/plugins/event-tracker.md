@@ -46,19 +46,19 @@ The following tables outlines all possible configuration options for the `eventT
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
-      See the <a href="/googleanalytics/autotrack/blob/master/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.
+      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/googleanalytics/autotrack/blob/master/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/googleanalytics/autotrack/blob/master/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -120,7 +120,7 @@ The follow HTML will track right clicks given the above configuration:
 
 ### Tracking non-event hit types
 
-By default the `hitType` for all hits sent by the `eventTracker` plugin are event hits, but this can be customized either with the [`fieldsObj`](/googleanalytics/autotrack/blob/master/docs/common-options.md#fieldsobj) or [`hitFilter`](/googleanalytics/autotrack/blob/master/docs/common-options.md#hitfilter) options, or setting the `ga-hit-type` attribute on the element itself (assuming the default `ga-` attribute prefix).
+By default the `hitType` for all hits sent by the `eventTracker` plugin are event hits, but this can be customized either with the [`fieldsObj`](/docs/common-options.md#fieldsobj) or [`hitFilter`](/docs/common-options.md#hitfilter) options, or setting the `ga-hit-type` attribute on the element itself (assuming the default `ga-` attribute prefix).
 
 For example, to send a [social interaction hit](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/social-interactions) instead of an event, you could use the following HTML:
 
