@@ -30,13 +30,13 @@ In all 1.x versions, a warning will be logged to the console if you require the 
 
 ### Individual plugin changes
 
-#### mediaQueryTracker
+#### [mediaQueryTracker](/docs/plugins/media-query-tracker.md)
 
 - The `mediaQueryDefinitions` option has been renamed to `definitions`.
 - The `mediaQueryChangeTemplate` option has been renamed to `changeTemplate`.
 - The `mediaQueryChangeTimeout` option has been renamed to `changeTimeout`.
 
-#### socialTracker
+#### [socialTracker](/docs/plugins/social-widget-tracker.md)
 
 - The `socialTracker` plugin has been renamed to `socialWidgetTracker`.
 - The `socialWidgetTracker` no longer supports declarative social interaction tracking, as that can now be accomplished entirely via the `eventTracker` plugin.
@@ -45,22 +45,22 @@ In all 1.x versions, a warning will be logged to the console if you require the 
 
 ### Global enhancement
 
-- All plugins that send hits accept both [`fieldsObj`](#) and [`hitFilter`](#) options. These options can be used to set or change ay valid analytics.js field prior to the hit being sent.
-- All plugins that send hits as a result of user interaction with a DOM element support [setting field values declaratively](#).
+- All plugins that send hits accept both [`fieldsObj`](/docs/common-options.md#fieldsobj) and [`hitFilter`](/docs/common-options.md#hitfilter) options. These options can be used to set or change ay valid analytics.js field prior to the hit being sent.
+- All plugins that send hits as a result of user interaction with a DOM element support [setting field values declaratively](/docs/common-options.md#attributeprefix).
 
 ### Individual plugin enhancements
 
-#### eventTracker
+#### [eventTracker](/docs/plugins/event-tracker.md)
 
 - Added support for declarative tracking of any DOM event, not just click events (e.g. `submit`, `contextmenu`, etc.)
 
-#### outboundFormTracker
+#### [outboundFormTracker](/docs/plugins/outbound-form-tracker.md)
 
 - Added support for tracking forms within shadom DOM subtrees.
 - Added the ability to customize the selector used to identify forms.
 - Added a `parseUrl` utility function to the `shouldTrackOutboundForm` method to more easily identify or exclude outbound forms.
 
-#### outboundLinkTracker
+#### [outboundLinkTracker](/docs/plugins/outbound-link-tracker.md)
 
 - Added support for DOM events other than `click` (e.g. `contextmenu`, `touchend`, etc.)
 - Added support for tracking links within shadom DOM subtrees.
@@ -71,6 +71,6 @@ In all 1.x versions, a warning will be logged to the console if you require the 
 
 The following new plugins have been added. See their individual documentation pages for usage details.
 
-- [`cleanUrlTracker`](#)
-- [`impressionTracker`](#)
-- [`pageVisibilityTracker`](#)
+- [`cleanUrlTracker`](/docs/plugins/clean-url-tracker.md)
+- [`impressionTracker`](/docs/plugins/impression-tracker.md)
+- [`pageVisibilityTracker`](/docs/plugins/page-visibility-tracker.md)

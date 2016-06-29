@@ -1,6 +1,6 @@
 # Autotrack Documentation
 
-The autotrack [README](/) is the best source to get a general overview of the autotrack library and get started using it.
+The autotrack [README](/README.md) is the best source to get a general overview of the autotrack library and get started using it.
 
 Once you understand how to use autotrack, the references listed here will help you get a deeper understanding and provide you with comprehensive instructions on how to use each autotrack plugin.
 

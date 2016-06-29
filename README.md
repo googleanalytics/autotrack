@@ -144,7 +144,7 @@ ga('send', 'pageview');
 
 All autotrack plugin accept a configuration object as the third parameter to the `require` command.
 
-Some of the plugins (e.g. `outboundLinkTracker`, `socialWidgetTracker`, `urlChangeTracker`) have a default behavior that works for most people without specifying any configuration options. Other plugins (e.g. `cleanUrlTracker`, `impressionTracker`, `mediaQueryTracker) require certain configuration options to be set in order to work.
+Some of the plugins (e.g. `outboundLinkTracker`, `socialWidgetTracker`, `urlChangeTracker`) have a default behavior that works for most people without specifying any configuration options. Other plugins (e.g. `cleanUrlTracker`, `impressionTracker`, `mediaQueryTracker`) require certain configuration options to be set in order to work.
 
 See the individual plugin documentation to reference what options each plugin aceepts (and what the default value is, if any).
 
