@@ -99,12 +99,12 @@ describe('pageVisibilityTracker', function() {
     assert.equal(hitData[0].eventCategory, 'Page Visibility');
     assert.equal(hitData[0].eventAction, 'change');
     assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert(hitData[0].eventValue == 2); // 1500-2499 ms rounds to 2 seconds.
+    assert.equal(hitData[0].eventValue, 2); // 1500-2499ms rounds to 2 seconds.
 
     assert.equal(hitData[1].eventCategory, 'Page Visibility');
     assert.equal(hitData[1].eventAction, 'change');
     assert.equal(hitData[1].eventLabel, 'hidden => visible');
-    assert(hitData[1].eventValue == 1); // 500-1499 ms rounds to 1 second.
+    assert.equal(hitData[1].eventValue, 1); // 500-1499ms rounds to 1 second.
   });
 
 
@@ -155,14 +155,14 @@ describe('pageVisibilityTracker', function() {
     assert.equal(hitData[0].eventCategory, 'Page Visibility');
     assert.equal(hitData[0].eventAction, 'change');
     assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert(hitData[0].eventValue == 2); // 1500-2499 ms rounds to 2 seconds.
-    assert(hitData[0].metric1 == 2); // 1500-2499 ms rounds to 2 seconds.
+    assert.equal(hitData[0].eventValue, 2); // 1500-2499ms rounds to 2 seconds.
+    assert.equal(hitData[0].metric1, 2); // 1500-2499ms rounds to 2 seconds.
 
     assert.equal(hitData[1].eventCategory, 'Page Visibility');
     assert.equal(hitData[1].eventAction, 'change');
     assert.equal(hitData[1].eventLabel, 'hidden => visible');
-    assert(hitData[1].eventValue == 1); // 500-1499 ms rounds to 1 second.
-    assert(hitData[1].metric2 == 1); // 500-1499 ms rounds to 1 second.
+    assert.equal(hitData[1].eventValue, 1); // 500-1499ms rounds to 1 second.
+    assert.equal(hitData[1].metric2, 1); // 500-1499ms rounds to 1 second.
   });
 
 

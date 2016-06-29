@@ -53,6 +53,6 @@
     "vinyl-source-stream": "^1.1.0",
     "wdio-mocha-framework": "^0.2.12",
     "wdio-sauce-service": "^0.2.2",
-    "webdriverio": "^4.0.5"
+    "webdriverio": "^4.1.1"
   }
 }

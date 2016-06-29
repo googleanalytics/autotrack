@@ -61,10 +61,9 @@ module.exports =  {
 
   hitDataMatches: function(expected) {
     return function() {
-      return browser.execute(this.getHitData).then(function(hitData) {
-        return expected.every(function(item) {
-          return get(hitData.value, item[0]) === item[1];
-        });
+      var hitData = browser.execute(this.getHitData);
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
       });
     }.bind(this);
   },
@@ -80,10 +79,9 @@ module.exports =  {
 
   trackerDataMatches: function(expected) {
     return function() {
-      return browser.execute(this.getTrackerData).then(function(trackerData) {
-        return expected.every(function(item) {
-          return get(trackerData.value, item[0]) === item[1];
-        });
+      var trackerData = browser.execute(this.getTrackerData);
+      return expected.every(function(item) {
+        return get(trackerData.value, item[0]) === item[1];
       });
     }.bind(this);
   },

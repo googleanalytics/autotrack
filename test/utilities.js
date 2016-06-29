@@ -25,10 +25,9 @@ module.exports = {
    */
   urlMatches: function(expectedUrl) {
     return function() {
-      return browser.url().then(function(result) {
-        var actualUrl = result.value;
-        return actualUrl.indexOf(expectedUrl) > -1;
-      });
+      var result = browser.url();
+      var actualUrl = result.value;
+      return actualUrl.indexOf(expectedUrl) > -1;
     };
   },
 
