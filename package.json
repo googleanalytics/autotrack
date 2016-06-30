@@ -1,7 +1,7 @@
 {
   "name": "autotrack",
-  "version": "0.6.5",
-  "description": "Automatic + enhanced analytics.js tracking for common user interactions",
+  "version": "1.0.0",
+  "description": "Automatic and enhanced Google Analytics tracking for common user interactions on the web",
   "main": "lib",
   "scripts": {
     "build": "gulp build",
@@ -31,7 +31,7 @@
   "homepage": "https://github.com/googleanalytics/autotrack#readme",
   "dependencies": {
     "debounce": "^1.0.0",
-    "dom-utils": "^0.2.1",
+    "dom-utils": "^0.2.2",
     "object-assign": "^4.0.1"
   },
   "devDependencies": {

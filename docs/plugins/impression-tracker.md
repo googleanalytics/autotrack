@@ -20,12 +20,12 @@ ga('require', 'impressionTracker', options);
 
 The `impressionTracker` plugin takes advantage of a new browser API called [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API), which allows you to register a callback that gets invoked whenever a target element is visible within the viewport.
 
-The `IntersectionObserver` is supported natively in Chrome 51+, and with an [`IntersectionObserver` polyfill](https://cdn.rawgit.com/philipwalton/IntersectionObserver/polyfill/polyfill/intersection-observer.js), it can be used in all other browsers as well.
+The `IntersectionObserver` is supported natively in Chrome 51+, and with an [`IntersectionObserver` polyfill](https://cdn.rawgit.com/philipwalton/IntersectionObserver/61cd29/polyfill/intersection-observer.js), it can be used in all other browsers as well.
 
 To use the polyfill, add it to your page prior to requiring the `impressionTracker` plugin:
 
 ```html
-<script src="https://cdn.rawgit.com/philipwalton/IntersectionObserver/polyfill/polyfill/intersection-observer.js"></script>
+<script src="https://cdn.rawgit.com/philipwalton/IntersectionObserver/61cd29/polyfill/intersection-observer.js"></script>
 ```
 
 ## Options
