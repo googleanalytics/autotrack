@@ -21,6 +21,9 @@ var utilities = require('./utilities');
 var constants = require('../lib/constants');
 
 
+var browserCaps;
+
+
 describe('outboundLinkTracker', function() {
 
   before(setupPage);
@@ -117,6 +120,8 @@ describe('outboundLinkTracker', function() {
 
 
   it('supports events other than click', function() {
+
+    if (!browserSupportsRightClick()) return;
 
     var hitData = browser
         .execute(utilities.stopClickEvents)
@@ -226,7 +231,7 @@ describe('outboundLinkTracker', function() {
 
   it('should support links in shadow DOM and event retargetting', function() {
 
-    if (notSupportedInBrowser()) return;
+    if (!browserSupportsShadowDom()) return;
 
     var hitData = browser
         .execute(utilities.stopClickEvents)
@@ -258,6 +263,7 @@ describe('outboundLinkTracker', function() {
  * Navigates to the outbound link tracker test page.
  */
 function setupPage() {
+  browserCaps = browser.session().value;
   browser.url('/test/outbound-link-tracker.html');
 }
 
@@ -285,13 +291,21 @@ function stopTracking() {
 
 
 /**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
+ * @return {boolean} True if the current browser supports Shadow DOM.
  */
-function notSupportedInBrowser() {
+function browserSupportsShadowDom() {
   return browser.execute(function() {
-    return !Element.prototype.attachShadow;
+    return Element.prototype.attachShadow;
   }).value;
+}
+
+
+/**
+ * @return {boolean} True if the browser driver supports the rightClick method.
+ */
+function browserSupportsRightClick() {
+  // https://github.com/webdriverio/webdriverio/issues/1419
+  return browserCaps.browserName != 'safari';
 }
 
 

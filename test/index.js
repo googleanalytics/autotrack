@@ -26,6 +26,7 @@ describe('index', function() {
         .execute(ga.clearHitData)
         .execute(ga.run, 'cleanUrlTracker:remove')
         .execute(ga.run, 'eventTracker:remove')
+        .execute(ga.run, 'impressionTracker:remove')
         .execute(ga.run, 'mediaQueryTracker:remove')
         .execute(ga.run, 'outboundFormTracker:remove')
         .execute(ga.run, 'outboundLinkTracker:remove')
@@ -46,6 +47,7 @@ describe('index', function() {
     assert(gaplugins.Autotrack);
     assert(gaplugins.CleanUrlTracker);
     assert(gaplugins.EventTracker);
+    assert(gaplugins.ImpressionTracker);
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
     assert(gaplugins.OutboundLinkTracker);
@@ -65,6 +67,7 @@ describe('index', function() {
 
     assert(gaplugins.Autotrack);
     assert(gaplugins.CleanUrlTracker);
+    assert(gaplugins.ImpressionTracker);
     assert(gaplugins.EventTracker);
     assert(gaplugins.MediaQueryTracker);
     assert(gaplugins.OutboundFormTracker);
@@ -83,6 +86,7 @@ describe('index', function() {
         .execute(ga.trackHitData)
         .execute(ga.run, 'require', 'cleanUrlTracker')
         .execute(ga.run, 'require', 'eventTracker')
+        .execute(ga.run, 'require', 'impressionTracker')
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'require', 'outboundFormTracker')
@@ -105,6 +109,7 @@ describe('index', function() {
         .execute(ga.trackHitData)
         .execute(ga.run, 'require', 'cleanUrlTracker')
         .execute(ga.run, 'require', 'eventTracker')
+        .execute(ga.run, 'require', 'impressionTracker')
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .execute(ga.run, 'require', 'mediaQueryTracker')
         .execute(ga.run, 'require', 'outboundFormTracker')

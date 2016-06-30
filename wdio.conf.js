@@ -70,7 +70,7 @@ exports.config = {
   sync: true,
   //
   // Level of logging verbosity: silent | verbose | command | data | result | error
-  logLevel: 'silent',
+  logLevel: 'error',
   //
   // Enables colors for log output.
   coloredLogs: true,
@@ -83,11 +83,11 @@ exports.config = {
   baseUrl: process.env.BASE_URL || 'http://localhost:8080',
   //
   // Default timeout for all waitFor* commands.
-  waitforTimeout: 100000,
+  waitforTimeout: 60000,
   //
   // Default timeout in milliseconds for request
   // if Selenium Grid doesn't send response
-  connectionRetryTimeout: 100000,
+  connectionRetryTimeout: 60000,
   //
   // Default request retries count
   connectionRetryCount: 3,
@@ -135,7 +135,7 @@ exports.config = {
   // See the full list at http://mochajs.org/
   mochaOpts: {
     ui: 'bdd',
-    timeout: 100000
+    timeout: 60000
   },
   //
   // =====
@@ -208,7 +208,7 @@ function getCapabilities() {
   // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
   var capabilities = [
     {browserName: 'chrome'},
-    {browserName: 'firefox'}
+    // {browserName: 'firefox'}
   ];
 
   if (isSauceLabs) {
@@ -219,7 +219,8 @@ function getCapabilities() {
       },
       {
         browserName: 'firefox',
-        platform: 'OS X 10.11'
+        platform: 'OS X 10.11',
+        version: '46' // TODO(philipwalton): 47 has issues, use 46 until fixed.
       },
       {
         browserName: 'safari',
