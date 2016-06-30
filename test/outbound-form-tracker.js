@@ -202,6 +202,42 @@ describe('outboundFormTracker', function() {
   });
 
 
+  it('supports setting attributes declaratively', function() {
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker')
+        .click('#declarative-attributes-submit')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'External Form');
+    assert.equal(hitData[0].eventAction, 'submit');
+    assert.equal(hitData[0].dimension1, true);
+  });
+
+
+  it('supports customizing the attribute prefix', function() {
+
+    var hitData = browser
+        .execute(utilities.stopSubmitEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundFormTracker', {
+          attributePrefix: 'data-ga-'
+        })
+        .click('#declarative-attributes-prefix-submit')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventAction, 'submit');
+    assert.equal(hitData[0].eventLabel, 'www.google-analytics.com');
+    assert.equal(hitData[0].nonInteraction, true);
+  });
+
+
   it('should support specifying a hit filter', function() {
 
     var hitData = browser

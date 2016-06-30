@@ -50,17 +50,17 @@ The following table outlines all possible configuration options for the `impress
     <td>This option is a CSS margin string accepting pixel or percentage values only. It is passed as the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>rootMargin</code></a> option to the <code>IntersectionObserver</code> instance, which is used to expand or contract the viewport area to change when an element is considered visible. For example: the string <code>'-20px'</code> would contract the viewport by 20 pixels on each side, and all element visibility calculations would be based on that rather than the viewport dimensions.</td>
   </tr>
   <tr valign="top">
+    <td><code>fieldsObj</code></a></td>
+    <td><code>Object</code></a></td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+  </tr>
+  <tr valign="top">
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
       See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
-  </tr>
-  <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>

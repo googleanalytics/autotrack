@@ -210,6 +210,42 @@ describe('outboundLinkTracker', function() {
   });
 
 
+  it('supports setting attributes declaratively', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker')
+        .click('#declarative-attributes')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'External Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].dimension1, true);
+  });
+
+
+  it('supports customizing the attribute prefix', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker', {
+          attributePrefix: 'data-ga-'
+        })
+        .click('#declarative-attributes-prefix')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'www.google-analytics.com');
+    assert.equal(hitData[0].nonInteraction, true);
+  });
+
+
   it('should support specifying a hit filter', function() {
 
     var hitData = browser
