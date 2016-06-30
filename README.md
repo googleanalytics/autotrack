@@ -15,7 +15,7 @@
 
 The default [JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/) for Google Analytics runs when a web page is first loaded and sends a pageview hit to Google Analytics. If you want to know about more than just pageviews (e.g. events, social interactions), you have to write code to capture that information yourself.
 
-Since most website owners care about most of the same types of user interactions, web developers end up writing the same code over and over again for every new site they build.
+Since most website owners care about a lot of the same types of user interactions, web developers end up writing the same code over and over again for every new site they build.
 
 Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are using your site.
 
@@ -66,7 +66,7 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
   </tr>
 </table>
 
-**Disclaimer:** autotrack is maintained by the Google Analytics developer relations team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics premium support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
+**Disclaimer:** autotrack is maintained by members of the Google Analytics developer platform team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics premium support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
 
 ## Installation and usage
 
@@ -75,7 +75,7 @@ To add autotrack to your site, you have to do two things:
 1. Load the `autotrack.js` script file on your page.
 2. Update your [tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference) to [require](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) the various autotrack plugins you want to use.
 
-If your site already includes the default JavaScript tracking snippet, you can modify it too look something like this, with the following modifications:
+If your site already includes the default JavaScript tracking snippet, you can modify it too look something like this:
 
 ```html
 <script>
@@ -83,7 +83,7 @@ window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 
 // Replace the following lines with the plugins you want to use.
-ga('require', 'cleanUrlTracker');
+ga('require', 'eventTracker');
 ga('require', 'outboundLinkTracker');
 ga('require', 'urlChangeTracker');
 // ...
@@ -125,7 +125,9 @@ require('autotrack/lib/plugins/url-change-tracker');
 // ...
 ```
 
-The above two examples shows how to include the plugin source code in your final, generated JavaScript file, but that's only the first of the two steps. You still have to update your tracking snippet and require the plugins you included in your JavaScript code.
+The above examples show how to include the plugin source code in your final, generated JavaScript file, which accomlishes the first step of the two-step installation process.
+
+You still have to update your tracking snippet and require the plugins you want to use:
 
 
 ```js
@@ -149,7 +151,7 @@ All autotrack plugin accept a configuration object as the third parameter to the
 
 Some of the plugins (e.g. `outboundLinkTracker`, `socialWidgetTracker`, `urlChangeTracker`) have a default behavior that works for most people without specifying any configuration options. Other plugins (e.g. `cleanUrlTracker`, `impressionTracker`, `mediaQueryTracker`) require certain configuration options to be set in order to work.
 
-See the individual plugin documentation to reference what options each plugin aceepts (and what the default value is, if any).
+See the individual plugin documentation to reference what options each plugin accepts (and what the default value is, if any).
 
 ## Advanced configuration
 
@@ -163,13 +165,13 @@ The following example shows how to create a build that only includes the `eventT
 browserify lib/plugins/event-tracker lib/plugins/outbound-link-tracker
 ```
 
-When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will prevent any subsequent `analytics.js` commands from running.
+When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will create an unmet dependency, which will prevent subsequent commands from running.
 
-If you're already using a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs) to build your JavaScript, you can skip the above step and just require the plugins as desribed in the [loading autotrack via npm](#loading-autotrack-via-npm) section.
+If you're already using a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs) to build your JavaScript, you can skip the above step and just require the plugins as described in the [loading autotrack via npm](#loading-autotrack-via-npm) section.
 
 ### Using autotrack with multiple trackers
 
-All autotrack plugins support multiple trackers and work by specifying the tracker name in the `require` command. The following example creates two trackers and requires various autotrack plugins on both.
+All autotrack plugins support multiple trackers and work by specifying the tracker name in the `require` command. The following example creates two trackers and requires various autotrack plugins on each.
 
 ```js
 // Creates two trackers, one named `tracker1` and one named `tracker2`.
@@ -185,7 +187,7 @@ ga('tracker2.require', 'eventTracker');
 ga('tracker2.require', 'outboundLinkTracker');
 ga('tracker2.require', 'pageVisibilityTracker');
 
-// Sends the initial pageview for both trackers.
+// Sends the initial pageview for each tracker.
 ga('tracker1.send', 'pageview');
 ga('tracker2.send', 'pageview');
 ```
@@ -234,5 +236,5 @@ The following translations have been graciously provided by the community. Pleas
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
 1. Fork this repository
-2. Remove all files other than `README.md` and the `docs` folder.
+2. Remove all files other than `README.md` and those in the `docs` folder.
 3. Submit a pull request to this repository that adds a link to your translations to the above list.

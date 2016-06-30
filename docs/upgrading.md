@@ -6,7 +6,7 @@ This guide outlines how to upgrade from any pre-1.0 version to version 1.0.
 
 ### Global changes
 
-In version 1.0, you can no longer require all plugins with the command following command `ga('require', 'autotrack')`. This change was made to avoid users accidentally enabling plugin behavior they didn't intend.
+In version 1.0, you can no longer require all plugins with the command `ga('require', 'autotrack')`. This change was made to avoid users accidentally enabling plugin behavior they didn't intend.
 
 Going forward, all autotrack plugins must be individually required, and their options individually specified.
 
@@ -15,10 +15,11 @@ Going forward, all autotrack plugins must be individually required, and their op
 window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
 ga('create', 'UA-XXXXX-Y', 'auto');
 
-// Plugins must be required (and passed config options) individually.
-ga('require', 'eventTracker', { ... });
-ga('require', 'outboundLinkTracker', { ... });
-ga('require', 'pageVisibilityTracker');
+// Plugins must be required individually.
+ga('require', 'eventTracker');
+ga('require', 'outboundLinkTracker');
+ga('require', 'urlChangeTracker');
+// ...
 
 ga('send', 'pageview');
 </script>
@@ -30,40 +31,39 @@ In all 1.x versions, a warning will be logged to the console if you require the 
 
 ### Individual plugin changes
 
-#### [mediaQueryTracker](/docs/plugins/media-query-tracker.md)
+#### [`mediaQueryTracker`](/docs/plugins/media-query-tracker.md)
 
 - The `mediaQueryDefinitions` option has been renamed to `definitions`.
 - The `mediaQueryChangeTemplate` option has been renamed to `changeTemplate`.
 - The `mediaQueryChangeTimeout` option has been renamed to `changeTimeout`.
 
-#### [socialTracker](/docs/plugins/social-widget-tracker.md)
+#### `socialTracker`
 
-- The `socialTracker` plugin has been renamed to `socialWidgetTracker`.
-- The `socialWidgetTracker` no longer supports declarative social interaction tracking, as that can now be accomplished entirely via the `eventTracker` plugin.
+- The `socialTracker` plugin has been renamed to [`socialWidgetTracker`](/docs/plugins/social-widget-tracker.md) and no longer supports declarative social interaction tracking (since that can now be handled entirely via the [`eventTracker`](/docs/plugins/event-tracker.md) plugin).
 
 ## Plugin enhancements
 
 ### Global enhancement
 
-- All plugins that send hits accept both [`fieldsObj`](/docs/common-options.md#fieldsobj) and [`hitFilter`](/docs/common-options.md#hitfilter) options. These options can be used to set or change ay valid analytics.js field prior to the hit being sent.
+- All plugins that send hits accept both [`fieldsObj`](/docs/common-options.md#fieldsobj) and [`hitFilter`](/docs/common-options.md#hitfilter) options. These options can be used to set or change any valid analytics.js field prior to the hit being sent.
 - All plugins that send hits as a result of user interaction with a DOM element support [setting field values declaratively](/docs/common-options.md#attributeprefix).
 
 ### Individual plugin enhancements
 
-#### [eventTracker](/docs/plugins/event-tracker.md)
+#### [`eventTracker`](/docs/plugins/event-tracker.md)
 
 - Added support for declarative tracking of any DOM event, not just click events (e.g. `submit`, `contextmenu`, etc.)
 
-#### [outboundFormTracker](/docs/plugins/outbound-form-tracker.md)
+#### [`outboundFormTracker`](/docs/plugins/outbound-form-tracker.md)
 
-- Added support for tracking forms within shadom DOM subtrees.
+- Added support for tracking forms within shadow DOM subtrees.
 - Added the ability to customize the selector used to identify forms.
 - Added a `parseUrl` utility function to the `shouldTrackOutboundForm` method to more easily identify or exclude outbound forms.
 
-#### [outboundLinkTracker](/docs/plugins/outbound-link-tracker.md)
+#### [`outboundLinkTracker`](/docs/plugins/outbound-link-tracker.md)
 
 - Added support for DOM events other than `click` (e.g. `contextmenu`, `touchend`, etc.)
-- Added support for tracking links within shadom DOM subtrees.
+- Added support for tracking links within shadow DOM subtrees.
 - Added the ability to customize the selector used to identify links.
 - Added a `parseUrl` utility function to the `shouldTrackOutboundLink` method to more easily identify or exclude outbound links.
 

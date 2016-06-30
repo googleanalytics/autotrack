@@ -8,9 +8,9 @@ Many of the autotrack plugins accept options that are common to multiple differe
 
 ## `fieldsObj`
 
-Some of the autotrack plugins send hits with default [analytics.js field values](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) set. These plugins accept a `fieldsObj` option, which allows you to customize the values of those fields for all hits set from that plugin. It also allows you to set fields that aren't set by default.
+Some of the autotrack plugins send hits with default [analytics.js field values](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) set. These plugins accept a `fieldsObj` option, which allows you to customize those values for each plugin. It also allows you to set any fields that aren't set by default.
 
-The `fieldsObj` option is a `Object` who properties can be any [analytics.js field name](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference), and whose values will be used as the cooresponding field value for all hits sent by the plugin.
+The `fieldsObj` option is an `Object` who properties can be any [analytics.js field name](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference), and whose values will be used as the corresponding field value for all hits sent by the plugin.
 
 ### Examples
 
@@ -103,11 +103,11 @@ ga('require', 'outboundLinkTracker', {
 
 The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the tracker's [model object](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference) as its first argument, and, if the hit was initiated from a user interaction with a DOM element, the element as the second argument.
 
-To get the value of any of model object's fields, use the [`get`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#get) method. To modify a model, use the [`set`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#set) method on the model. To abort the hit, throw an error.
+Within the `hitFilter` function you can get the value of any of the model object's fields using the [`get`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#get) method on the `model` argument. And you can set a new value using the [`set`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#set) method on the `model` argument. To abort the hit, throw an error.
 
 To modify the model for the current hit only (and not all subsequent hits), make sure to set the third argument ([`temporary`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#set)) to `true`.
 
-**Note:** the `hitFilter` function
+### How it works
 
 The `hitFilter` option works by overriding the tracker's [`buildHitTask`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/tasks). The passed `hitFilter` function runs after the `fieldsObj` values and attribute fields have been set on the tracker but before running the original `buildHitTask`. Refer to the guide on [analytics.js tasks](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/tasks) to learn more.
 
