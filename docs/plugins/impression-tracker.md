@@ -30,7 +30,7 @@ To use the polyfill, add it to your page prior to requiring the `impressionTrack
 
 ## Options
 
-The following tables outlines all possible configuration options for the `impressionTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `impressionTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">
@@ -53,7 +53,7 @@ The following tables outlines all possible configuration options for the `impres
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
-      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.
+      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
@@ -80,7 +80,7 @@ The following tables outlines all possible configuration options for the `impres
   <tr valign="top">
     <td><code>id</code></a></td>
     <td><code>string</code></a></td>
-    <td>The ID attribute of the element to track</td>
+    <td>The ID attribute of the element to track.</td>
   </tr>
   <tr valign="top">
     <td><code>threshold</code></a></td>
@@ -163,7 +163,7 @@ ga('require', 'impressionTracker', {
 
 ### Tracking multiple impressions for the same element
 
-This example sends events anytime the `#foo` and/or `#bar` elements becomes visible in the viewport. Then, if the `#foo` and/or `#bar` elements leaves the viewport and then become visible again later, another event is sent for each occurrence.
+This example sends events anytime the `#foo` and/or `#bar` elements becomes visible in the viewport. Then, if the `#foo` and/or `#bar` elements leave the viewport and then become visible again later, another event is sent for each occurrence.
 
 ```js
 ga('require', 'impressionTracker', {

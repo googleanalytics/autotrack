@@ -12,7 +12,7 @@ Historically, outbound link tracking has been tricky to implement because most b
 
 ## Usage
 
-To enable the `outboundLinkTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'outboundLinkTracker'`, and pass in any configuration options you wish to set:
+To enable the `outboundLinkTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'outboundLinkTracker'`, and pass in any configuration options (if any) you wish to set:
 
 ```js
 ga('require', 'outboundLinkTracker', options);
@@ -24,7 +24,7 @@ By default a link is considered outbound if the hostname of the URL it's pointin
 
 ## Options
 
-The following tables outlines all possible configuration options for the `outboundLinkTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `outboundLinkTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">

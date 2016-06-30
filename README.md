@@ -66,7 +66,7 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
   </tr>
 </table>
 
-**Disclaimer:** autotrack is maintained by members of the Google Analytics developer platform team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics premium support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
+**Disclaimer:** autotrack is maintained by members of the Google Analytics developer platform team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics 360 support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
 
 ## Installation and usage
 
@@ -97,7 +97,7 @@ ga('send', 'pageview');
 Of course, you'll have to make the following modifications to customize autotrack to your needs:
 
 - Replace `UA-XXXXX-Y` with your [tracking ID](https://support.google.com/analytics/answer/1032385)
-- Replace with sample list of plugin `require` statements with the plugins you want to use.
+- Replace the sample list of plugin `require` statements with the plugins you want to use.
 - Replace `path/to/autotrack.js` with the actual location of the `autotrack.js` file hosted on your server.
 
 **Note:** the [analytics.js plugin system](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) is designed to support asynchronously loaded scripts, so it doesn't matter if `autotrack.js` is loaded before or after `analytics.js`. It also doesn't matter if the `autotrack.js` library is loaded individually or bundled with the rest of your JavaScript code.
@@ -143,11 +143,11 @@ ga('require', 'urlChangeTracker');
 ga('send', 'pageview');
 ```
 
-**Note:** be careful not to confusing the node module [`require`](https://nodejs.org/api/modules.html) statement with the `analytics.js` [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/command-queue-reference#require) command. When loading autotrack with an npm module loader, both requires must be used.
+**Note:** be careful not to confuse the node module [`require`](https://nodejs.org/api/modules.html) statement with the `analytics.js` [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/command-queue-reference#require) command. When loading autotrack with an npm module loader, both requires must be used.
 
 ### Passing configuration options
 
-All autotrack plugin accept a configuration object as the third parameter to the `require` command.
+All autotrack plugins accept a configuration object as the third parameter to the `require` command.
 
 Some of the plugins (e.g. `outboundLinkTracker`, `socialWidgetTracker`, `urlChangeTracker`) have a default behavior that works for most people without specifying any configuration options. Other plugins (e.g. `cleanUrlTracker`, `impressionTracker`, `mediaQueryTracker`) require certain configuration options to be set in order to work.
 

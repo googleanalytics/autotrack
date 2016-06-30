@@ -101,15 +101,15 @@ ga('require', 'outboundLinkTracker', {
 
 ## `hitFilter`
 
-The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the tracker's [model object](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference) as its first argument, and, if the hit was initiated from a user interaction with a DOM element, the element as the second argument.
+The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the tracker's [model object](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference) as its first argument, and, if the hit was initiated from a user interaction with a DOM element, the element as the second argument.
 
-Within the `hitFilter` function you can get the value of any of the model object's fields using the [`get`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#get) method on the `model` argument. And you can set a new value using the [`set`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#set) method on the `model` argument. To abort the hit, throw an error.
+Within the `hitFilter` function you can get the value of any of the model object's fields using the [`get`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#get) method on the `model` argument. And you can set a new value using the [`set`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#set) method on the `model` argument. To abort the hit, throw an error.
 
-To modify the model for the current hit only (and not all subsequent hits), make sure to set the third argument ([`temporary`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/model-object-reference#set)) to `true`.
+To modify the model for the current hit only (and not all subsequent hits), make sure to set the third argument ([`temporary`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#set)) to `true`.
 
 ### How it works
 
-The `hitFilter` option works by overriding the tracker's [`buildHitTask`](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/tasks). The passed `hitFilter` function runs after the `fieldsObj` values and attribute fields have been set on the tracker but before running the original `buildHitTask`. Refer to the guide on [analytics.js tasks](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/tasks) to learn more.
+The `hitFilter` option works by overriding the tracker's [`buildHitTask`](https://developers.google.com/analytics/devguides/collection/analyticsjs/tasks). The passed `hitFilter` function runs after the `fieldsObj` values and attribute fields have been set on the tracker but before running the original `buildHitTask`. Refer to the guide on [analytics.js tasks](https://developers.google.com/analytics/devguides/collection/analyticsjs/tasks) to learn more.
 
 ### Examples
 

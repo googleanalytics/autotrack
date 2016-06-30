@@ -4,7 +4,7 @@ This guide explains what the `cleanUrlTracker` plugin is and how to integrate it
 
 ## Overview
 
-When viewing your most visited pages in Google Analytics, it's not uncommon to see multiple different URL paths that reference the same page on your site. The following table is a good example of this and the frustrating situation many users find themselves in today:
+When viewing your most visited pages in Google Analytics, it's not uncommon to see multiple different URL paths that reference the same page on your site. The following report table is a good example of this and the frustrating situation many users find themselves in today:
 
 <table>
   <tr valign="top">
@@ -37,7 +37,9 @@ The `cleanUrlTracker` plugin helps you do this. It lets you specify a preference
 
 The `cleanUrlPlugin` works by intercepting each hit as it's being sent and modifying the [`page`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#page) field based on the rules specified by the configuration [options](#options).
 
-If no `page` field exists, one is created based on the URL path from the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field. Note that while the `cleanUrlTracker` plugin does modify `page` field values for each hit, it never modifies the `location` field. This allows campaign and site search data encoded in the full URL to be preserved.
+If no `page` field exists, one is created based on the URL path from the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field.
+
+**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the `location` field. This allows campaign and site search data encoded in the full URL to be preserved.
 
 ## Usage
 
@@ -49,7 +51,7 @@ ga('require', 'cleanUrlTracker', options);
 
 ## Options
 
-The following tables outlines all possible configuration options for the `cleanUrlTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `cleanUrlTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">
@@ -61,7 +63,7 @@ The following tables outlines all possible configuration options for the `cleanU
     <td><code>stripQuery</code></a></td>
     <td><code>boolean</code></a></td>
     <td>
-      When <code>true</code>, the query string portion of the URL will be removed from the URL reported to Google Analytics.<br>
+      When <code>true</code>, the query string portion of the URL will be removed.<br>
       <strong>Default:</strong> <code>false</code>
     </td>
   </tr>
@@ -69,7 +71,7 @@ The following tables outlines all possible configuration options for the `cleanU
     <td><code>queryDimensionIndex</code></a></td>
     <td><code>number</code></a></td>
     <td>
-      There are cases where you want to strip the query string from the URL, but you still want to record what query string was originally there, so you can report on those values separately. When specifying a <code>queryDimensionIndex</code> value, the stripped query string will be set on the custom dimension at the specified index.
+      There are cases where you want to strip the query string from the URL, but you still want to record what query string was originally there, so you can report on those values separately. You can do this by creating a new <a href=""https://support.google.com/analytics/answer/2709829>custom dimension</a> in Google Analytics. Set the dimension's <a href="https://support.google.com/analytics/answer/2709828#example-hit">scope</a> to "hit", and then set the index of the newly created dimension as the <code>queryDimensionIndex</code> option. Once set, the stripped query string will be set on the custom dimension at the specified index.
     </td>
   </tr>
   <tr valign="top">

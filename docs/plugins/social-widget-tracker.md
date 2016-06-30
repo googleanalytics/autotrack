@@ -8,7 +8,7 @@ The `socialWidgetTracker` automatically adds social tracking for the official Tw
 
 ## Usage
 
-To enable the `socialWidgetTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'socialWidgetTracker'`, and pass in the configuration options you want to set:
+To enable the `socialWidgetTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'socialWidgetTracker'`, and pass in the configuration options (if any) you want to set:
 
 ```js
 ga('require', 'socialWidgetTracker', options);
@@ -16,7 +16,7 @@ ga('require', 'socialWidgetTracker', options);
 
 ## Options
 
-The following tables outlines all possible configuration options for the `socialWidgetTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `socialWidgetTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">

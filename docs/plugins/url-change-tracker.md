@@ -10,7 +10,7 @@ The `urlChangeTracker` plugin detects changes to the URL via the [History API](h
 
 ## Usage
 
-To enable the `urlChangeTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'urlChangeTracker'`, and pass in the configuration options you want to set:
+To enable the `urlChangeTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'urlChangeTracker'`, and pass in the configuration options (if any) you want to set:
 
 ```js
 ga('require', 'urlChangeTracker', options);
@@ -18,7 +18,7 @@ ga('require', 'urlChangeTracker', options);
 
 ## Options
 
-The following tables outlines all possible configuration options for the `urlChangeTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `urlChangeTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">

@@ -28,7 +28,7 @@ Refer to the [`definition`](#the-definition-object) object documentation for an 
 
 ## Options
 
-The following tables outlines all possible configuration options for the `mediaQueryTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `mediaQueryTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">

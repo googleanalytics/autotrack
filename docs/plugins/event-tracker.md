@@ -18,15 +18,15 @@ ga('require', 'eventTracker', options);
 
 ### Modifying the HTML
 
-To add interaction tracking to a DOM element, you start by adding a `ga-on` attribute (assuming the default `'ga-'` attribute prefix) and setting its value to whatever DOM event you want to listen for (though it must be one of the events specified in the `events` configuration option). When the specified event is detected on the element, an event is sent to Google Analytics using the field values from the other attributes on the element.
+To add declarative interaction tracking to a DOM element, you start by adding a `ga-on` attribute (assuming the default `'ga-'` attribute prefix) and setting its value to whatever DOM event you want to listen for (note: it must be one of the events specified in the `events` configuration option). When the specified event is detected, a hit is sent to Google Analytics with whatever field attribute values are present on the element.
 
-Any valid [analytics.js field](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) can be set. The attribute name can be determined by combining the [`attributePrefix`](#options) option with the [kebab-cased](https://en.wikipedia.org/wiki/Letter_case#Special_case_styles) version of the field name. For example, if you want to set the [`eventCategory`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory) field and you're using the default `attributePrefix` of `'ga-'`, you would use the attribute name `ga-event-category`.
+Any valid [analytics.js field](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) can be set declaratively via an attribute. The attribute name can be determined by combining the [`attributePrefix`](#options) option with the [kebab-cased](https://en.wikipedia.org/wiki/Letter_case#Special_case_styles) version of the field name. For example, if you want to set the [`eventCategory`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory) field and you're using the default `attributePrefix` of `'ga-'`, you would use the attribute name `ga-event-category`.
 
 Refer to the [examples](#examples) section to see what the code looks like. For a complete list of possible fields to send, refer to the [field reference](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) in the `analytics.js` documentation.
 
 ## Options
 
-The following tables outlines all possible configuration options for the `eventTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `eventTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">
@@ -46,7 +46,7 @@ The following tables outlines all possible configuration options for the `eventT
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
-      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.
+      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
@@ -120,9 +120,9 @@ The follow HTML will track right clicks given the above configuration:
 
 ### Tracking non-event hit types
 
-By default the `hitType` for all hits sent by the `eventTracker` plugin are event hits, but this can be customized either with the [`fieldsObj`](/docs/common-options.md#fieldsobj) or [`hitFilter`](/docs/common-options.md#hitfilter) options, or setting the `ga-hit-type` attribute on the element itself (assuming the default `ga-` attribute prefix).
+The default the `hitType` for all hits sent by the `eventTracker` plugin is `'event'`, but this can be customized either with the [`fieldsObj`](/docs/common-options.md#fieldsobj) or [`hitFilter`](/docs/common-options.md#hitfilter) options, or setting the `ga-hit-type` attribute on the element itself (assuming the default `ga-` attribute prefix).
 
-For example, to send a [social interaction hit](https://devsite.googleplex.com/analytics/devguides/collection/analyticsjs/social-interactions) instead of an event, you could use the following HTML:
+For example, to send a [social interaction hit](https://developers.google.com/analytics/devguides/collection/analyticsjs/social-interactions) instead of an event, you could use the following HTML:
 
 ```html
 <button

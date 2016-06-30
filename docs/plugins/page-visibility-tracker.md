@@ -20,7 +20,7 @@ When using the `pageVisibilityTracker` plugin, you'll probably notice an increas
 
 ## Usage
 
-To enable the `pageVisibilityTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'pageVisibilityTracker'`, and pass in any configuration options you wish to set:
+To enable the `pageVisibilityTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'pageVisibilityTracker'`, and pass in any configuration options (if any) you wish to set:
 
 ```js
 ga('require', 'pageVisibilityTracker', options);
@@ -28,7 +28,7 @@ ga('require', 'pageVisibilityTracker', options);
 
 ## Options
 
-The following tables outlines all possible configuration options for the `outboundLinkTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `outboundLinkTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">
