@@ -39,7 +39,7 @@ The following table outlines all possible configuration options for the `mediaQu
   <tr valign="top">
     <td><code>definitions</code></a></td>
     <td><code>Object|Array&lt;Object&gt;</code></a></td>
-    <td>A definition object or an array of definition objects. See the <a href="#the-definition-object"><code>definition</code></a> object description for property details.</td>
+    <td>A <code>definition</code> object or an array of <code>definition</code> objects. See the <a href="#the-definition-object"><code>definition</code></a> object description for property details.</td>
   </tr>
   <tr valign="top">
     <td><code>changeTemplate</code></a></td>
@@ -55,19 +55,19 @@ The following table outlines all possible configuration options for the `mediaQu
   <tr valign="top">
     <td><code>changeTimeout</code></a></td>
     <td><code>number</code></a></td>
-    <td>The debounce timeout, i.e., the amount of time to wait before sending the change event. If multiple change events occur within the timeout period, only the last one is sent.
-    <p><strong>Default:</strong> <code>1000</code></p>
+    <td>The debounce timeout, i.e., the amount of time to wait before sending the change event. If multiple change events occur within the timeout period, only the last one is sent.<br>
+    <strong>Default:</strong> <code>1000</code>
     </td>
   </tr>
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -94,7 +94,7 @@ The `definition` object allows you to group multiple different types of media qu
   <tr valign="top">
     <td><code>items</code></a></td>
     <td><code>Array</code></a></td>
-    <td>An array of item objects. See the <a href="#the-item-object"><code>item</code></a> object description for property details</td>
+    <td>An array of <code>item</code> objects. See the <a href="#the-item-object"><code>item</code></a> object description for property details.</td>
   </tr>
 </table>
 
@@ -149,7 +149,7 @@ The `mediaQueryTracker` plugin sets the following default field values on all hi
   </tr>
 </table>
 
-Note: the reference to `definition` in the table above refers to the definition the changing media value is defined in. The reference to `options` refers to passed configuration [options](#options).
+**Note:** the reference to `definition` in the table above refers to the definition the changing media value is defined in. The reference to `options` refers to passed configuration [options](#options).
 
 ## Example
 

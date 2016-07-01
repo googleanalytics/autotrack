@@ -36,7 +36,7 @@ The following table outlines all possible configuration options for the `outboun
     <td><code>events</code></a></td>
     <td><code>Array</code></a></td>
     <td>
-      A list of events to listen for on links. Since it's possible to navigate to a link without generating a `click` (e.g. right-clicking generates a `contextmenu` event), you can customize this option to track additional events.<br>
+      A list of events to listen for on links. Since it's possible to navigate to a link without generating a <code>click</code> (e.g. right-clicking generates a <code>contextmenu</code> event), you can customize this option to track additional events.<br>
       <strong>Default:</strong> <code>['click']</code>
     </td>
   </tr>
@@ -64,20 +64,20 @@ The following table outlines all possible configuration options for the `outboun
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
-      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.<br>
+      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -108,7 +108,7 @@ The `outboundLinkTracker` plugin sends hits with the following values. To custom
   </tr>
 </table>
 
-Note: the reference to `form` in the table above refers to the `<form>` element being clicked. The refernce to `event` refers to the event being dispatched by the user interaction.
+**Note:** the reference to `form` in the table above refers to the `<form>` element being clicked. The reference to `event` refers to the event being dispatched by the user interaction.
 
 ## Examples
 

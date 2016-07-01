@@ -47,25 +47,25 @@ The following table outlines all possible configuration options for the `impress
   <tr valign="top">
     <td><code>rootMargin</code></a></td>
     <td><code>string</code></a></td>
-    <td>This option is a CSS margin string accepting pixel or percentage values only. It is passed as the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>rootMargin</code></a> option to the <code>IntersectionObserver</code> instance, which is used to expand or contract the viewport area to change when an element is considered visible. For example: the string <code>'-20px'</code> would contract the viewport by 20 pixels on each side, and all element visibility calculations would be based on that rather than the viewport dimensions.</td>
+    <td>A CSS margin string accepting pixel or percentage values. It is passed as the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>rootMargin</code></a> option to the <code>IntersectionObserver</code> instance, which is used to expand or contract the viewport area to change when an element is considered visible. For example: the string <code>'-20px 0'</code> would contract the viewport by 20 pixels on the top and bottom sides, and all element visibility calculations would be based on that rather than the full viewport dimensions.</td>
   </tr>
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
-      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.<br>
+      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -94,7 +94,7 @@ The following table outlines all possible configuration options for the `impress
     <td><code>trackFirstImpressionOnly</code></a></td>
     <td><code>boolean</code></a></td>
     <td>
-      When <code>true</code>, an impression is only tracked when the element is first visible within the viewport. Set this to <code>false</code> if you want to track subsequent impressions.<br>
+      When <code>true</code>, an impression for this element is only tracked the first time it is visible within the viewport. Set this to <code>false</code> if you want to track subsequent impressions.<br>
       <strong>Default:</strong> <code>true</code>
     </td>
   </tr>
@@ -128,13 +128,13 @@ The `impressionTracker` plugin sets the following default field values on all hi
   </tr>
 </table>
 
-Note: reference to `element` in the table above refers to the element being observed.
+**Note:** the reference to `element` in the table above refers to the element being observed.
 
 ## Examples
 
 ### Basic tracking of when elements are visible
 
-This example sends and event when any part of the `#foo` and/or `#bar` elements becomes visible in the viewport:
+This example sends an event when any part of the `#foo` and/or `#bar` elements become visible in the viewport:
 
 ```js
 ga('require', 'impressionTracker', {
@@ -163,7 +163,7 @@ ga('require', 'impressionTracker', {
 
 ### Tracking multiple impressions for the same element
 
-This example sends events anytime the `#foo` and/or `#bar` elements becomes visible in the viewport. Then, if the `#foo` and/or `#bar` elements leave the viewport and then become visible again later, another event is sent for each occurrence.
+This example sends events anytime the `#foo` and/or `#bar` elements become visible in the viewport. Then, if the `#foo` and/or `#bar` elements leave the viewport and become visible again later, another event is sent for each occurrence.
 
 ```js
 ga('require', 'impressionTracker', {
@@ -182,11 +182,11 @@ ga('require', 'impressionTracker', {
 
 ### Change the `rootMargin` value
 
-This example sends events anytime the `#foo` and/or `#bar` elements appear at least within 20 pixels of the edges of the viewport.
+This example sends events anytime the `#foo` and/or `#bar` elements appear at least within 20 pixels of the top and bottom edges of the viewport.
 
 ```js
 ga('require', 'impressionTracker', {
   elements: ['foo', 'bar'],
-  rootMargin: '-20px'
+  rootMargin: '-20px 0'
 });
 ```

@@ -29,7 +29,7 @@ ga('require', 'mediaQueryTracker', {
 
 #### `urlChangeTracker`
 
-This configuration sets a custom dimension for all pageview hits sent by the `urlChangeTracker`. This would allow you to differentiate between the initial pageview and "virtual" pageviews sent after loading new pages via AJAX:
+This configuration sets a [custom dimension](https://support.google.com/analytics/answer/2709828) at index 1 for all pageview hits sent by the `urlChangeTracker`. This would allow you to differentiate between the initial pageview and "virtual" pageviews sent after loading new pages via AJAX:
 
 ```js
 ga('require', 'urlChangeTracker', {
@@ -38,7 +38,7 @@ ga('require', 'urlChangeTracker', {
   }
 });
 ga('send', 'pageview', {
-  dimension1: 'initial'
+  dimension1: 'pageload'
 });
 ```
 

@@ -56,20 +56,20 @@ The following table outlines all possible configuration options for the `outboun
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>attributePrefix</code></a></td>
     <td><code>string</code></a></td>
     <td>
-      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for <code>attributePrefix</code> description.<br>
+      See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -100,7 +100,7 @@ The `outboundFormTracker` plugin sends hits with the following values. To custom
   </tr>
 </table>
 
-Note: the reference to `form` in the table above refers to the `<form>` element being submitted.
+**Note:** the reference to `form` in the table above refers to the `<form>` element being submitted.
 
 ## Examples
 
@@ -142,7 +142,7 @@ ga('require', 'outboundFormTracker', {
 });
 ```
 
-With the above code, submits form the following forms won't be tracked, even though the form is submitting to an external domain:
+With the above code, submits from the following form won't be tracked, even though the form is submitting to an external domain:
 
 ```html
 <form action="https://example.com">...</form>

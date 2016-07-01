@@ -6,7 +6,9 @@ This guide explains what the `urlChangeTracker` plugin is and how to integrate i
 
 The `urlChangeTracker` plugin detects changes to the URL via the [History API](https://developer.mozilla.org/en-US/docs/Web/API/History_API) and automatically updates the tracker and sends additional pageviews. This allows [single page applications](https://en.wikipedia.org/wiki/Single-page_application) to be tracked like traditional sites without any extra configuration.
 
-**Note:** this plugin does not support tracking hash changes as most Google Analytics implementations do not capture the hash portion of the URL when tracking pageviews. Also, developers of single page applications should make sure their framework isn't already tracking URL changes to avoid collecting duplicate data.
+Developers of single page applications should make sure their framework isn't already tracking URL changes to avoid collecting duplicate data.
+
+**Note:** this plugin does not support tracking hash changes as most Google Analytics implementations do not capture the hash portion of the URL when tracking pageviews.
 
 ## Usage
 
@@ -30,21 +32,21 @@ The following table outlines all possible configuration options for the `urlChan
     <td><code>shouldTrackUrlChange</code></a></td>
     <td><code>Function</code></a></td>
     <td>
-      A function used to determine if a URL change should be tracked. The function is invoked with the string values `newPath` and `oldPath` which represent the pathname and search portion of the URL (not the hash portion). Note, the function is only invoked if both a new and old path are differ from each other.<br>
+      A function used to determine if a URL change should be tracked. The function is invoked with the string values <code>newPath</code> and <code>oldPath</code> which represent the pathname and search portion of the URL (not the hash portion). Note, the function is only invoked if the new path and old path are different.<br>
       <strong>Default:</strong>
 <pre>function shouldTrackUrlChange(newPath, oldPath) {
-  return newPath &amp;&amp;
+  return newPath &amp;&amp; oldPath;
 };</pre>
     </td>
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -71,7 +73,7 @@ The `urlChangeTracker` plugin sets the following default field values on all hit
   </tr>
 </table>
 
-Note: the reference to `newPath` in the table above refers to the same value passed to the [`shouldTrackUrlChange`](#options) function in the configuration options.
+**Note:** the reference to `newPath` in the table above refers to the same value passed to the [`shouldTrackUrlChange`](#options) function in the configuration options.
 
 ## Example
 
@@ -85,7 +87,7 @@ ga('require', 'urlChangeTracker');
 
 ### Customizing what is considered a URL change
 
-This code updates the `shouldTrackUrlChange` configuration option to not track path changes that only modify the query string portion of the URL:
+This code updates the `shouldTrackUrlChange` configuration option to not track changes where only the query string portion of the URL is different:
 
 ```js
 ga('require', 'urlChangeTracker', {
@@ -108,7 +110,10 @@ The following code uses the `fieldsObj` option to set a custom dimension at inde
 ```js
 ga('require', 'urlChangeTracker', {
   fieldsObj: {
-    dimension1: 'virtual pageview'
+    dimension1: 'virtual'
   }
+});
+ga('send', 'pageview', {
+  dimension1: 'pageload'
 });
 ```

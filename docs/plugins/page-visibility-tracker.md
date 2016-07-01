@@ -12,7 +12,7 @@ The `pageVisibilityTracker` plugin changes this paradigm by shifting from pagelo
 
 ### How it works
 
-The `pageVisibilityTracker` plugin listens for [`visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/Events/visibilitychange) events and sends events capturing how long the session was in each state. It also programmatically starts new sessions and sends new pageviews when the visibility state changes from hidden to visible (if the previous session has timed out).
+The `pageVisibilityTracker` plugin listens for [`visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/Events/visibilitychange) events on the current page and sends hits to Google Analytics capturing how long the page was in each state. It also programmatically starts new sessions and sends new pageviews when the visibility state changes from hidden to visible (if the previous session has timed out).
 
 ### Impact on session and pageview counts
 
@@ -40,7 +40,7 @@ The following table outlines all possible configuration options for the `outboun
     <td><code>sessionTimeout</code></a></td>
     <td><code>number</code></a></td>
     <td>
-      The <a href="https://support.google.com/analytics/answer/2795871">session timeout</a> amount (in minutes) of the Google Analytics property hits are being sent to. By default this value is 30 minutes, which is the same default for new Google Analytics properties. The value set for this plugin should always be the same as the property setting in Google Analytics.<br>
+      The <a href="https://support.google.com/analytics/answer/2795871">session timeout</a> amount (in minutes) of the Google Analytics property. By default this value is 30 minutes, which is the same default used for new Google Analytics properties. The value set for this plugin should always be the same as the property setting in Google Analytics.<br>
       <strong>Default:</strong> <code>30</code>
   </td>
   </tr>
@@ -48,7 +48,7 @@ The following table outlines all possible configuration options for the `outboun
     <td><code>changeTemplate</code></a></td>
     <td><code>Function</code></a></td>
     <td>
-      A function that accepts the old and new values and returns a string to be used as the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a> fields for the change event.<br>
+      A function that accepts the old and new values and returns a string to be used as the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a> field for change events.<br>
       <strong>Default:</strong>
 <pre><code>function(oldValue, newValue) {
   return oldValue + ' => ' + newValue;
@@ -68,12 +68,12 @@ The following table outlines all possible configuration options for the `outboun
   <tr valign="top">
     <td><code>fieldsObj</code></a></td>
     <td><code>Object</code></a></td>
-    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for <code>fieldsObj</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
     <td><code>hitFilter</code></a></td>
     <td><code>Function</code></a></td>
-    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for <code>hitFilter</code> description.</td>
+    <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
 
@@ -114,7 +114,7 @@ The `pageVisibilityTracker` plugin sets the following default field values on ev
   </tr>
 </table>
 
-Note: the reference to `options` refers to passed configuration [options](#options).
+**Note:** the reference to `options` refers to passed configuration [options](#options).
 
 ### New pageview events
 
@@ -140,7 +140,7 @@ Session duration in Google Analytics is defined as the amount of time between th
 
 The `pageVisibilityTracker` plugin defaults to sending visibility state change events as [non-interaction](https://developers.google.com/analytics/devguides/collection/analyticsjs/events#non-interaction_events) hits (for the `hidden` event), but you can customize this to make all hits interactive and since most sessions will contain visibility state change events, your sessions durations will become much more accurate.
 
-The downside of this approach is it will alter your bounce rate. However, for many users, this trade off is worth it since bounce rate can be calculated in other ways (e.g. with a custom segment).
+The downside of this approach is it will alter your bounce rate. However, for many users, this trade-off is worth it since bounce rate can be calculated in other ways (e.g. with a custom segment).
 
 The examples section below includes a code sample showing [how to make all events interaction events](#ensuring-all-events-are-interaction-events).
 
@@ -169,5 +169,5 @@ ga('require', 'pageVisibilityTracker', {
 });
 ```
 
-Note that this requires [creating custom metrics](https://support.google.com/analytics/answer/2709829) in your Google Analytics property settings.
+**Note:** this requires [creating custom metrics](https://support.google.com/analytics/answer/2709829) in your Google Analytics property settings.
 
