@@ -17,6 +17,7 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
+var constants = require('../lib/constants');
 
 
 describe('index', function() {
@@ -121,6 +122,34 @@ describe('index', function() {
         .value;
 
     assert.equal(hitData.length, 1);
+  });
+
+
+  it('tracks usage for all required plugins', function() {
+
+    var hitData = browser
+        .url('/test/autotrack.html')
+        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
+        .execute(ga.trackHitData)
+        .execute(ga.run, 'require', 'cleanUrlTracker')
+        .execute(ga.run, 'require', 'eventTracker')
+        .execute(ga.run, 'require', 'impressionTracker')
+        .execute(ga.run, 'require', 'outboundLinkTracker')
+        .execute(ga.run, 'require', 'mediaQueryTracker')
+        .execute(ga.run, 'require', 'outboundFormTracker')
+        .execute(ga.run, 'require', 'pageVisibilityTracker')
+        .execute(ga.run, 'require', 'socialWidgetTracker')
+        .execute(ga.run, 'require', 'urlChangeTracker')
+        .execute(ga.run, 'send', 'pageview')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].devId, constants.DEV_ID);
+    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+
+    // '1ff' = '111111111' in hex
+    assert.equal(hitData[0][constants.USAGE_PARAM], '1ff');
   });
 
 });
