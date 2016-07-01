@@ -54,7 +54,9 @@ module.exports =  {
         metric1: model.get('metric1'),
         metric2: model.get('metric2'),
         nonInteraction: model.get('nonInteraction'),
-        devId: model.get('&did')
+        devId: model.get('&did'),
+        '&_av': model.get('&_av'),
+        '&_au': model.get('&_au')
       });
     });
   },

@@ -263,12 +263,20 @@ describe('cleanUrlTracker', function() {
   });
 
 
-  it('includes the &did param with all hits', function() {
+  it('includes usage params with all hits', function() {
 
-    browser
+    var hitData = browser
         .execute(ga.run, 'require', 'cleanUrlTracker')
         .execute(ga.run, 'send', 'pageview')
-        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].devId, constants.DEV_ID);
+    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+
+    // '1' = '000000001' in hex
+    assert.equal(hitData[0][constants.USAGE_PARAM], '1');
   });
 
 });
