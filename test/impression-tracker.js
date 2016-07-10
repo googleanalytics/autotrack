@@ -126,26 +126,22 @@ describe('impressionTracker', function() {
   });
 
 
-  it('tracks elements initially not in the DOM', function() {
+  it('handles elements being added and removed from the DOM', function() {
 
     if (notSupportedInBrowser()) return;
 
     browser
         .execute(ga.run, 'require', 'impressionTracker', {
           elements: [
-            'fixture',
-            'fixture-1',
-            'fixture-1-1',
-            'fixture-1-2',
-            'fixture-2',
-            'fixture-2-1',
-            'fixture-2-2'
+            {id: 'fixture', trackFirstImpressionOnly: false},
+            {id: 'fixture-1', trackFirstImpressionOnly: false},
+            {id: 'fixture-2', trackFirstImpressionOnly: false}
           ]
         })
         .execute(addFixtures)
         .scroll('#fixture')
         .waitUntil(ga.hitDataMatches([
-          ['length', 7],
+          ['length', 3],
           ['[0].eventCategory', 'Viewport'],
           ['[0].eventAction', 'impression'],
           ['[0].eventLabel', 'fixture'],
@@ -154,19 +150,25 @@ describe('impressionTracker', function() {
           ['[1].eventLabel', 'fixture-1'],
           ['[2].eventCategory', 'Viewport'],
           ['[2].eventAction', 'impression'],
-          ['[2].eventLabel', 'fixture-1-1'],
+          ['[2].eventLabel', 'fixture-2']
+        ]));
+
+    browser
+        .execute(removeFixtures)
+        .scroll('#foo')
+        .execute(addFixtures)
+        .scroll('#fixture')
+        .waitUntil(ga.hitDataMatches([
+          ['length', 6],
           ['[3].eventCategory', 'Viewport'],
           ['[3].eventAction', 'impression'],
-          ['[3].eventLabel', 'fixture-1-2'],
+          ['[3].eventLabel', 'fixture'],
           ['[4].eventCategory', 'Viewport'],
           ['[4].eventAction', 'impression'],
-          ['[4].eventLabel', 'fixture-2'],
+          ['[4].eventLabel', 'fixture-1'],
           ['[5].eventCategory', 'Viewport'],
           ['[5].eventAction', 'impression'],
-          ['[5].eventLabel', 'fixture-2-1'],
-          ['[6].eventCategory', 'Viewport'],
-          ['[6].eventAction', 'impression'],
-          ['[6].eventLabel', 'fixture-2-2']
+          ['[5].eventLabel', 'fixture-2']
         ]));
 
     browser.execute(removeFixtures);
@@ -476,14 +478,8 @@ function addFixtures() {
   fixture.id = 'fixture';
   fixture.className = 'container';
   fixture.innerHTML =
-      '<div class="box" id="fixture-1">' +
-      '  <div class="box" id="fixture-1-1"></div>' +
-      '  <div class="box" id="fixture-1-2"></div>' +
-      '</div>' +
-      '<div class="box" id="fixture-2">' +
-      '  <div class="box" id="fixture-2-1"></div>' +
-      '  <div class="box" id="fixture-2-2"></div>' +
-      '</div>';
+      '<div class="box" id="fixture-1"></div>' +
+      '<div class="box" id="fixture-2"></div>';
   document.body.appendChild(fixture);
 }
 
