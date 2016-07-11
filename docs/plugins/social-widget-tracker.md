@@ -115,6 +115,23 @@ The `socialWidgetTracker` plugin sets the following default field values on all 
   </tr>
 </table>
 
+## Methods
+
+The following table lists all methods for the `socialWidgetTracker` plugin:
+
+<table>
+  <tr valign="top">
+    <th align="left">Name</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr valign="top">
+    <td><code>remove</code></a></td>
+    <td>Removes the <code>socialWidgetTracker</code> plugin from the specified tracker, removes all event listeners registered with the social SDKs, and restores all modified tasks to their original state prior to the plugin being required.</td>
+  </tr>
+</table>
+
+For details on how `analytics.js` plugin methods work and how to invoke them, see [calling plugin methods](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins#calling_plugin_methods) in the `analytics.js` documentation.
+
 ## Examples
 
 ### Basic usage

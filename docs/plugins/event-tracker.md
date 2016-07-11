@@ -77,6 +77,23 @@ The `eventTracker` plugin sets the following default field values on all hits it
   </tr>
 </table>
 
+## Methods
+
+The following table lists all methods for the `eventTracker` plugin:
+
+<table>
+  <tr valign="top">
+    <th align="left">Name</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr valign="top">
+    <td><code>remove</code></a></td>
+    <td>Removes the <code>eventTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
+  </tr>
+</table>
+
+For details on how `analytics.js` plugin methods work and how to invoke them, see [calling plugin methods](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins#calling_plugin_methods) in the `analytics.js` documentation.
+
 ## Examples
 
 ### Basic usage

@@ -151,6 +151,23 @@ The `mediaQueryTracker` plugin sets the following default field values on all hi
 
 **Note:** the reference to `definition` in the table above refers to the definition the changing media value is defined in. The reference to `options` refers to passed configuration [options](#options).
 
+## Methods
+
+The following table lists all methods for the `mediaQueryTracker` plugin:
+
+<table>
+  <tr valign="top">
+    <th align="left">Name</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr valign="top">
+    <td><code>remove</code></a></td>
+    <td>Removes the <code>mediaQueryTracker</code> plugin from the specified tracker, removes all media query listeners, and restores all modified tasks to their original state prior to the plugin being required.</td>
+  </tr>
+</table>
+
+For details on how `analytics.js` plugin methods work and how to invoke them, see [calling plugin methods](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins#calling_plugin_methods) in the `analytics.js` documentation.
+
 ## Example
 
 ### Basic usage

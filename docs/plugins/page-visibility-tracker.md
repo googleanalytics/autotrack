@@ -144,6 +144,23 @@ The downside of this approach is it will alter your bounce rate. However, for ma
 
 The examples section below includes a code sample showing [how to make all events interaction events](#ensuring-all-events-are-interaction-events).
 
+## Methods
+
+The following table lists all methods for the `pageVisibilityTracker` plugin:
+
+<table>
+  <tr valign="top">
+    <th align="left">Name</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr valign="top">
+    <td><code>remove</code></a></td>
+    <td>Removes the <code>pageVisibilityTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
+  </tr>
+</table>
+
+For details on how `analytics.js` plugin methods work and how to invoke them, see [calling plugin methods](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins#calling_plugin_methods) in the `analytics.js` documentation.
+
 ## Examples
 
 ### Ensuring all events are interaction events

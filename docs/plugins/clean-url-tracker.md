@@ -90,6 +90,23 @@ The following table outlines all possible configuration options for the `cleanUr
   </tr>
 </table>
 
+## Methods
+
+The following table lists all methods for the `cleanUrlTracker` plugin:
+
+<table>
+  <tr valign="top">
+    <th align="left">Name</th>
+    <th align="left">Description</th>
+  </tr>
+  <tr valign="top">
+    <td><code>remove</code></a></td>
+    <td>Removes the <code>cleanUrlTracker</code> plugin from the specified tracker and restores all modified tasks to their original state prior to the plugin being required.</td>
+  </tr>
+</table>
+
+For details on how `analytics.js` plugin methods work and how to invoke them, see [calling plugin methods](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins#calling_plugin_methods) in the `analytics.js` documentation.
+
 ## Example
 
 Given the four URL paths shown in the table at the beginning of this guide, the following `cleanUrlTracker` configuration would ensure that only the URL path `/contact` ever appears in your reports.
