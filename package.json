@@ -44,6 +44,7 @@
     "gulp-uglify": "^1.5.1",
     "gulp-util": "^3.0.7",
     "gulp-webdriver": "^2.0.1",
+    "intersection-observer": "^0.1.1",
     "lodash": "^4.8.2",
     "mocha": "^2.3.4",
     "ngrok": "^2.1.6",
