@@ -28,7 +28,7 @@ ga('require', 'pageVisibilityTracker', options);
 
 ## Options
 
-The following table outlines all possible configuration options for the `outboundLinkTracker` plugin. If any of the options has a default value, the default is explicitly stated:
+The following table outlines all possible configuration options for the `pageVisibilityTracker` plugin. If any of the options has a default value, the default is explicitly stated:
 
 <table>
   <tr valign="top">
@@ -165,12 +165,12 @@ For details on how `analytics.js` plugin methods work and how to invoke them, se
 
 ### Ensuring all events are interaction events
 
-This example uses the `fieldsObj` option to set the default `nonInteraction` value for all hits to `false`, which overrides the plugin's default `nonInteraction` value of `true` for hidden events.
+This example uses the `fieldsObj` option to set the `nonInteraction` value for all hits to `null`, which overrides the plugin's default `nonInteraction` value of `true` for hidden events. Making this change will dramatically [improve session duration calculations](#improving-session-duration-calculations) as described above.
 
 ```js
 ga('require', 'pageVisibilityTracker', {
   fieldsObj: {
-    nonInteraction: false
+    nonInteraction: null
   }
 });
 ```

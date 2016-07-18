@@ -10,7 +10,7 @@ Many of the autotrack plugins accept options that are common to multiple differe
 
 Some of the autotrack plugins send hits with default [analytics.js field values](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) set. These plugins accept a `fieldsObj` option, which allows you to customize those values for each plugin. It also allows you to set any fields that aren't set by default.
 
-The `fieldsObj` option is an `Object` who properties can be any [analytics.js field name](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference), and whose values will be used as the corresponding field value for all hits sent by the plugin.
+The `fieldsObj` option is an `Object` whose properties can be any [analytics.js field name](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference), and whose values will be used as the corresponding field value for all hits sent by the plugin.
 
 ### Examples
 
@@ -101,7 +101,7 @@ ga('require', 'outboundLinkTracker', {
 
 ## `hitFilter`
 
-The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the tracker's [model object](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference) as its first argument, and, if the hit was initiated from a user interaction with a DOM element, the element as the second argument.
+The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the tracker's [model object](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference) as its first argument, and (if the hit was initiated by a user interaction with a DOM element) the DOM element as the second argument.
 
 Within the `hitFilter` function you can get the value of any of the model object's fields using the [`get`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#get) method on the `model` argument. And you can set a new value using the [`set`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#set) method on the `model` argument. To abort the hit, throw an error.
 

@@ -137,7 +137,7 @@ The follow HTML will track right clicks given the above configuration:
 
 ### Tracking non-event hit types
 
-The default the `hitType` for all hits sent by the `eventTracker` plugin is `'event'`, but this can be customized either with the [`fieldsObj`](/docs/common-options.md#fieldsobj) or [`hitFilter`](/docs/common-options.md#hitfilter) options, or setting the `ga-hit-type` attribute on the element itself (assuming the default `ga-` attribute prefix).
+The default `hitType` for all hits sent by the `eventTracker` plugin is `'event'`, but this can be customized either with the [`fieldsObj`](/docs/common-options.md#fieldsobj) or [`hitFilter`](/docs/common-options.md#hitfilter) options, or setting the `ga-hit-type` attribute on the element itself (assuming the default `ga-` attribute prefix).
 
 For example, to send a [social interaction hit](https://developers.google.com/analytics/devguides/collection/analyticsjs/social-interactions) instead of an event, you could use the following HTML:
 

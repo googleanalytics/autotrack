@@ -71,7 +71,7 @@ The following table outlines all possible configuration options for the `cleanUr
     <td><code>queryDimensionIndex</code></a></td>
     <td><code>number</code></a></td>
     <td>
-      There are cases where you want to strip the query string from the URL, but you still want to record what query string was originally there, so you can report on those values separately. You can do this by creating a new <a href=""https://support.google.com/analytics/answer/2709829>custom dimension</a> in Google Analytics. Set the dimension's <a href="https://support.google.com/analytics/answer/2709828#example-hit">scope</a> to "hit", and then set the index of the newly created dimension as the <code>queryDimensionIndex</code> option. Once set, the stripped query string will be set on the custom dimension at the specified index.
+      There are cases where you want to strip the query string from the URL, but you still want to record what query string was originally there, so you can report on those values separately. You can do this by creating a new <a href="https://support.google.com/analytics/answer/2709829">custom dimension</a> in Google Analytics. Set the dimension's <a href="https://support.google.com/analytics/answer/2709828#example-hit">scope</a> to "hit", and then set the index of the newly created dimension as the <code>queryDimensionIndex</code> option. Once set, the stripped query string will be set on the custom dimension at the specified index.
     </td>
   </tr>
   <tr valign="top">
@@ -109,7 +109,7 @@ For details on how `analytics.js` plugin methods work and how to invoke them, se
 
 ## Example
 
-Given the four URL paths shown in the table at the beginning of this guide, the following `cleanUrlTracker` configuration would ensure that only the URL path `/contact` ever appears in your reports.
+Given the four URL paths shown in the table at the beginning of this guide, the following `cleanUrlTracker` configuration would ensure that only the URL path `/contact` ever appears in your reports (assumes you've created a custom dimension for the query at index 1):
 
 ```js
 ga('require', 'cleanUrlTracker', {

@@ -30,7 +30,7 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
   </tr>
   <tr>
     <td><a href="/docs/plugins/clean-url-tracker.md"><code>cleanUrlTracker</code></a></td>
-    <td>Prevents mutliple different URL paths that point to the same page from appearing in your Google Analytics reports.</td>
+    <td>Ensures consistency in the URL paths that get reported to Google Analytics; avoiding the problem where separate rows in your pages reports actually point to the same page.</td>
   </tr>
   <tr>
     <td><a href="/docs/plugins/event-tracker.md"><code>eventTracker</code></a></td>
@@ -54,7 +54,7 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
   </tr>
   <tr>
     <td><a href="/docs/plugins/page-visibility-tracker.md"><code>pageVisibilityTracker</code></a></td>
-    <td>Tracks page visibility state changes, which enables much more accurate session, session duration, and pageview metrics</td>
+    <td>Tracks page visibility state changes, which enables much more accurate session, session duration, and pageview metrics.</td>
   </tr>
   <tr>
     <td><a href="/docs/plugins/social-widget-tracker.md"><code>socialWidgetTracker</code></a></td>
@@ -125,7 +125,7 @@ require('autotrack/lib/plugins/url-change-tracker');
 // ...
 ```
 
-The above examples show how to include the plugin source code in your final, generated JavaScript file, which accomlishes the first step of the two-step installation process.
+The above examples show how to include the plugin source code in your final, generated JavaScript file, which accomplishes the first step of the two-step installation process.
 
 You still have to update your tracking snippet and require the plugins you want to use:
 
@@ -235,6 +235,6 @@ The following translations have been graciously provided by the community. Pleas
 
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
-1. Fork this repository
+1. Fork this repository.
 2. Remove all files other than `README.md` and those in the `docs` folder.
 3. Submit a pull request to this repository that adds a link to your translations to the above list.

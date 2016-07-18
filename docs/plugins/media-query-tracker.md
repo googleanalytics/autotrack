@@ -6,7 +6,7 @@ This guide explains what the `mediaQueryTracker` plugin is and how to integrate 
 
 Most sites today use responsive design to update the page layout based on the screen size or capabilities of the user's device. If [media queries](https://developer.mozilla.org/en-US/docs/Web/CSS/Media_Queries/Using_media_queries) are used to alter the look or functionality of a page, it's important to capture that information to better understand how usage differs when different media queries are active.
 
-The `mediaQueryTracker` plugin allows you to register the set of media query values you're using, and those values are automatically tracked via [custom dimensions](https://support.google.com/analytics/answer/2709828) with each hit. It also sends events those values change.
+The `mediaQueryTracker` plugin allows you to register the set of media query values you're using, and those values are automatically tracked via [custom dimensions](https://support.google.com/analytics/answer/2709828) with each hit. It also sends events when those values change.
 
 ## Usage
 
@@ -209,7 +209,7 @@ ga('require', 'mediaQueryTracker', {
 
 ### Customizing the change template and timeout
 
-This code updates the change template to only report the new media value in the event hit. It also eliminates the debounce timeout amount for change events, so hits are sent as soon and as often as changes occur (not recommended):
+This code updates the change template to only report the new media value in the event hit. It also increases the debounce timeout amount for change events, so rapid changes have more time to settle before being reported:
 
 ```js
 ga('require', 'mediaQueryTracker', {
@@ -227,6 +227,6 @@ ga('require', 'mediaQueryTracker', {
   changeTemplate: function(newValue, oldValue) {
     return newValue;
   },
-  changeTimeout: 0
+  changeTimeout: 3000
 });
 ```
