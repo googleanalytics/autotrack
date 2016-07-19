@@ -237,5 +237,7 @@ The following translations have been graciously provided by the community. Pleas
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
 1. Fork this repository.
-2. Remove all files other than `README.md` and those in the `docs` folder.
-3. Submit a pull request to this repository that adds a link to your translations to the above list.
+2. Update the settings of your fork to [allow issues](http://programmers.stackexchange.com/questions/179468/forking-a-repo-on-github-but-allowing-new-issues-on-the-fork).
+3. Remove all non-documentation files.
+4. Update the documentation files with your translated versions.
+5. Submit a pull request to this repository that adds a link to your fork to the above list.
