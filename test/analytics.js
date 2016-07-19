@@ -20,9 +20,9 @@ var get = require('lodash/get');
 
 module.exports =  {
 
-  run: function(command, arg1, arg2) {
+  run: function() {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga(command, arg1, arg2);
+    ga.apply(null, arguments);
   },
 
   getProvidedPlugins: function() {
@@ -39,6 +39,7 @@ module.exports =  {
     ga('set', 'sendHitTask', function(model) {
       window.hitData.push({
         hitType: model.get('hitType'),
+        location: model.get('location'),
         page: model.get('page'),
         title: model.get('title'),
         eventCategory: model.get('eventCategory'),
@@ -50,17 +51,21 @@ module.exports =  {
         socialTarget: model.get('socialTarget'),
         dimension1: model.get('dimension1'),
         dimension2: model.get('dimension2'),
-        devId: model.get('&did')
+        metric1: model.get('metric1'),
+        metric2: model.get('metric2'),
+        nonInteraction: model.get('nonInteraction'),
+        devId: model.get('&did'),
+        '&_av': model.get('&_av'),
+        '&_au': model.get('&_au')
       });
     });
   },
 
   hitDataMatches: function(expected) {
     return function() {
-      return browser.execute(this.getHitData).then(function(hitData) {
-        return expected.every(function(item) {
-          return get(hitData.value, item[0]) === item[1];
-        });
+      var hitData = browser.execute(this.getHitData);
+      return expected.every(function(item) {
+        return get(hitData.value, item[0]) === item[1];
       });
     }.bind(this);
   },
@@ -76,10 +81,9 @@ module.exports =  {
 
   trackerDataMatches: function(expected) {
     return function() {
-      return browser.execute(this.getTrackerData).then(function(trackerData) {
-        return expected.every(function(item) {
-          return get(trackerData.value, item[0]) === item[1];
-        });
+      var trackerData = browser.execute(this.getTrackerData);
+      return expected.every(function(item) {
+        return get(trackerData.value, item[0]) === item[1];
       });
     }.bind(this);
   },

@@ -97,6 +97,7 @@ describe('urlTracker', function() {
         .execute(ga.getHitData)
         .value;
 
+    assert.equal(hitData.length, 6);
     assert.equal(hitData[0].page, '/test/foo.html');
     assert.equal(hitData[0].title, 'Foo');
     assert.equal(hitData[1].page, '/test/bar.html');
@@ -172,7 +173,7 @@ describe('urlTracker', function() {
 
     if (notSupportedInBrowser()) return;
 
-    browser.execute(requireUrlChangeTrackerTrackerWithConditional);
+    browser.execute(requireUrlChangeTrackerTracker_shouldTrackUrlChange);
 
     var fooUrl = browser
         .click('#foo')
@@ -194,29 +195,70 @@ describe('urlTracker', function() {
   });
 
 
-  it('should include the &did param with all hits', function() {
+  it('should support customizing any field via the fieldsObj', function() {
 
-    browser
+    if (notSupportedInBrowser()) return;
+
+    browser.execute(ga.run, 'require', 'urlChangeTracker', {
+      fieldsObj: {
+        dimension1: 'urlChangeTracker'
+      }
+    });
+
+    browser.click('#foo');
+    browser.back();
+
+    var hitData = browser
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 2);
+    assert.equal(hitData[0].page, '/test/foo.html');
+    assert.equal(hitData[0].title, 'Foo');
+    assert.equal(hitData[0].dimension1, 'urlChangeTracker');
+    assert.equal(hitData[1].page, '/test/url-change-tracker.html');
+    assert.equal(hitData[1].title, 'Home');
+    assert.equal(hitData[1].dimension1, 'urlChangeTracker');
+  });
+
+
+  it('should support specifying a hit filter', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser.execute(requireUrlChangeTrackerTracker_hitFilter);
+
+    browser.click('#foo');
+    browser.back();
+
+    var hitData = browser
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].page, '/test/url-change-tracker.html');
+    assert.equal(hitData[0].title, 'Home');
+    assert.equal(hitData[0].dimension1, 'urlChangeTracker');
+  });
+
+
+  it('includes usage params with all hits', function() {
+
+    var hitData = browser
         .execute(ga.run, 'require', 'urlChangeTracker')
         .execute(ga.run, 'send', 'pageview')
-        .waitUntil(ga.hitDataMatches([['[0].devId', constants.DEV_ID]]));
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].devId, constants.DEV_ID);
+    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+
+    // '100' = '100000000' in hex
+    assert.equal(hitData[0][constants.USAGE_PARAM], '100');
   });
 
 });
-
-
-/**
- * Since function objects can't be passed via parameters from server to
- * client, this one-off function must be used to set the value for
- * `shouldTrackOutboundForm`.
- */
-function requireUrlChangeTrackerTrackerWithConditional() {
-  ga('require', 'urlChangeTracker', {
-    shouldTrackUrlChange: function() {
-      return false;
-    }
-  });
-}
 
 
 /**
@@ -227,4 +269,38 @@ function notSupportedInBrowser() {
   // IE9 doesn't support the HTML5 History API.
   return browserCaps.browserName == 'internet explorer' &&
       browserCaps.version == '9';
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `shouldTrackOutboundForm`.
+ */
+function requireUrlChangeTrackerTracker_shouldTrackUrlChange() {
+  ga('require', 'urlChangeTracker', {
+    shouldTrackUrlChange: function() {
+      return false;
+    }
+  });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `hitFilter`.
+ */
+function requireUrlChangeTrackerTracker_hitFilter() {
+  ga('require', 'urlChangeTracker', {
+    hitFilter: function(model) {
+      var title = model.get('title');
+      if (title == 'Foo') {
+        throw 'Exclude Foo pages';
+      }
+      else {
+        model.set('dimension1', 'urlChangeTracker');
+      }
+    }
+  });
 }

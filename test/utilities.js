@@ -25,10 +25,9 @@ module.exports = {
    */
   urlMatches: function(expectedUrl) {
     return function() {
-      return browser.url().then(function(result) {
-        var actualUrl = result.value;
-        return actualUrl.indexOf(expectedUrl) > -1;
-      });
+      var result = browser.url();
+      var actualUrl = result.value;
+      return actualUrl.indexOf(expectedUrl) > -1;
     };
   },
 
@@ -37,7 +36,7 @@ module.exports = {
    * Prevents the default form submit action allowing forms to be interacted
    * with without navigating away from the current page.
    */
-  stopFormSubmitEvents: function() {
+  stopSubmitEvents: function() {
     window.__stopFormSubmits__ = function(event) {
       event.preventDefault();
     };
@@ -49,7 +48,7 @@ module.exports = {
   /**
    * Restores normal form submit behavior.
    */
-  unstopFormSubmitEvents: function() {
+  unstopSubmitEvents: function() {
     document.removeEventListener('submit', window.__stopFormSubmits__);
   },
 
@@ -68,20 +67,20 @@ module.exports = {
    * Prevents the default link click action allowing links to be interacted
    * with without navigating away from the current page.
    */
-  stopLinkClickEvents: function() {
-    window.__stopLinkClicks__ = function(event) {
+  stopClickEvents: function() {
+    window.__stopClicks__ = function(event) {
       event.preventDefault();
     };
 
-    document.addEventListener('click', window.__stopLinkClicks__);
+    document.addEventListener('click', window.__stopClicks__);
   },
 
 
   /**
    * Restores normal link click behavior.
    */
-  unstopLinkClickEvents: function() {
-    document.removeEventListener('click', window.__stopLinkClicks__);
+  unstopClickEvents: function() {
+    document.removeEventListener('click', window.__stopClicks__);
   },
 
 
@@ -102,6 +101,40 @@ module.exports = {
    */
   stubNoBeacon: function() {
     navigator.sendBeacon = undefined;
+  },
+
+
+  /**
+   * Wraps `console.error` and tracks calls to it.
+   */
+  trackConsoleErrors: function() {
+    if (!window.console) return;
+    window.__consoleErrors__ = [];
+    window.__originalConsoleError__ = window.console.error;
+    window.console.error = function() {
+      window.__consoleErrors__.push(arguments);
+      window.__originalConsoleError__.apply(window.console, arguments);
+    };
+  },
+
+
+  /**
+   * Restores the original `console.error`.
+   */
+  untrackConsoleErrors: function() {
+    if (!window.console) return;
+    delete window.__consoleErrors__;
+    window.console.error = window.__originalConsoleError__ ||
+        window.console.error;
+  },
+
+
+  /**
+   * Returns all console error call arguments since tracking started.
+   * @return {Array} The list of console error call arguments.
+   */
+  getConsoleErrors: function() {
+    return window.__consoleErrors__;
   }
 
 };
