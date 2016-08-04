@@ -108,13 +108,13 @@ describe('outboundLinkTracker', function() {
   it('should delay the link navigation until after the hit succeeds or ' +
       'times out when beacon is not supported', function() {
 
-    var hitData = browser
-        .execute(utilities.stopClickEvents)
-        .execute(utilities.stubNoBeacon)
-        .execute(ga.run, 'require', 'outboundLinkTracker')
-        .click('#outbound-link')
-        .execute(ga.getHitData)
-        .value;
+    // var hitData = browser
+    //     .execute(utilities.stopClickEvents)
+    //     .execute(utilities.stubNoBeacon)
+    //     .execute(ga.run, 'require', 'outboundLinkTracker')
+    //     .click('#outbound-link')
+    //     .execute(ga.getHitData)
+    //     .value;
 
     // Tests that the hit is sent.
     // TODO: stub the redirect so these assertions work
