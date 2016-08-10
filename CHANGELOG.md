@@ -2,6 +2,10 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 1.0.1 (2016-08-10)
+
+- Upgrade dependencies to get third-party fixes
+
 ### 1.0.0 (2016-06-30)
 
 - See the [Upgrade Reference](/docs/upgrading.md) for a full list of change.
