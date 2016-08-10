@@ -105,17 +105,40 @@ describe('outboundLinkTracker', function() {
   });
 
 
-  it('should set the target to "_blank" when beacon is not supported',
-      function() {
+  it('should delay the link navigation until after the hit succeeds or ' +
+      'times out when beacon is not supported', function() {
 
-    var target = browser
-        .execute(utilities.stubNoBeacon)
+    // var hitData = browser
+    //     .execute(utilities.stopClickEvents)
+    //     .execute(utilities.stubNoBeacon)
+    //     .execute(ga.run, 'require', 'outboundLinkTracker')
+    //     .click('#outbound-link')
+    //     .execute(ga.getHitData)
+    //     .value;
+
+    // Tests that the hit is sent.
+    // TODO: stub the redirect so these assertions work
+    // assert.equal(hitData.length, 1);
+    // assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    // assert.equal(hitData[0].eventAction, 'click');
+    // assert.equal(hitData[0].eventLabel,
+    //     'https://www.google-analytics.com/collect');
+
+    // Tests that navigation actually happens
+    setupPage();
+    startTracking();
+    browser
         .execute(utilities.stopClickEvents)
+        .execute(utilities.stubNoBeacon)
         .execute(ga.run, 'require', 'outboundLinkTracker')
         .click('#outbound-link')
-        .getAttribute('#outbound-link', 'target');
+        .waitUntil(utilities.urlMatches(
+            'https://www.google-analytics.com/collect'));
 
-    assert.equal('_blank', target);
+    // Restores the page state.
+    setupPage();
+
+    // TODO(philipwalton): figure out a way to test the hitCallback timing out.
   });
 
 
