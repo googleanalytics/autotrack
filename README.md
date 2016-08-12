@@ -233,6 +233,7 @@ The following translations have been graciously provided by the community. Pleas
 
 * [Japanese](https://github.com/nebosuker/autotrack)
 * [Chinese](https://github.com/stevezhuang/autotrack/blob/master/README.zh.md)
+* [Polish](https://github.com/krisu7/autotrack)
 
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
