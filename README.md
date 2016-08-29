@@ -75,7 +75,7 @@ To add autotrack to your site, you have to do two things:
 1. Load the `autotrack.js` script file on your page.
 2. Update your [tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference) to [require](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) the various autotrack plugins you want to use.
 
-If your site already includes the default JavaScript tracking snippet, you can modify it too look something like this:
+If your site already includes the default JavaScript tracking snippet, you can modify it to look something like this:
 
 ```html
 <script>
