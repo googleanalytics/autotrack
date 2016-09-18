@@ -1,6 +1,6 @@
 {
   "name": "autotrack",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "Automatic and enhanced Google Analytics tracking for common user interactions on the web",
   "main": "lib",
   "scripts": {
