@@ -339,7 +339,7 @@ function stopTracking() {
  */
 function browserSupportsShadowDom() {
   return browser.execute(function() {
-    return Element.prototype.attachShadow;
+    return Event.prototype.deepPath;
   }).value;
 }
 

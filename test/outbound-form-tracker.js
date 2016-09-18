@@ -331,7 +331,7 @@ function stopTracking() {
  */
 function notSupportedInBrowser() {
   return browser.execute(function() {
-    return !Element.prototype.attachShadow;
+    return !Event.prototype.deepPath;
   }).value;
 }
 
