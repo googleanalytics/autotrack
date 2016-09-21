@@ -119,6 +119,42 @@ describe('outboundLinkTracker', function() {
   });
 
 
+  it('should work with SVG links', function() {
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker')
+        .click('#svg-link')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/?_src=svg-link');
+  });
+
+
+  it('should work with <area> links', function() {
+
+    if (!browserSupportsAreaClicks()) return;
+
+    var hitData = browser
+        .execute(utilities.stopClickEvents)
+        .execute(utilities.stubBeacon)
+        .execute(ga.run, 'require', 'outboundLinkTracker')
+        .click('#area-link')
+        .execute(ga.getHitData)
+        .value;
+
+    assert.equal(hitData.length, 1);
+    assert.equal(hitData[0].eventCategory, 'Outbound Link');
+    assert.equal(hitData[0].eventAction, 'click');
+    assert.equal(hitData[0].eventLabel, 'https://example.com/?_src=area-link');
+  });
+
+
   it('supports events other than click', function() {
 
     if (!browserSupportsRightClick()) return;
@@ -350,6 +386,15 @@ function browserSupportsShadowDom() {
 function browserSupportsRightClick() {
   // https://github.com/webdriverio/webdriverio/issues/1419
   return browserCaps.browserName != 'safari';
+}
+
+
+/**
+ * @return {boolean} True if the browser driver supports proper clicking on
+ *     <area> elements.
+ */
+function browserSupportsAreaClicks() {
+  return browserCaps.browserName != 'internet explorer';
 }
 
 
