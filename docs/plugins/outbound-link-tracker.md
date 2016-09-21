@@ -45,7 +45,7 @@ The following table outlines all possible configuration options for the `outboun
     <td><code>string</code></a></td>
     <td>
       A selector used to identify links to listen for events on.<br>
-      <strong>Default:</strong> <code>'a'</code>
+      <strong>Default:</strong> <code>'a, area'</code>
     </td>
   </tr>
   <tr valign="top">
@@ -55,7 +55,8 @@ The following table outlines all possible configuration options for the `outboun
       A function that returns <code>true</code> if the link in question should be considered an outbound link. The function is invoked with the link element as its first argument and a <code>parseUrl</code> utility function (which returns a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>-like object) as its second argument.<br>
       <strong>Default:</strong>
 <pre>function shouldTrackOutboundLink(link, parseUrl) {
-  var url = parseUrl(link.href);
+  var href = link.getAttribute('href') || link.getAttribute('xlink:href');
+  var url = parseUrl(href);
   return url.hostname != location.hostname &amp;&amp;
       url.protocol.slice(0, 4) == 'http';
 }</pre>
@@ -161,7 +162,8 @@ This code changes the default logic used to determine if a link is "outbound". I
 ```js
 ga('require', 'outboundLinkTracker', {
   shouldTrackOutboundLink: function(link, parseUrl) {
-    var url = parseUrl(link.href);
+    var href = link.getAttribute('href') || link.getAttribute('xlink:href');
+    var url = parseUrl(href);
     return /(foo|bar)\.com$/.test(url.hostname);
   }
 });
