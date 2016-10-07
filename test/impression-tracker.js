@@ -434,6 +434,164 @@ describe('impressionTracker', function() {
     assert.equal(hitData[0][constants.USAGE_PARAM], '4');
   });
 
+
+  describe('addElements', function() {
+
+    it('adds elements to be observed for intersections', function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              'foo',
+              'foo-1',
+              'foo-2',
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:addElements', [
+            {id: 'bar', threshold: 0},
+            {id: 'bar-1', threshold: 0.5},
+            {id: 'bar-2', threshold: 1},
+          ])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 3],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-1'],
+            ['[2].eventCategory', 'Viewport'],
+            ['[2].eventAction', 'impression'],
+            ['[2].eventLabel', 'foo-2'],
+          ]));
+
+      browser
+          .scroll('#bar')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 6],
+            ['[3].eventCategory', 'Viewport'],
+            ['[3].eventAction', 'impression'],
+            ['[3].eventLabel', 'bar'],
+            ['[4].eventCategory', 'Viewport'],
+            ['[4].eventAction', 'impression'],
+            ['[4].eventLabel', 'bar-1'],
+            ['[5].eventCategory', 'Viewport'],
+            ['[5].eventAction', 'impression'],
+            ['[5].eventLabel', 'bar-2'],
+          ]));
+    });
+  });
+
+
+  describe('removeElements', function() {
+
+    it('removes elements from being observed for intersections', function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              'foo',
+              'foo-1',
+              'foo-2',
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:removeElements', ['foo'])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 2],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo-1'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-2'],
+          ]));
+    });
+
+    it('only removes elements if all properties match', function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              {id: 'foo', threshold: 0},
+              {id: 'foo-1', threshold: 0.5, trackFirstImpressionOnly: false},
+              {id: 'foo-1-1', threshold: 0.5, trackFirstImpressionOnly: false},
+              {id: 'foo-1-2', threshold: 0.5, trackFirstImpressionOnly: false},
+              {id: 'foo-2', threshold: 1, trackFirstImpressionOnly: true},
+              {id: 'foo-2-1', threshold: 1, trackFirstImpressionOnly: true},
+              {id: 'foo-2-2', threshold: 1, trackFirstImpressionOnly: true},
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:removeElements', [
+            'foo',
+            'foo-1', // Mismatch.
+            {id: 'foo-1-1', threshold: 0.5}, // Mismatch.
+            {id: 'foo-2-2', threshold: 1},
+          ])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 5],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo-1'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-1-1'],
+            ['[2].eventCategory', 'Viewport'],
+            ['[2].eventAction', 'impression'],
+            ['[2].eventLabel', 'foo-1-2'],
+            ['[3].eventCategory', 'Viewport'],
+            ['[3].eventAction', 'impression'],
+            ['[3].eventLabel', 'foo-2'],
+            ['[4].eventCategory', 'Viewport'],
+            ['[4].eventAction', 'impression'],
+            ['[4].eventLabel', 'foo-2-1'],
+          ]));
+    });
+  });
+
+  describe('removeAllElements', function() {
+
+    it('removes all elements from being observed for intersections',
+        function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              'foo',
+              'foo-1',
+              'foo-2',
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:removeAllElements')
+          .execute(ga.run, 'impressionTracker:addElements', [
+            'foo-1-1',
+            'foo-2-2',
+          ])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 2],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo-1-1'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-2-2'],
+          ]));
+
+    });
+
+  });
+
 });
 
 
