@@ -456,7 +456,7 @@ describe('impressionTracker', function() {
   });
 
 
-  describe('addElements', function() {
+  describe('observeElements', function() {
 
     it('adds elements to be observed for intersections', function() {
 
@@ -470,7 +470,7 @@ describe('impressionTracker', function() {
               'foo-2',
             ]
           })
-          .execute(ga.run, 'impressionTracker:addElements', [
+          .execute(ga.run, 'impressionTracker:observeElements', [
             {id: 'bar', threshold: 0},
             {id: 'bar-1', threshold: 0.5},
             {id: 'bar-2', threshold: 1},
@@ -507,7 +507,7 @@ describe('impressionTracker', function() {
   });
 
 
-  describe('removeElements', function() {
+  describe('unobserveElements', function() {
 
     it('removes elements from being observed for intersections', function() {
 
@@ -521,7 +521,7 @@ describe('impressionTracker', function() {
               'foo-2',
             ]
           })
-          .execute(ga.run, 'impressionTracker:removeElements', ['foo'])
+          .execute(ga.run, 'impressionTracker:unobserveElements', ['foo'])
           .scroll('#foo')
           .waitUntil(ga.hitDataMatches([
             ['length', 2],
@@ -550,7 +550,7 @@ describe('impressionTracker', function() {
               {id: 'foo-2-2', threshold: 1, trackFirstImpressionOnly: true},
             ]
           })
-          .execute(ga.run, 'impressionTracker:removeElements', [
+          .execute(ga.run, 'impressionTracker:unobserveElements', [
             'foo',
             'foo-1', // Mismatch.
             {id: 'foo-1-1', threshold: 0.5}, // Mismatch.
@@ -578,7 +578,7 @@ describe('impressionTracker', function() {
     });
   });
 
-  describe('removeAllElements', function() {
+  describe('unobserveAllElements', function() {
 
     it('removes all elements from being observed for intersections',
         function() {
@@ -593,8 +593,8 @@ describe('impressionTracker', function() {
               'foo-2',
             ]
           })
-          .execute(ga.run, 'impressionTracker:removeAllElements')
-          .execute(ga.run, 'impressionTracker:addElements', [
+          .execute(ga.run, 'impressionTracker:unobserveAllElements')
+          .execute(ga.run, 'impressionTracker:observeElements', [
             'foo-1-1',
             'foo-2-2',
           ])
