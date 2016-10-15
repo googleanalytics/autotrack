@@ -159,6 +159,18 @@ The following table lists all methods for the `impressionTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
+    <td><code>observeElements</code></a></td>
+    <td>Accepts an array of <code>elements</code> (as described in the <a href="#options">options</a> section) to start observing for impressions.</td>
+  </tr>
+  <tr valign="top">
+    <td><code>unobserveElements</code></a></td>
+    <td>Accepts an array of <code>elements</code> (as described in the <a href="#options">options</a> section) to stop observing for impressions. (Note: elements whose <code>trackFirstImpressionOnly<code> property is <code>true</code> are automatically unobserved after the first impression.)</td>
+  </tr>
+  <tr valign="top">
+    <td><code>unobserveAllElements</code></a></td>
+    <td>Stops observing all elements currently being observed.</td>
+  </tr>
+  <tr valign="top">
     <td><code>remove</code></a></td>
     <td>Removes the <code>impressionTracker</code> plugin from the specified tracker, disconnects all observers, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
