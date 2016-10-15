@@ -238,3 +238,22 @@ ga('require', 'impressionTracker', {
   rootMargin: '-20px 0'
 });
 ```
+
+### Programmatically observing and unobserving elements
+
+This example requires the `impressionTracker` plugin without specifying any elements to observe. When the user clicks on the `#start-observing` button, observation starts on the `#foo` element. When the user clicks on the #stop-observing` button, observing `#foo` stops.
+
+```js
+ga('require', 'impressionTracker');
+
+var startObservingBtn = document.getElementById('start-observing');
+var stopObservingBtn = document.getElementById('stop-observing');
+
+startObservingBtn.addEventListener('click', function() {
+  ga('impressionTracker:observeElements', ['foo']);
+});
+
+stopObservingBtn.addEventListener('click', function() {
+  ga('impressionTracker:unobserveElements', ['foo']);
+});
+```
