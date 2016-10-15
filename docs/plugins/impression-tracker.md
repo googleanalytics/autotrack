@@ -164,7 +164,7 @@ The following table lists all methods for the `impressionTracker` plugin:
   </tr>
   <tr valign="top">
     <td><code>unobserveElements</code></a></td>
-    <td>Accepts an array of <code>elements</code> (as described in the <a href="#options">options</a> section) to stop observing for impressions. (Note: elements whose <code>trackFirstImpressionOnly<code> property is <code>true</code> are automatically unobserved after the first impression.)</td>
+    <td>Accepts an array of <code>elements</code> (as described in the <a href="#options">options</a> section) to stop observing for impressions. (Note: elements whose <code>trackFirstImpressionOnly</code> property is <code>true</code> are automatically unobserved after the first impression.)</td>
   </tr>
   <tr valign="top">
     <td><code>unobserveAllElements</code></a></td>
