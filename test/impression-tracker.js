@@ -23,6 +23,27 @@ var constants = require('../lib/constants');
 var browserCaps;
 
 
+var elementIdsByDomOrder = [
+  'foo',
+  'foo-1',
+  'foo-1-1',
+  'foo-1-2',
+  'foo-2',
+  'foo-2-1',
+  'foo-2-2',
+  'bar',
+  'bar-1',
+  'bar-1-1',
+  'bar-1-2',
+  'bar-2',
+  'bar-2-1',
+  'bar-2-2',
+  'attrs',
+  'attrs-1',
+  'attrs-2'
+];
+
+
 describe('impressionTracker', function() {
 
   before(function() {
@@ -320,7 +341,7 @@ describe('impressionTracker', function() {
           ['[1].eventCategory', 'Viewport'],
           ['[1].eventAction', 'impression'],
           ['[1].eventLabel', 'foo-2-2']
-        ]));
+        ], sortHitDataByEventLabel));
   });
 
 
@@ -466,7 +487,7 @@ describe('impressionTracker', function() {
             ['[2].eventCategory', 'Viewport'],
             ['[2].eventAction', 'impression'],
             ['[2].eventLabel', 'foo-2'],
-          ]));
+          ], sortHitDataByEventLabel));
 
       browser
           .scroll('#bar')
@@ -481,7 +502,7 @@ describe('impressionTracker', function() {
             ['[5].eventCategory', 'Viewport'],
             ['[5].eventAction', 'impression'],
             ['[5].eventLabel', 'bar-2'],
-          ]));
+          ], sortHitDataByEventLabel));
     });
   });
 
@@ -553,7 +574,7 @@ describe('impressionTracker', function() {
             ['[4].eventCategory', 'Viewport'],
             ['[4].eventAction', 'impression'],
             ['[4].eventLabel', 'foo-2-1'],
-          ]));
+          ], sortHitDataByEventLabel));
     });
   });
 
@@ -648,4 +669,19 @@ function addFixtures() {
 function removeFixtures() {
   var fixture = document.getElementById('fixture');
   document.body.removeChild(fixture);
+}
+
+/**
+ * A comparison function that sorts hits by the `eventLabel` value.
+ * This is needed to work around Chrome's non-deterministic firing of
+ * IntersectionObserver callbacks when multiple instances are used.
+ * @param {Object} a The first hit to compare.
+ * @param {Object} b The second hit to compare.
+ * @return {number} A negative number if a should appear first in the sorted
+ *     array, and a positive number if b should appear first.
+ */
+function sortHitDataByEventLabel(a, b) {
+  var aDomIndex = elementIdsByDomOrder.indexOf(a.eventLabel);
+  var bDomIndex = elementIdsByDomOrder.indexOf(b.eventLabel);
+  return aDomIndex - bDomIndex;
 }
