@@ -2,6 +2,10 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 1.0.4 (2016-10-15)
+
+- Prevent the withTimeout callback from firing twice
+
 ### 1.0.3 (2016-09-18)
 
 - Update dom-utils for better shadow DOM support
