@@ -37,16 +37,16 @@ The following table outlines all possible configuration options for the `pageVis
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>sessionTimeout</code></a></td>
-    <td><code>number</code></a></td>
+    <td><code>sessionTimeout</code></td>
+    <td><code>number</code></td>
     <td>
       The <a href="https://support.google.com/analytics/answer/2795871">session timeout</a> amount (in minutes) of the Google Analytics property. By default this value is 30 minutes, which is the same default used for new Google Analytics properties. The value set for this plugin should always be the same as the property setting in Google Analytics.<br>
       <strong>Default:</strong> <code>30</code>
   </td>
   </tr>
   <tr valign="top">
-    <td><code>changeTemplate</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>changeTemplate</code></td>
+    <td><code>Function</code></td>
     <td>
       A function that accepts the old and new values and returns a string to be used as the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a> field for change events.<br>
       <strong>Default:</strong>
@@ -56,23 +56,23 @@ The following table outlines all possible configuration options for the `pageVis
     </td>
   </tr>
   <tr valign="top">
-    <td><code>hiddenMetricIndex</code></a></td>
-    <td><code>number</code></a></td>
+    <td><code>hiddenMetricIndex</code></td>
+    <td><code>number</code></td>
     <td>If set, a <a href="https://support.google.com/analytics/answer/2709828">custom metric</a> at the index provided is sent when the page's visibility state changes from hidden to visible. The metric value is the amount of time (in seconds) the page was in the hidden state.</td>
   </tr>
   <tr valign="top">
-    <td><code>visibleMetricIndex</code></a></td>
-    <td><code>number</code></a></td>
+    <td><code>visibleMetricIndex</code></td>
+    <td><code>number</code></td>
     <td>If set, a <a href="https://support.google.com/analytics/answer/2709828">custom metric</a> at the index provided is sent when the page's visibility state changes from visible to hidden. The metric value is the amount of time (in seconds) the page was in the visible state.</td>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -94,11 +94,11 @@ The `pageVisibilityTracker` plugin sets the following default field values on ev
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a></td>
-    <td><code>'Page Visibility'</code></a></td>
+    <td><code>'Page Visibility'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
-    <td><code>'change'</code></a></td>
+    <td><code>'change'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
@@ -154,7 +154,7 @@ The following table lists all methods for the `pageVisibilityTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>pageVisibilityTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

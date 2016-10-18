@@ -58,32 +58,32 @@ The following table outlines all possible configuration options for the `impress
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>elements</code></a></td>
-    <td><code>Array&lt;string|Object&gt;</code></a></td>
+    <td><code>elements</code></td>
+    <td><code>Array&lt;string|Object&gt;</code></td>
     <td>
       A list of element IDs or element objects. See the <a href="#element-object-properties"><code>element</code> object properties</a> section below for details.</td>
   </tr>
   <tr valign="top">
-    <td><code>rootMargin</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>rootMargin</code></td>
+    <td><code>string</code></td>
     <td>A CSS margin string accepting pixel or percentage values. It is passed as the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>rootMargin</code></a> option to the <code>IntersectionObserver</code> instance, which is used to expand or contract the viewport area to change when an element is considered visible. For example: the string <code>'-20px 0'</code> would contract the viewport by 20 pixels on the top and bottom sides, and all element visibility calculations would be based on that rather than the full viewport dimensions.</td>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>attributePrefix</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>attributePrefix</code></td>
+    <td><code>string</code></td>
     <td>
       See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -97,21 +97,21 @@ The following table outlines all possible configuration options for the `impress
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>id</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>id</code></td>
+    <td><code>string</code></td>
     <td>The ID attribute of the element to track.</td>
   </tr>
   <tr valign="top">
-    <td><code>threshold</code></a></td>
-    <td><code>number</code></a></td>
+    <td><code>threshold</code></td>
+    <td><code>number</code></td>
     <td>
       A percentage of the element's area that must be within the viewport in order for the element to be considered visible. This value is used as one of the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>thresholds</code></a> passed to the <code>IntersectionObserver</code> instance. A threshold of <code>1</code> means the element must be entirely within the viewport to be considered visible. A threshold of <code>0.5</code> means half of the element must be within the viewport. And a threshold of <code>0</code> means if any of the element intersects with the viewport at all (including just the border), it is considered visible.<br>
       <strong>Default:</strong> <code>0</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>trackFirstImpressionOnly</code></a></td>
-    <td><code>boolean</code></a></td>
+    <td><code>trackFirstImpressionOnly</code></td>
+    <td><code>boolean</code></td>
     <td>
       When <code>true</code>, an impression for this element is only tracked the first time it is visible within the viewport. Set this to <code>false</code> if you want to track subsequent impressions.<br>
       <strong>Default:</strong> <code>true</code>
@@ -135,11 +135,11 @@ The `impressionTracker` plugin sets the following default field values on all hi
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a></td>
-    <td><code>'Viewport'</code></a></td>
+    <td><code>'Viewport'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
-    <td><code>'impression'</code></a></td>
+    <td><code>'impression'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
@@ -159,19 +159,19 @@ The following table lists all methods for the `impressionTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>observeElements</code></a></td>
+    <td><code>observeElements</code></td>
     <td>Accepts an array of <code>elements</code> (as described in the <a href="#options">options</a> section) to start observing for impressions.</td>
   </tr>
   <tr valign="top">
-    <td><code>unobserveElements</code></a></td>
+    <td><code>unobserveElements</code></td>
     <td>Accepts an array of <code>elements</code> (as described in the <a href="#options">options</a> section) to stop observing for impressions. (Note: elements whose <code>trackFirstImpressionOnly</code> property is <code>true</code> are automatically unobserved after the first impression.)</td>
   </tr>
   <tr valign="top">
-    <td><code>unobserveAllElements</code></a></td>
+    <td><code>unobserveAllElements</code></td>
     <td>Stops observing all elements currently being observed.</td>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>impressionTracker</code> plugin from the specified tracker, disconnects all observers, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

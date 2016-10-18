@@ -35,29 +35,29 @@ The following table outlines all possible configuration options for the `eventTr
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>events</code></a></td>
-    <td><code>Array</code></a></td>
+    <td><code>events</code></td>
+    <td><code>Array</code></td>
     <td>
       A list of DOM events to listen for. Note that in order for an event set in the HTML via the <code>*-on</code> attribute to work, it must be listed in this array.<br>
       <strong>Default:</strong> <code>['click']</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>attributePrefix</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>attributePrefix</code></td>
+    <td><code>string</code></td>
     <td>
       See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -73,7 +73,7 @@ The `eventTracker` plugin sets the following default field values on all hits it
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#hitType"><code>hitType</code></a></td>
-    <td><code>'event'</code></a></td>
+    <td><code>'event'</code></td>
   </tr>
 </table>
 
@@ -87,7 +87,7 @@ The following table lists all methods for the `eventTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>eventTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

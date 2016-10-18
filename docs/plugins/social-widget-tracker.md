@@ -25,13 +25,13 @@ The following table outlines all possible configuration options for the `socialW
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -53,7 +53,7 @@ The `socialWidgetTracker` plugin sets the following default field values on all 
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#socialNetwork"><code>socialNetwork</code></a></td>
-    <td><code>'Facebook'</code></a></td>
+    <td><code>'Facebook'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#socialAction"><code>socialAction</code></a></td>
@@ -78,7 +78,7 @@ The `socialWidgetTracker` plugin sets the following default field values on all 
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#socialNetwork"><code>socialNetwork</code></a></td>
-    <td><code>'Twitter'</code></a></td>
+    <td><code>'Twitter'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#socialAction"><code>socialAction</code></a></td>
@@ -103,7 +103,7 @@ The `socialWidgetTracker` plugin sets the following default field values on all 
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#socialNetwork"><code>socialNetwork</code></a></td>
-    <td><code>'Twitter'</code></a></td>
+    <td><code>'Twitter'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#socialAction"><code>socialAction</code></a></td>
@@ -125,7 +125,7 @@ The following table lists all methods for the `socialWidgetTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>socialWidgetTracker</code> plugin from the specified tracker, removes all event listeners registered with the social SDKs, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

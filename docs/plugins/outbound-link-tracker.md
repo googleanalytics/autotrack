@@ -33,24 +33,24 @@ The following table outlines all possible configuration options for the `outboun
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>events</code></a></td>
-    <td><code>Array</code></a></td>
+    <td><code>events</code></td>
+    <td><code>Array</code></td>
     <td>
       A list of events to listen for on links. Since it's possible to navigate to a link without generating a <code>click</code> (e.g. right-clicking generates a <code>contextmenu</code> event), you can customize this option to track additional events.<br>
       <strong>Default:</strong> <code>['click']</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>linkSelector</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>linkSelector</code></td>
+    <td><code>string</code></td>
     <td>
       A selector used to identify links to listen for events on.<br>
       <strong>Default:</strong> <code>'a, area'</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>shouldTrackOutboundLink</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>shouldTrackOutboundLink</code></td>
+    <td><code>Function</code></td>
     <td>
       A function that returns <code>true</code> if the link in question should be considered an outbound link. The function is invoked with the link element as its first argument and a <code>parseUrl</code> utility function (which returns a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>-like object) as its second argument.<br>
       <strong>Default:</strong>
@@ -63,21 +63,21 @@ The following table outlines all possible configuration options for the `outboun
     </td>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>attributePrefix</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>attributePrefix</code></td>
+    <td><code>string</code></td>
     <td>
       See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -97,11 +97,11 @@ The `outboundLinkTracker` plugin sends hits with the following values. To custom
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a></td>
-    <td><code>'Outbound Link'</code></a></td>
+    <td><code>'Outbound Link'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
-    <td><code>event.type</code></a></td>
+    <td><code>event.type</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
@@ -121,7 +121,7 @@ The following table lists all methods for the `outboundLinkTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>outboundLinkTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

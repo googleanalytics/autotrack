@@ -33,16 +33,16 @@ The following table outlines all possible configuration options for the `outboun
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>formSelector</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>formSelector</code></td>
+    <td><code>string</code></td>
     <td>
       A selector used to identify forms to listen for submit events on.<br>
       <strong>Default:</strong> <code>'form'</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>shouldTrackOutboundForm</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>shouldTrackOutboundForm</code></td>
+    <td><code>Function</code></td>
     <td>
       A function that returns <code>true</code> if the form in question should be considered an outbound form. The function is invoked with the form element as its first argument and a <code>parseUrl</code> utility function (which returns a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>-like object) as its second argument.<br>
       <strong>Default:</strong>
@@ -54,21 +54,21 @@ The following table outlines all possible configuration options for the `outboun
     </td>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>attributePrefix</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>attributePrefix</code></td>
+    <td><code>string</code></td>
     <td>
       See the <a href="/docs/common-options.md#attributeprefix">common options guide</a> for the <code>attributePrefix</code> description.<br>
       <strong>Default:</strong> <code>'ga-'</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -88,11 +88,11 @@ The `outboundFormTracker` plugin sends hits with the following values. To custom
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a></td>
-    <td><code>'Outbound Form'</code></a></td>
+    <td><code>'Outbound Form'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
-    <td><code>'submit'</code></a></td>
+    <td><code>'submit'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
@@ -112,7 +112,7 @@ The following table lists all methods for the `outboundFormTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>outboundFormTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

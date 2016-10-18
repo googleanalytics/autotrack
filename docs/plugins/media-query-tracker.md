@@ -37,13 +37,13 @@ The following table outlines all possible configuration options for the `mediaQu
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>definitions</code></a></td>
-    <td><code>Object|Array&lt;Object&gt;</code></a></td>
+    <td><code>definitions</code></td>
+    <td><code>Object|Array&lt;Object&gt;</code></td>
     <td>A <code>definition</code> object or an array of <code>definition</code> objects. See the <a href="#the-definition-object"><code>definition</code></a> object description for property details.</td>
   </tr>
   <tr valign="top">
-    <td><code>changeTemplate</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>changeTemplate</code></td>
+    <td><code>Function</code></td>
     <td colspan="2">
     The <code>changeTemplate</code> function (via its return value) determines what the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a> field will be for event hits when the matching media definition changes. The function is invoked with the newly matching value and the previously matching value as its first and second arguments, respectively:<br>
     <strong>Default:</strong>
@@ -53,20 +53,20 @@ The following table outlines all possible configuration options for the `mediaQu
     </td>
   </tr>
   <tr valign="top">
-    <td><code>changeTimeout</code></a></td>
-    <td><code>number</code></a></td>
+    <td><code>changeTimeout</code></td>
+    <td><code>number</code></td>
     <td>The debounce timeout, i.e., the amount of time to wait before sending the change event. If multiple change events occur within the timeout period, only the last one is sent.<br>
     <strong>Default:</strong> <code>1000</code>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -82,18 +82,18 @@ The `definition` object allows you to group multiple different types of media qu
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>name</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>name</code></td>
+    <td><code>string</code></td>
     <td>A unique name that will be used as the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a> value for media query change events.</td>
   </tr>
   <tr valign="top">
-    <td><code>dimensionIndex</code></a></td>
-    <td><code>number</code></a></td>
+    <td><code>dimensionIndex</code></td>
+    <td><code>number</code></td>
     <td>The index of the custom dimension <a href="https://support.google.com/analytics/answer/2709829">created in Google Analytics</a>.</td>
   </tr>
   <tr valign="top">
-    <td><code>items</code></a></td>
-    <td><code>Array</code></a></td>
+    <td><code>items</code></td>
+    <td><code>Array</code></td>
     <td>An array of <code>item</code> objects. See the <a href="#the-item-object"><code>item</code></a> object description for property details.</td>
   </tr>
 </table>
@@ -109,13 +109,13 @@ The `item` object allows you to specify what media query values are relevant wit
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>name</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>name</code></td>
+    <td><code>string</code></td>
     <td>The value that will be set on the custom dimension at the specified index.</td>
   </tr>
   <tr valign="top">
-    <td><code>media</code></a></td>
-    <td><code>string</code></a></td>
+    <td><code>media</code></td>
+    <td><code>string</code></td>
     <td>The media query value to test for a match.</td>
   </tr>
 </table>
@@ -137,11 +137,11 @@ The `mediaQueryTracker` plugin sets the following default field values on all hi
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a></td>
-    <td><code>definition.name</code></a></td>
+    <td><code>definition.name</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
-    <td><code>'change'</code></a></td>
+    <td><code>'change'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
@@ -161,7 +161,7 @@ The following table lists all methods for the `mediaQueryTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>mediaQueryTracker</code> plugin from the specified tracker, removes all media query listeners, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>
