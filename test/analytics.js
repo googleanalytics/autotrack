@@ -61,11 +61,14 @@ module.exports =  {
     });
   },
 
-  hitDataMatches: function(expected) {
+  hitDataMatches: function(expected, compareFunction) {
     return function() {
-      var hitData = browser.execute(this.getHitData);
+      var hitData = browser.execute(this.getHitData).value;
+      if (compareFunction) {
+        hitData = hitData.sort(compareFunction);
+      }
       return expected.every(function(item) {
-        return get(hitData.value, item[0]) === item[1];
+        return get(hitData, item[0]) === item[1];
       });
     }.bind(this);
   },

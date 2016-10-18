@@ -29,8 +29,8 @@ The following table outlines all possible configuration options for the `urlChan
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>shouldTrackUrlChange</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>shouldTrackUrlChange</code></td>
+    <td><code>Function</code></td>
     <td>
       A function used to determine if a URL change should be tracked. The function is invoked with the string values <code>newPath</code> and <code>oldPath</code> which represent the pathname and search portion of the URL (not the hash portion). Note, the function is only invoked if the new path and old path are different.<br>
       <strong>Default:</strong>
@@ -39,13 +39,13 @@ The following table outlines all possible configuration options for the `urlChan
 };</pre>
     </td>
   <tr valign="top">
-    <td><code>fieldsObj</code></a></td>
-    <td><code>Object</code></a></td>
+    <td><code>fieldsObj</code></td>
+    <td><code>Object</code></td>
     <td>See the <a href="/docs/common-options.md#fieldsobj">common options guide</a> for the <code>fieldsObj</code> description.</td>
   </tr>
   <tr valign="top">
-    <td><code>hitFilter</code></a></td>
-    <td><code>Function</code></a></td>
+    <td><code>hitFilter</code></td>
+    <td><code>Function</code></td>
     <td>See the <a href="/docs/common-options.md#hitfilter">common options guide</a> for the <code>hitFilter</code> description.</td>
   </tr>
 </table>
@@ -65,11 +65,11 @@ The `urlChangeTracker` plugin sets the following default field values on all hit
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#page"><code>page</code></a></td>
-    <td><code>newPath</code></a></td>
+    <td><code>newPath</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#title"><code>title</code></a></td>
-    <td><code>document.title</code></a></td>
+    <td><code>document.title</code></td>
   </tr>
 </table>
 
@@ -85,7 +85,7 @@ The following table lists all methods for the `urlChangeTracker` plugin:
     <th align="left">Description</th>
   </tr>
   <tr valign="top">
-    <td><code>remove</code></a></td>
+    <td><code>remove</code></td>
     <td>Removes the <code>urlChangeTracker</code> plugin from the specified tracker, removes all event listeners from the DOM, and restores all modified tasks to their original state prior to the plugin being required.</td>
   </tr>
 </table>

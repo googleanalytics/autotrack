@@ -23,6 +23,27 @@ var constants = require('../lib/constants');
 var browserCaps;
 
 
+var elementIdsByDomOrder = [
+  'foo',
+  'foo-1',
+  'foo-1-1',
+  'foo-1-2',
+  'foo-2',
+  'foo-2-1',
+  'foo-2-2',
+  'bar',
+  'bar-1',
+  'bar-1-1',
+  'bar-1-2',
+  'bar-2',
+  'bar-2-1',
+  'bar-2-2',
+  'attrs',
+  'attrs-1',
+  'attrs-2'
+];
+
+
 describe('impressionTracker', function() {
 
   before(function() {
@@ -320,7 +341,7 @@ describe('impressionTracker', function() {
           ['[1].eventCategory', 'Viewport'],
           ['[1].eventAction', 'impression'],
           ['[1].eventLabel', 'foo-2-2']
-        ]));
+        ], sortHitDataByEventLabel));
   });
 
 
@@ -434,6 +455,164 @@ describe('impressionTracker', function() {
     assert.equal(hitData[0][constants.USAGE_PARAM], '4');
   });
 
+
+  describe('observeElements', function() {
+
+    it('adds elements to be observed for intersections', function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              'foo',
+              'foo-1',
+              'foo-2',
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:observeElements', [
+            {id: 'bar', threshold: 0},
+            {id: 'bar-1', threshold: 0.5},
+            {id: 'bar-2', threshold: 1},
+          ])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 3],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-1'],
+            ['[2].eventCategory', 'Viewport'],
+            ['[2].eventAction', 'impression'],
+            ['[2].eventLabel', 'foo-2'],
+          ], sortHitDataByEventLabel));
+
+      browser
+          .scroll('#bar')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 6],
+            ['[3].eventCategory', 'Viewport'],
+            ['[3].eventAction', 'impression'],
+            ['[3].eventLabel', 'bar'],
+            ['[4].eventCategory', 'Viewport'],
+            ['[4].eventAction', 'impression'],
+            ['[4].eventLabel', 'bar-1'],
+            ['[5].eventCategory', 'Viewport'],
+            ['[5].eventAction', 'impression'],
+            ['[5].eventLabel', 'bar-2'],
+          ], sortHitDataByEventLabel));
+    });
+  });
+
+
+  describe('unobserveElements', function() {
+
+    it('removes elements from being observed for intersections', function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              'foo',
+              'foo-1',
+              'foo-2',
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:unobserveElements', ['foo'])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 2],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo-1'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-2'],
+          ]));
+    });
+
+    it('only removes elements if all properties match', function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              {id: 'foo', threshold: 0},
+              {id: 'foo-1', threshold: 0.5, trackFirstImpressionOnly: false},
+              {id: 'foo-1-1', threshold: 0.5, trackFirstImpressionOnly: false},
+              {id: 'foo-1-2', threshold: 0.5, trackFirstImpressionOnly: false},
+              {id: 'foo-2', threshold: 1, trackFirstImpressionOnly: true},
+              {id: 'foo-2-1', threshold: 1, trackFirstImpressionOnly: true},
+              {id: 'foo-2-2', threshold: 1, trackFirstImpressionOnly: true},
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:unobserveElements', [
+            'foo',
+            'foo-1', // Mismatch.
+            {id: 'foo-1-1', threshold: 0.5}, // Mismatch.
+            {id: 'foo-2-2', threshold: 1},
+          ])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 5],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo-1'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-1-1'],
+            ['[2].eventCategory', 'Viewport'],
+            ['[2].eventAction', 'impression'],
+            ['[2].eventLabel', 'foo-1-2'],
+            ['[3].eventCategory', 'Viewport'],
+            ['[3].eventAction', 'impression'],
+            ['[3].eventLabel', 'foo-2'],
+            ['[4].eventCategory', 'Viewport'],
+            ['[4].eventAction', 'impression'],
+            ['[4].eventLabel', 'foo-2-1'],
+          ], sortHitDataByEventLabel));
+    });
+  });
+
+  describe('unobserveAllElements', function() {
+
+    it('removes all elements from being observed for intersections',
+        function() {
+
+      if (notSupportedInBrowser()) return;
+
+      browser
+          .execute(ga.run, 'require', 'impressionTracker', {
+            elements: [
+              'foo',
+              'foo-1',
+              'foo-2',
+            ]
+          })
+          .execute(ga.run, 'impressionTracker:unobserveAllElements')
+          .execute(ga.run, 'impressionTracker:observeElements', [
+            'foo-1-1',
+            'foo-2-2',
+          ])
+          .scroll('#foo')
+          .waitUntil(ga.hitDataMatches([
+            ['length', 2],
+            ['[0].eventCategory', 'Viewport'],
+            ['[0].eventAction', 'impression'],
+            ['[0].eventLabel', 'foo-1-1'],
+            ['[1].eventCategory', 'Viewport'],
+            ['[1].eventAction', 'impression'],
+            ['[1].eventLabel', 'foo-2-2'],
+          ]));
+
+    });
+
+  });
+
 });
 
 
@@ -490,4 +669,19 @@ function addFixtures() {
 function removeFixtures() {
   var fixture = document.getElementById('fixture');
   document.body.removeChild(fixture);
+}
+
+/**
+ * A comparison function that sorts hits by the `eventLabel` value.
+ * This is needed to work around Chrome's non-deterministic firing of
+ * IntersectionObserver callbacks when multiple instances are used.
+ * @param {Object} a The first hit to compare.
+ * @param {Object} b The second hit to compare.
+ * @return {number} A negative number if a should appear first in the sorted
+ *     array, and a positive number if b should appear first.
+ */
+function sortHitDataByEventLabel(a, b) {
+  var aDomIndex = elementIdsByDomOrder.indexOf(a.eventLabel);
+  var bDomIndex = elementIdsByDomOrder.indexOf(b.eventLabel);
+  return aDomIndex - bDomIndex;
 }
