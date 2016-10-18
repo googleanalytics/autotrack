@@ -2,6 +2,10 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+## 1.1.0 (2016-10-18)
+
+- Add impressionTracker methods to observe and unobserve elements (#111)
+
 ### 1.0.4 (2016-10-15)
 
 - Prevent the withTimeout callback from firing twice
