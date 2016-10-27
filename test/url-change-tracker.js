@@ -299,7 +299,7 @@ function requireUrlChangeTrackerTracker_hitFilter() {
         throw 'Exclude Foo pages';
       }
       else {
-        model.set('dimension1', 'urlChangeTracker');
+        model.set('dimension1', 'urlChangeTracker', true);
       }
     }
   });

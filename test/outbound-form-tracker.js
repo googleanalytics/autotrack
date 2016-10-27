@@ -362,7 +362,7 @@ function requireOutboundFormTracker_hitFilter() {
         throw 'Exclude hits to www.google-analytics.com';
       }
       else {
-        model.set('nonInteraction', true);
+        model.set('nonInteraction', true, true);
       }
     }
   });
