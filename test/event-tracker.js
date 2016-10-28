@@ -183,9 +183,9 @@ function requireEventTrackerWithHitFilter() {
         throw 'Aborting non-social hits';
       }
       else {
-        model.set('nonInteraction', true);
-        model.set('dimension1', 'foo');
-        model.set('dimension2', 'bar');
+        model.set('nonInteraction', true, true);
+        model.set('dimension1', 'foo', true);
+        model.set('dimension2', 'bar', true);
       }
     }
   });

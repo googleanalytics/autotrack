@@ -640,9 +640,9 @@ function requireImpressionTracker_hitFilter() {
         throw 'Aborting hits with ID "foo-1"';
       }
       else {
-        model.set('nonInteraction', true);
-        model.set('dimension1', 'one');
-        model.set('dimension2', 'two');
+        model.set('nonInteraction', true, true);
+        model.set('dimension1', 'one', true);
+        model.set('dimension2', 'two', true);
       }
     }
   });

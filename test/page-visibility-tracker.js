@@ -395,7 +395,7 @@ function requirePageVisibilityTracker_hitFilter() {
         throw 'Exclude changes to visible';
       }
       else {
-        model.set('dimension1', 'pageVisibilityTracker');
+        model.set('dimension1', 'pageVisibilityTracker', true);
       }
     }
   });

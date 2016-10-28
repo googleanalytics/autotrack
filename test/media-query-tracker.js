@@ -111,6 +111,32 @@ describe('mediaQueryTracker', function() {
   });
 
 
+  it('should send non-interactive events', function() {
+
+    if (notSupportedInBrowser()) return;
+
+    browser
+        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
+        .setViewportSize({width: 400, height: 400}, false)
+        .waitUntil(ga.trackerDataMatches([
+          ['dimension1', 'sm'],
+          ['dimension2', 'sm']
+        ]));
+
+    browser
+        .waitUntil(ga.hitDataMatches([
+          ['[0].eventCategory', 'Width'],
+          ['[0].eventAction', 'change'],
+          ['[0].eventLabel', 'lg => sm'],
+          ['[0].nonInteraction', true],
+          ['[1].eventCategory', 'Height'],
+          ['[1].eventAction', 'change'],
+          ['[1].eventLabel', 'md => sm'],
+          ['[0].nonInteraction', true]
+        ]));
+  });
+
+
   it('should wait for the timeout to set or send changes', function() {
 
     if (notSupportedInBrowser()) return;
@@ -200,7 +226,7 @@ describe('mediaQueryTracker', function() {
             Object.assign({}, opts, {
               changeTimeout: 0,
               fieldsObj: {
-                nonInteraction: true
+                nonInteraction: false
               }
             }))
         .setViewportSize({width: 400, height: 400}, false)
@@ -208,11 +234,11 @@ describe('mediaQueryTracker', function() {
           ['[0].eventCategory', 'Width'],
           ['[0].eventAction', 'change'],
           ['[0].eventLabel', 'lg => sm'],
-          ['[0].nonInteraction', true],
+          ['[0].nonInteraction', false],
           ['[1].eventCategory', 'Height'],
           ['[1].eventAction', 'change'],
           ['[1].eventLabel', 'md => sm'],
-          ['[1].nonInteraction', true]
+          ['[1].nonInteraction', false]
         ]));
   });
 
@@ -228,7 +254,7 @@ describe('mediaQueryTracker', function() {
           ['[0].eventCategory', 'Height'],
           ['[0].eventAction', 'change'],
           ['[0].eventLabel', 'md => sm'],
-          ['[0].nonInteraction', true]
+          ['[0].nonInteraction', false]
         ]));
   });
 
@@ -335,7 +361,7 @@ function requireMediaQueryTracker_hitFilter() {
         throw 'Exclude width changes';
       }
       else {
-        model.set('nonInteraction', true);
+        model.set('nonInteraction', false, true);
       }
     }
   });
