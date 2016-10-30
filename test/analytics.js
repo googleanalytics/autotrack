@@ -32,19 +32,26 @@ module.exports =  {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
     if (typeof ga == 'function') {
       ga(function(tracker) {
-        var index = 1;
+        var oldSendHitTask = tracker.get('sendHitTask');
         tracker.set('sendHitTask', function(model) {
-          var hitPayload = model.get('hitPayload') + ('&index=' + index++);
+          var hitIndex = +(localStorage.getItem('hitcounter') || 0) + 1;
+          var hitTime = +new Date();
+          var hitPayload = model.get('hitPayload') +
+              '&_ht=' + hitTime + '&_hi=' + hitIndex;
+
           if ('sendBeacon' in navigator) {
             navigator.sendBeacon('/collect/' + testId, hitPayload);
           } else {
             var beacon = new Image();
             beacon.src = '/collect/' + testId + '?' + hitPayload;
           }
+          localStorage.setItem('hitcounter', hitIndex);
+          oldSendHitTask(model);
         });
       });
     }
   },
+
 
   /**
    * Sends a hit with no data to the collect endpoint for the passed test ID.
@@ -58,6 +65,6 @@ module.exports =  {
    */
   sendEmptyHit: function(baseUrl, testId) {
     var beacon = new Image();
-    beacon.src = baseUrl + '/collect/' + testId + '?empty=1';
+    beacon.src = baseUrl + '/collect/' + testId + '?empty=1&index=1';
   },
 };
