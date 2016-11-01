@@ -19,26 +19,25 @@
 
 
 var browserify = require('browserify');
-var buffer = require('vinyl-buffer');
-var connect = require('connect');
+var spawn = require('child_process').spawn;
 var envify = require('envify');
-var eslint = require('gulp-eslint');
 var fs = require('fs');
 var gulp = require('gulp');
+var eslint = require('gulp-eslint');
 var gulpIf = require('gulp-if');
-var gutil = require('gulp-util');
-var ngrok = require('ngrok');
-var pkg = require('./package.json');
-var seleniumServerJar = require('selenium-server-standalone-jar');
-var serveStatic = require('serve-static');
-var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
-var spawn = require('child_process').spawn;
 var uglify = require('gulp-uglify');
+var gutil = require('gulp-util');
 var webdriver = require('gulp-webdriver');
+var ngrok = require('ngrok');
+var seleniumServerJar = require('selenium-server-standalone-jar');
+var buffer = require('vinyl-buffer');
+var source = require('vinyl-source-stream');
+
+var pkg = require('./package.json');
+var server = require('./test/server');
 
 
-var server;
 var seleniumServer;
 
 
@@ -95,7 +94,7 @@ gulp.task('lint', function () {
 
 gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
   function stopServers() {
-    server.close();
+    server.stop();
     ngrok.kill();
     if (!process.env.CI) seleniumServer.kill();
   }
@@ -116,7 +115,8 @@ gulp.task('tunnel', ['serve'], function(done) {
 
 
 gulp.task('serve', ['javascript'], function(done) {
-  server = connect().use(serveStatic('./')).listen(8080, done);
+  server.start(done);
+  process.on('exit', server.stop.bind(server));
 });
 
 
@@ -130,6 +130,7 @@ gulp.task('selenium', function(done) {
       done();
     }
   });
+  process.on('exit', seleniumServer.kill.bind(seleniumServer));
 });
 
 

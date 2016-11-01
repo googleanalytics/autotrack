@@ -15,6 +15,9 @@
  */
 
 
+var server = require('./server');
+
+
 module.exports = {
 
   /**
@@ -28,6 +31,21 @@ module.exports = {
       var result = browser.url();
       var actualUrl = result.value;
       return actualUrl.indexOf(expectedUrl) > -1;
+    };
+  },
+
+
+  bindLogAccessors: function(testId) {
+    return {
+      getHits: server.getHitLogs.bind(server, testId),
+      removeHits: server.removeHitLogs.bind(server, testId),
+      hitCountEquals: function(count) {
+        return function() {
+          var hitcount = server.getHitLogs(testId).length;
+          console.log(hitcount);
+          return hitcount === count;
+        };
+      }
     };
   },
 

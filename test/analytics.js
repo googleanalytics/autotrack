@@ -61,6 +61,19 @@ module.exports =  {
     });
   },
 
+  logHitData: function(testId) {
+    var ga = window[window.GoogleAnalyticsObject || 'ga'];
+    ga('set', 'sendHitTask', function(model) {
+      var hitPayload = model.get('hitPayload');
+      if ('sendBeacon' in navigator) {
+        navigator.sendBeacon('/collect/' + testId, hitPayload);
+      } else {
+        var beacon = new Image();
+        beacon.src = '/collect/' + testId + '?' + hitPayload;
+      }
+    });
+  },
+
   hitDataMatches: function(expected, compareFunction) {
     return function() {
       var hitData = browser.execute(this.getHitData).value;
