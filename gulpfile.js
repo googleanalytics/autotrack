@@ -19,20 +19,22 @@
 
 
 var browserify = require('browserify');
-var spawn = require('child_process').spawn;
+var buffer = require('vinyl-buffer');
+var connect = require('connect');
 var envify = require('envify');
+var eslint = require('gulp-eslint');
 var fs = require('fs');
 var gulp = require('gulp');
-var eslint = require('gulp-eslint');
 var gulpIf = require('gulp-if');
-var sourcemaps = require('gulp-sourcemaps');
-var uglify = require('gulp-uglify');
 var gutil = require('gulp-util');
-var webdriver = require('gulp-webdriver');
 var ngrok = require('ngrok');
 var seleniumServerJar = require('selenium-server-standalone-jar');
-var buffer = require('vinyl-buffer');
+var serveStatic = require('serve-static');
 var source = require('vinyl-source-stream');
+var sourcemaps = require('gulp-sourcemaps');
+var spawn = require('child_process').spawn;
+var uglify = require('gulp-uglify');
+var webdriver = require('gulp-webdriver');
 
 var pkg = require('./package.json');
 var server = require('./test/server');
