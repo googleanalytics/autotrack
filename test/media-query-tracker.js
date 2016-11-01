@@ -16,11 +16,13 @@
 
 
 var assert = require('assert');
+var uuid = require('uuid');
 var ga = require('./analytics');
+var utilities = require('./utilities');
 var constants = require('../lib/constants');
+var pkg = require('../package.json');
 
 
-var browserCaps;
 var TIMEOUT = 1000;
 
 
@@ -50,152 +52,106 @@ var opts = {
 
 describe('mediaQueryTracker', function() {
 
-  before(function() {
-    browserCaps = browser.session().value;
+  var TEST_ID = uuid();
+  var log = utilities.bindLogAccessors(TEST_ID);
 
+  before(function() {
     // Loads the autotrack file since no custom HTML is needed.
     browser.url('/test/autotrack.html');
   });
 
-
   beforeEach(function() {
-    browser
-        .setViewportSize({width: 800, height: 600}, false)
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData);
+    browser.setViewportSize({width: 800, height: 600}, false);
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, TEST_ID);
   });
-
 
   afterEach(function () {
-    browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'mediaQueryTracker:remove')
-        .execute(ga.run, 'remove');
+    log.removeHits();
+    browser.execute(ga.run, 'mediaQueryTracker:remove');
+    browser.execute(ga.run, 'remove');
   });
 
-
-  it('should set initial data via custom dimensions', function() {
-
+  it('sets initial data via custom dimensions', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
-        .waitUntil(ga.trackerDataMatches([
-          ['dimension1', 'lg'],
-          ['dimension2', 'md']
-        ]));
+    browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].cd1, 'lg');
+    assert.strictEqual(hits[0].cd2, 'md');
   });
 
-
-  it('should send events when the matched media changes', function() {
-
+  it('sends events when the matched media changes', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
-        .setViewportSize({width: 400, height: 400}, false)
-        .waitUntil(ga.trackerDataMatches([
-          ['dimension1', 'sm'],
-          ['dimension2', 'sm']
-        ]));
+    browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
+    browser.setViewportSize({width: 400, height: 400}, false);
+    browser.waitUntil(log.hitCountEquals(2));
 
-    browser
-        .waitUntil(ga.hitDataMatches([
-          ['[0].eventCategory', 'Width'],
-          ['[0].eventAction', 'change'],
-          ['[0].eventLabel', 'lg => sm'],
-          ['[1].eventCategory', 'Height'],
-          ['[1].eventAction', 'change'],
-          ['[1].eventLabel', 'md => sm']
-        ]));
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Width');
+    assert.strictEqual(hits[0].ea, 'change');
+    assert.strictEqual(hits[0].el, 'lg => sm');
+    assert.strictEqual(hits[1].ec, 'Height');
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'md => sm');
   });
 
-
-  it('should send non-interactive events', function() {
-
+  it('sends non-interactive events', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
-        .setViewportSize({width: 400, height: 400}, false)
-        .waitUntil(ga.trackerDataMatches([
-          ['dimension1', 'sm'],
-          ['dimension2', 'sm']
-        ]));
+    browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
+    browser.setViewportSize({width: 400, height: 400}, false);
+    browser.waitUntil(log.hitCountEquals(2));
 
-    browser
-        .waitUntil(ga.hitDataMatches([
-          ['[0].eventCategory', 'Width'],
-          ['[0].eventAction', 'change'],
-          ['[0].eventLabel', 'lg => sm'],
-          ['[0].nonInteraction', true],
-          ['[1].eventCategory', 'Height'],
-          ['[1].eventAction', 'change'],
-          ['[1].eventLabel', 'md => sm'],
-          ['[0].nonInteraction', true]
-        ]));
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Width');
+    assert.strictEqual(hits[0].ea, 'change');
+    assert.strictEqual(hits[0].el, 'lg => sm');
+    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[1].ec, 'Height');
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'md => sm');
+    assert.strictEqual(hits[1].ni, '1');
   });
 
-
-  it('should wait for the timeout to set or send changes', function() {
-
+  it('waits for the timeout send changes', function() {
     if (notSupportedInBrowser()) return;
 
-   browser
-        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
-        .setViewportSize({width: 400, height: 400}, false);
+    browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
+    browser.setViewportSize({width: 400, height: 400}, false);
 
     var timeoutStart = Date.now();
-    browser.waitUntil(ga.trackerDataMatches([
-      ['dimension1', 'sm'],
-      ['dimension2', 'sm']
-    ]));
-    browser.waitUntil(ga.hitDataMatches([
-      ['length', 2]
-    ]));
+    browser.waitUntil(log.hitCountEquals(2));
     var timeoutDuration = Date.now() - timeoutStart;
 
     assert(timeoutDuration >= TIMEOUT);
   });
 
-
-  it('should support customizing the timeout period', function() {
-
+  it('supports customizing the timeout period', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(ga.run, 'require', 'mediaQueryTracker',
-            Object.assign({}, opts, {changeTimeout: 0}))
-        .setViewportSize({width: 400, height: 400}, false);
+    browser.execute(ga.run, 'require', 'mediaQueryTracker',
+        Object.assign({}, opts, {changeTimeout: 0}));
+    browser.setViewportSize({width: 400, height: 400}, false);
 
     var shortTimeoutStart = Date.now();
-    browser.waitUntil(ga.trackerDataMatches([
-      ['dimension1', 'sm'],
-      ['dimension2', 'sm']
-    ]));
-    browser.waitUntil(ga.hitDataMatches([
-      ['length', 2]
-    ]));
+    browser.waitUntil(log.hitCountEquals(2));
     var shortTimeoutDuration = Date.now() - shortTimeoutStart;
 
-    browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'mediaQueryTracker:remove')
-        .execute(ga.run, 'remove')
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-        .setViewportSize({width: 800, height: 600}, false)
-        .execute(ga.run, 'require', 'mediaQueryTracker', opts)
-        .setViewportSize({width: 400, height: 400}, false);
+    browser.execute(ga.run, 'mediaQueryTracker:remove');
+    browser.execute(ga.run, 'remove');
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, TEST_ID);
+    browser.setViewportSize({width: 800, height: 600}, false);
+    browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
+    browser.setViewportSize({width: 400, height: 400}, false);
 
     var longTimeoutStart = Date.now();
-    browser.waitUntil(ga.trackerDataMatches([
-      ['dimension1', 'sm'],
-      ['dimension2', 'sm']
-    ]));
-    browser.waitUntil(ga.hitDataMatches([
-      ['length', 2]
-    ]));
+    browser.waitUntil(log.hitCountEquals(4));
     var longTimeoutDuration = Date.now() - longTimeoutStart;
 
     // The long timeout should, in theory, be 1000ms longer, but we compare
@@ -203,78 +159,69 @@ describe('mediaQueryTracker', function() {
     assert(longTimeoutDuration - shortTimeoutDuration > (TIMEOUT/2));
   });
 
-
-  it('should support customizing the change template', function() {
-
+  it('supports customizing the change template', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(requireMediaQueryTracker_changeTemplate)
-        .setViewportSize({width: 400, height: 400}, false)
-        .waitUntil(ga.hitDataMatches([
-          ['[0].eventLabel', 'lg:sm'],
-          ['[1].eventLabel', 'md:sm']
-        ]));
+    browser.execute(requireMediaQueryTracker_changeTemplate);
+    browser.setViewportSize({width: 400, height: 400}, false);
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].el, 'lg:sm');
+    assert.strictEqual(hits[1].el, 'md:sm');
   });
 
-  it('should support customizing any field via the fieldsObj', function() {
-
+  it('supports customizing any field via the fieldsObj', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(ga.run, 'require', 'mediaQueryTracker',
-            Object.assign({}, opts, {
-              changeTimeout: 0,
-              fieldsObj: {
-                nonInteraction: false
-              }
-            }))
-        .setViewportSize({width: 400, height: 400}, false)
-        .waitUntil(ga.hitDataMatches([
-          ['[0].eventCategory', 'Width'],
-          ['[0].eventAction', 'change'],
-          ['[0].eventLabel', 'lg => sm'],
-          ['[0].nonInteraction', false],
-          ['[1].eventCategory', 'Height'],
-          ['[1].eventAction', 'change'],
-          ['[1].eventLabel', 'md => sm'],
-          ['[1].nonInteraction', false]
-        ]));
+    browser.execute(ga.run, 'require', 'mediaQueryTracker',
+        Object.assign({}, opts, {
+          changeTimeout: 0,
+          fieldsObj: {
+            nonInteraction: false
+          }
+        }));
+    browser.setViewportSize({width: 400, height: 400}, false);
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Width');
+    assert.strictEqual(hits[0].ea, 'change');
+    assert.strictEqual(hits[0].el, 'lg => sm');
+    assert.strictEqual(hits[0].ni, '0');
+    assert.strictEqual(hits[1].ec, 'Height');
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'md => sm');
+    assert.strictEqual(hits[1].ni, '0');
   });
 
-
-  it('should support specifying a hit filter', function() {
-
+  it('supports specifying a hit filter', function() {
     if (notSupportedInBrowser()) return;
 
-    browser
-        .execute(requireMediaQueryTracker_hitFilter)
-        .setViewportSize({width: 400, height: 400}, false)
-        .waitUntil(ga.hitDataMatches([
-          ['[0].eventCategory', 'Height'],
-          ['[0].eventAction', 'change'],
-          ['[0].eventLabel', 'md => sm'],
-          ['[0].nonInteraction', false]
-        ]));
+    browser.execute(requireMediaQueryTracker_hitFilter);
+    browser.setViewportSize({width: 400, height: 400}, false);
+    browser.waitUntil(log.hitCountEquals(1));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Height');
+    assert.strictEqual(hits[0].ea, 'change');
+    assert.strictEqual(hits[0].el, 'md => sm');
+    assert.strictEqual(hits[0].ni, '0');
   });
 
 
   it('includes usage params with all hits', function() {
+    browser.execute(ga.run, 'require', 'mediaQueryTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'mediaQueryTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].devId, constants.DEV_ID);
-    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+    var hits = log.getHits();
+    assert.equal(hits[0].did, constants.DEV_ID);
+    assert.equal(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '8' = '000001000' in hex
-    assert.equal(hitData[0][constants.USAGE_PARAM], '8');
+    assert.equal(hits[0][constants.USAGE_PARAM], '8');
   });
-
 });
 
 
@@ -283,6 +230,8 @@ describe('mediaQueryTracker', function() {
  *    required for these tests.
  */
 function notSupportedInBrowser() {
+  var browserCaps = browser.session().value;
+
   // TODO(philipwalton): Some capabilities aren't implemented, so we can't test
   // against Edge right now. Wait for build 10532 to support setViewportSize
   // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
