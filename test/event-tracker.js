@@ -16,158 +16,131 @@
 
 
 var assert = require('assert');
+var uuid = require('uuid');
 var ga = require('./analytics');
 var utilities = require('./utilities');
 var constants = require('../lib/constants');
+var pkg = require('../package.json');
 
 
 describe('eventTracker', function() {
+
+  var TEST_ID = uuid();
+  var log = utilities.bindLogAccessors(TEST_ID);
 
   before(function() {
     browser.url('/test/event-tracker.html');
   });
 
   beforeEach(function() {
-    browser
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData);
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, TEST_ID);
   });
 
   afterEach(function () {
-    browser
-        .execute(utilities.unstopSubmitEvents)
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'eventTracker:remove')
-        .execute(ga.run, 'remove');
+    log.removeHits();
+    browser.execute(ga.run, 'eventTracker:remove');
+    browser.execute(ga.run, 'remove');
   });
 
-  it('should support declarative event binding to DOM elements', function() {
+  it('supports declarative event binding to DOM elements', function() {
+    browser.execute(ga.run, 'require', 'eventTracker');
+    browser.click('#click-test');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'eventTracker')
-        .click('#click-test')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].eventCategory, 'foo');
-    assert.equal(hitData[0].eventAction, 'bar');
-    assert.equal(hitData[0].eventLabel, 'qux');
-    assert.equal(hitData[0].eventValue, '42');
-    assert.equal(hitData[0].dimension1, 'baz');
-    assert.equal(hitData[0].nonInteraction, true);
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'foo');
+    assert.strictEqual(hits[0].ea, 'bar');
+    assert.strictEqual(hits[0].el, 'qux');
+    assert.strictEqual(hits[0].ev, '42');
+    assert.strictEqual(hits[0].cd1, 'baz');
+    assert.strictEqual(hits[0].ni, '1');
   });
 
+  it('supports customizing the attribute prefix', function() {
+    browser.execute(ga.run, 'require', 'eventTracker', {
+      attributePrefix: 'data-ga-'
+    });
+    browser.click('#custom-prefix');
+    browser.waitUntil(log.hitCountEquals(1));
 
-  it('should support customizing the attribute prefix', function() {
-
-    var hitData = browser
-        .execute(ga.run, 'require', 'eventTracker', {
-          attributePrefix: 'data-ga-'
-        })
-        .click('#custom-prefix')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].eventCategory, 'foo');
-    assert.equal(hitData[0].eventAction, 'bar');
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'foo');
+    assert.strictEqual(hits[0].ea, 'bar');
   });
 
+  it('supports non-event hit types', function() {
+    browser.execute(ga.run, 'require', 'eventTracker');
+    browser.click('#social-hit-type');
+    browser.click('#pageview-hit-type');
+    browser.waitUntil(log.hitCountEquals(2));
 
-  it('should support non-event hit types', function() {
-
-    var hitData = browser
-        .execute(ga.run, 'require', 'eventTracker')
-        .click('#social-hit-type')
-        .click('#pageview-hit-type')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].hitType, 'social');
-    assert.equal(hitData[0].socialNetwork, 'Facebook');
-    assert.equal(hitData[0].socialAction, 'like');
-    assert.equal(hitData[0].socialTarget, 'me');
-    assert.equal(hitData[1].hitType, 'pageview');
-    assert.equal(hitData[1].page, '/foobar.html');
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].t, 'social');
+    assert.strictEqual(hits[0].sn, 'Facebook');
+    assert.strictEqual(hits[0].sa, 'like');
+    assert.strictEqual(hits[0].st, 'me');
+    assert.strictEqual(hits[1].t, 'pageview');
+    assert.strictEqual(hits[1].dp, '/foobar.html');
   });
 
+  it('supports customizing what events to listen for', function() {
+    browser.execute(ga.run, 'require', 'eventTracker', {
+      events: ['submit']
+    });
+    browser.click('#click-test');
+    browser.click('#submit-test');
+    browser.waitUntil(log.hitCountEquals(1));
 
-  it('should support customizing what events to listen for', function() {
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Forms');
+    assert.strictEqual(hits[0].ea, 'submit');
 
-    var hitData = browser
-        .execute(utilities.stopSubmitEvents)
-        .execute(ga.run, 'require', 'eventTracker', {
-          events: ['submit']
-        })
-        .click('#click-test')
-        .click('#submit-test')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].eventCategory, 'Forms');
-    assert.equal(hitData[0].eventAction, 'submit');
+    browser.url('/test/event-tracker.html');
   });
 
+  it('supports specifying a fields object for all hits', function() {
+    browser.execute(ga.run, 'require', 'eventTracker', {
+      fieldsObj: {
+        nonInteraction: true,
+        dimension1: 'foo',
+        dimension2: 'bar'
+      }
+    });
+    browser.click('#social-hit-type');
+    browser.waitUntil(log.hitCountEquals(1));
 
-  it('should support specifying a fields object for all hits', function() {
-
-    var hitData = browser
-        .execute(utilities.stopSubmitEvents)
-        .execute(ga.run, 'require', 'eventTracker', {
-          fieldsObj: {
-            nonInteraction: true,
-            dimension1: 'foo',
-            dimension2: 'bar'
-          }
-        })
-        .click('#social-hit-type')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].nonInteraction, true);
-    assert.equal(hitData[0].dimension1, 'foo');
-    assert.equal(hitData[0].dimension2, 'bar');
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].cd1, 'foo');
+    assert.strictEqual(hits[0].cd2, 'bar');
   });
 
+  it('supports specifying a hit filter', function() {
+    browser.execute(requireEventTrackerWithHitFilter);
+    browser.click('#click-test');
+    browser.click('#pageview-hit-type');
+    browser.click('#social-hit-type');
+    browser.waitUntil(log.hitCountEquals(1));
 
-  it('should support specifying a hit filter', function() {
-
-    var hitData = browser
-        .execute(utilities.stopSubmitEvents)
-        .execute(requireEventTrackerWithHitFilter)
-        .click('#click-test')
-        .click('#pageview-hit-type')
-        .click('#social-hit-type')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].nonInteraction, true);
-    assert.equal(hitData[0].dimension1, 'foo');
-    assert.equal(hitData[0].dimension2, 'bar');
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].cd1, 'foo');
+    assert.strictEqual(hits[0].cd2, 'bar');
   });
-
 
   it('includes usage params with all hits', function() {
+    browser.execute(ga.run, 'require', 'eventTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'eventTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].devId, constants.DEV_ID);
-    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '2' = '000000010' in hex
-    assert.equal(hitData[0][constants.USAGE_PARAM], '2');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '2');
   });
-
 });
 
 
