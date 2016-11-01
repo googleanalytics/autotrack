@@ -21,9 +21,11 @@
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var connect = require('connect');
+var envify = require('envify');
 var eslint = require('gulp-eslint');
 var fs = require('fs');
 var gulp = require('gulp');
+var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
 var ngrok = require('ngrok');
 var pkg = require('./package.json');
@@ -40,8 +42,15 @@ var server;
 var seleniumServer;
 
 
-gulp.task('javascript', function(done) {
+/**
+ * @return {boolean} True if NODE_ENV is production.
+ */
+function isProd() {
+  return process.env.NODE_ENV == 'production';
+}
 
+
+gulp.task('javascript', function(done) {
   // Gets the license string from this file (the first 15 lines),
   // and adds an @license tag.
   var license = fs.readFileSync(__filename, 'utf-8')
@@ -53,6 +62,7 @@ gulp.task('javascript', function(done) {
   browserify('./', {
     debug: true
   })
+  .transform(envify)
   .bundle()
 
   // TODO(philipwalton): Add real error handling.
@@ -64,7 +74,9 @@ gulp.task('javascript', function(done) {
   .pipe(source('./autotrack.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init({loadMaps: true}))
-  .pipe(uglify({output: {preamble: license + '\n\n' + version}}))
+  .pipe(gulpIf(isProd(), uglify({
+    output: {preamble: license + '\n\n' + version}
+  })))
   .pipe(sourcemaps.write('./'))
   .pipe(gulp.dest('./'));
 });
