@@ -37,13 +37,13 @@ describe('cleanUrlTracker', function() {
     browser.execute(ga.logHitData, TEST_ID);
   });
 
-  afterEach(function () {
+  afterEach(function() {
     log.removeHits();
     browser.execute(ga.run, 'cleanUrlTracker:remove');
     browser.execute(ga.run, 'remove');
   });
 
-  it('does not modify the URL path by default', function() {
+  it('set the page field but does not modify the path by default', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'set', 'location', url);
@@ -70,7 +70,6 @@ describe('cleanUrlTracker', function() {
   });
 
   it('optionally adds the query string as a custom dimension', function() {
-
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true,
@@ -237,4 +236,27 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '1');
   });
 
+  describe('remove', function() {
+    it('destroys all bound events and functionality', function() {
+      var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+      browser.execute(ga.run, 'require', 'cleanUrlTracker', {
+        stripQuery: true
+      });
+      browser.execute(ga.run, 'set', 'location', url);
+      browser.execute(ga.run, 'send', 'pageview');
+      browser.waitUntil(log.hitCountEquals(1));
+
+      var hits = log.getHits();
+      assert.strictEqual(hits[0].dl, url);
+      assert.strictEqual(hits[0].dp, '/foo/bar');
+
+      browser.execute(ga.run, 'cleanUrlTracker:remove');
+      browser.execute(ga.run, 'send', 'pageview');
+      browser.waitUntil(log.hitCountEquals(2));
+
+      hits = log.getHits();
+      assert.strictEqual(hits[1].dl, url);
+      assert(!hits[1].dp);
+    });
+  });
 });
