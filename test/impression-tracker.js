@@ -60,7 +60,7 @@ describe('impressionTracker', function() {
     browser.execute(ga.logHitData, TEST_ID);
   });
 
-  afterEach(function () {
+  afterEach(function() {
     log.removeHits();
     browser.execute(ga.run, 'impressionTracker:remove');
     browser.execute(ga.run, 'remove');
@@ -416,9 +416,7 @@ describe('impressionTracker', function() {
     assert.equal(hits[0][constants.USAGE_PARAM], '4');
   });
 
-
   describe('observeElements', function() {
-
     it('adds elements to be observed for intersections', function() {
       if (notSupportedInBrowser()) return;
 
@@ -465,7 +463,6 @@ describe('impressionTracker', function() {
   });
 
   describe('unobserveElements', function() {
-
     it('removes elements from being observed for intersections', function() {
       if (notSupportedInBrowser()) return;
 
@@ -531,9 +528,7 @@ describe('impressionTracker', function() {
     });
   });
 
-
   describe('unobserveAllElements', function() {
-
     it('removes all elements from being observed for intersections',
         function() {
       if (notSupportedInBrowser()) return;
@@ -560,6 +555,23 @@ describe('impressionTracker', function() {
       assert.strictEqual(hits[1].ec, 'Viewport');
       assert.strictEqual(hits[1].ea, 'impression');
       assert.strictEqual(hits[1].el, 'foo-2-2');
+    });
+  });
+
+  describe('remove', function() {
+    it('destroys all bound events and functionality', function() {
+      browser.execute(ga.run, 'require', 'impressionTracker', {
+        elements: [{id: 'foo', trackFirstImpressionOnly: false}]
+      });
+      browser.scroll('#foo');
+      browser.waitUntil(log.hitCountEquals(1));
+      assert.strictEqual(log.getHits()[0].el, 'foo');
+      log.removeHits();
+
+      browser.scroll(0, 0);
+      browser.execute(ga.run, 'impressionTracker:remove');
+      browser.scroll('#foo');
+      log.assertNoHitsReceived();
     });
   });
 });
