@@ -37,7 +37,7 @@ describe('eventTracker', function() {
     browser.execute(ga.logHitData, TEST_ID);
   });
 
-  afterEach(function () {
+  afterEach(function() {
     log.removeHits();
     browser.execute(ga.run, 'eventTracker:remove');
     browser.execute(ga.run, 'remove');
@@ -140,6 +140,20 @@ describe('eventTracker', function() {
 
     // '2' = '000000010' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '2');
+  });
+
+  describe('remove', function() {
+    it('destroys all bound events and functionality', function() {
+      browser.execute(ga.run, 'require', 'eventTracker');
+      browser.click('#click-test');
+      browser.waitUntil(log.hitCountEquals(1));
+      assert.strictEqual(log.getHits()[0].t, 'event');
+
+      log.removeHits();
+      browser.execute(ga.run, 'eventTracker:remove');
+      browser.click('#pageview-hit-type');
+      log.assertNoHitsReceived();
+    });
   });
 });
 

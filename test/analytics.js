@@ -74,6 +74,21 @@ module.exports =  {
     });
   },
 
+  /**
+   * Sends a hit with no data to the collect endpoint for the passed test ID.
+   * This can be helpful in cases where you need to assert that no hits were
+   * sent, but you want to avoid false positives from hits failing for
+   * some other reason. Sending an empty hit allows you to assert that hits
+   * are being received and that no hit was received prior to receiving the
+   * test hit.
+   * @param {string} baseUrl The base URL of the log server.
+   * @param {string} testId The test endpoint to target.
+   */
+  sendEmptyHit: function(baseUrl, testId) {
+    var beacon = new Image();
+    beacon.src = baseUrl + '/collect/' + testId + '?empty=1';
+  },
+
   hitDataMatches: function(expected, compareFunction) {
     return function() {
       var hitData = browser.execute(this.getHitData).value;

@@ -15,6 +15,8 @@
  */
 
 
+var assert = require('assert');
+var ga = require('./analytics');
 var server = require('./server');
 
 
@@ -36,17 +38,42 @@ module.exports = {
 
 
   bindLogAccessors: function(testId) {
-    return {
+    var accessors = {
       getHits: server.getHitLogs.bind(server, testId),
       removeHits: server.removeHitLogs.bind(server, testId),
       hitCountEquals: function(count) {
+        var callCount = 0;
         return function() {
-          var hitcount = server.getHitLogs(testId).length;
-          console.log(hitcount);
-          return hitcount === count;
+          var hits = server.getHitLogs(testId);
+          var hitcount = hits.length;
+          if (hitcount === count) {
+            return true;
+          } else {
+            callCount++;
+            if (callCount > 5 && callCount < 10) {
+              process.stdout.write(
+                  'Still waiting for ' + count + ' hits to be received\n');
+            } else if (callCount == 10) {
+              process.stdout.write(
+                  'Hmmmm, looks like waiting for hits will likely ' +
+                  'time out.\nHere are the hits received so far:\n' +
+                  JSON.stringify(hits, null, 2) + '\n');
+            }
+            return false;
+          }
         };
+      },
+      assertNoHitsReceived: function() {
+        assert.strictEqual(accessors.getHits().length, 0);
+
+        browser.execute(ga.sendEmptyHit, browser.options.baseUrl, testId);
+        browser.waitUntil(accessors.hitCountEquals(1));
+
+        assert.strictEqual(accessors.getHits()[0].empty, '1');
+        accessors.removeHits();
       }
     };
+    return accessors;
   },
 
 
