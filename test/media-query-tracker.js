@@ -56,7 +56,6 @@ describe('mediaQueryTracker', function() {
   var log = utilities.bindLogAccessors(TEST_ID);
 
   before(function() {
-    // Loads the autotrack file since no custom HTML is needed.
     browser.url('/test/autotrack.html');
   });
 
@@ -66,7 +65,7 @@ describe('mediaQueryTracker', function() {
     browser.execute(ga.logHitData, TEST_ID);
   });
 
-  afterEach(function () {
+  afterEach(function() {
     log.removeHits();
     browser.execute(ga.run, 'mediaQueryTracker:remove');
     browser.execute(ga.run, 'remove');
@@ -221,6 +220,31 @@ describe('mediaQueryTracker', function() {
 
     // '8' = '000001000' in hex
     assert.equal(hits[0][constants.USAGE_PARAM], '8');
+  });
+
+  describe('remove', function() {
+    it('destroys all bound events and functionality', function() {
+      if (notSupportedInBrowser()) return;
+
+      browser.execute(ga.run, 'require', 'mediaQueryTracker',
+          Object.assign({}, opts, {changeTimeout: 0}));
+
+      browser.setViewportSize({width: 400, height: 400}, false);
+      browser.waitUntil(log.hitCountEquals(2));
+
+      var hits = log.getHits();
+      assert.strictEqual(hits[0].ec, 'Width');
+      assert.strictEqual(hits[1].ec, 'Height');
+      log.removeHits();
+
+      browser.execute(ga.run, 'mediaQueryTracker:remove');
+
+      // This resize would trigger a change event
+      // if the plugin hadn't been removed.
+      browser.setViewportSize({width: 800, height: 600}, false);
+
+      log.assertNoHitsReceived();
+    });
   });
 });
 
