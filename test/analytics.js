@@ -22,7 +22,9 @@ module.exports =  {
 
   run: function() {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga.apply(null, arguments);
+    if (typeof ga == 'function') {
+      ga.apply(window, arguments);
+    }
   },
 
   getProvidedPlugins: function() {
@@ -63,15 +65,17 @@ module.exports =  {
 
   logHitData: function(testId) {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga('set', 'sendHitTask', function(model) {
-      var hitPayload = model.get('hitPayload');
-      if ('sendBeacon' in navigator) {
-        navigator.sendBeacon('/collect/' + testId, hitPayload);
-      } else {
-        var beacon = new Image();
-        beacon.src = '/collect/' + testId + '?' + hitPayload;
-      }
-    });
+    if (typeof ga == 'function') {
+      ga('set', 'sendHitTask', function(model) {
+        var hitPayload = model.get('hitPayload');
+        if ('sendBeacon' in navigator) {
+          navigator.sendBeacon('/collect/' + testId, hitPayload);
+        } else {
+          var beacon = new Image();
+          beacon.src = '/collect/' + testId + '?' + hitPayload;
+        }
+      });
+    }
   },
 
   /**

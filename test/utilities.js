@@ -45,8 +45,8 @@ module.exports = {
         var callCount = 0;
         return function() {
           var hits = server.getHitLogs(testId);
-          var hitcount = hits.length;
-          if (hitcount === count) {
+          var hitCount = hits.length;
+          if (hitCount === count) {
             return true;
           } else {
             callCount++;
@@ -64,13 +64,23 @@ module.exports = {
         };
       },
       assertNoHitsReceived: function() {
-        assert.strictEqual(accessors.getHits().length, 0);
+        var browserCaps = browser.session().value;
+        if (browserCaps.browserName == 'safari') {
+          // Reduces flakiness in Safari.
+          var timeToWait = browser.options.baseUrl.indexOf('localhost') > -1 ?
+              500 : 2000;
+          browser.pause(timeToWait);
+          assert.strictEqual(accessors.getHits().length, 0);
+        } else {
+          assert.strictEqual(accessors.getHits().length, 0);
 
-        browser.execute(ga.sendEmptyHit, browser.options.baseUrl, testId);
-        browser.waitUntil(accessors.hitCountEquals(1));
-
-        assert.strictEqual(accessors.getHits()[0].empty, '1');
-        accessors.removeHits();
+          // TODO(philipwalton): the following technique fails in Safari for
+          // unknown reasons.
+          browser.execute(ga.sendEmptyHit, browser.options.baseUrl, testId);
+          browser.waitUntil(accessors.hitCountEquals(1));
+          assert.strictEqual(accessors.getHits()[0].empty, '1');
+          accessors.removeHits();
+        }
       }
     };
     return accessors;

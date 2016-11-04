@@ -16,355 +16,313 @@
 
 
 var assert = require('assert');
+var uuid = require('uuid');
 var ga = require('./analytics');
+var utilities = require('./utilities');
 var constants = require('../lib/constants');
+var pkg = require('../package.json');
 
 
-var CTRL = '\uE009';
-var META = '\uE03D';
 var SESSION_TIMEOUT_IN_MILLISECONDS = 2000; // 2 seconds
 var SESSION_TIMEOUT_IN_MINUTES = (1/60) * 2; // 2 seconds
 var BUFFER = 500; // An extra wait time to avoid flakiness
 
-
-var browserCaps;
-var command;
-
-
 describe('pageVisibilityTracker', function() {
 
-  before(function() {
-    browserCaps = browser.session().value;
-    command = browserCaps.platform.indexOf('OS X') < 0 ? META : CTRL;
-
-    // Loads the autotrack file since no custom HTML is needed.
-    browser.url('/test/autotrack.html');
-  });
-
+  var TEST_ID = uuid();
+  var log = utilities.bindLogAccessors(TEST_ID);
 
   beforeEach(function() {
-    browser
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData);
+    browser.url('/test/autotrack.html');
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, TEST_ID);
   });
 
-
-  afterEach(function () {
-    browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'pageVisibilityTracker:remove')
-        .execute(ga.run, 'remove');
+  afterEach(function() {
+    browser.execute(ga.run, 'pageVisibilityTracker:remove');
+    browser.execute(ga.run, 'remove');
+    log.removeHits();
   });
 
+  function openTab() {
+    var prevTabIds = browser.getTabIds();
+    browser.execute(function() {
+      var a = document.createElement('a');
+      a.href = '/test/blank.html';
+      a.target = '_blank';
+      a.id = 'new-tab-link';
+      a.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
+      a.onclick = function() {document.body.removeChild(a);};
+      document.body.appendChild(a);
+    });
+    browser.element('#new-tab-link').click();
+
+    browser.pause(500);
+    browser.waitUntil(function() {
+      var newTabIds = browser.getTabIds();
+      return newTabIds.length > prevTabIds.length;
+    }, 2000, 'New tab was never opened.', 500);
+  }
+
+  function closeTab() {
+    var windowHandles = browser.windowHandles().value;
+    // Close all tabs but the first one
+    windowHandles.forEach(function(handle, index) {
+      if (index > 0) browser.switchTab(handle).close();
+    });
+  }
 
   it('should send events when the visibility state changes', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
+    openTab();
+    closeTab();
 
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].eventCategory, 'Page Visibility');
-    assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert.equal(hitData[1].eventCategory, 'Page Visibility');
-    assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'hidden => visible');
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Page Visibility');
+    assert.strictEqual(hits[0].ea, 'change');
+    assert.strictEqual(hits[0].el, 'visible => hidden');
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'hidden => visible');
   });
-
 
   it('should track the elapsed time between events', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.pause(1500);
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .pause(1500);
+    openTab();
+    browser.pause(500);
 
-    browser
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .pause(500);
+    closeTab();
+    browser.waitUntil(log.hitCountEquals(2));
 
-    var hitData = browser
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].eventCategory, 'Page Visibility');
-    assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert.equal(hitData[0].eventValue, 2); // 1500-2499ms rounds to 2 seconds.
-
-    assert.equal(hitData[1].eventCategory, 'Page Visibility');
-    assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'hidden => visible');
-    assert.equal(hitData[1].eventValue, 1); // 500-1499ms rounds to 1 second.
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ev, '2'); // 1500-2499ms rounds to 2 seconds.
+    assert.strictEqual(hits[1].ev, '1'); // 500-1499ms rounds to 1 second.
   });
-
 
   it('should send hidden events as non-interaction events', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
+    openTab();
+    closeTab();
 
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].eventCategory, 'Page Visibility');
-    assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert.equal(hitData[0].nonInteraction, true);
-    assert.equal(hitData[1].eventCategory, 'Page Visibility');
-    assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'hidden => visible');
-    assert.equal(hitData[1].nonInteraction, null);
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[1].ni, undefined);
   });
-
 
   it('should use custom metric values if specified', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleMetricIndex: 1,
+      hiddenMetricIndex: 2
+    });
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          visibleMetricIndex: 1,
-          hiddenMetricIndex: 2
-        })
-        .pause(1500);
+    browser.pause(1500);
+    openTab();
+    browser.pause(500);
+    closeTab();
 
-    browser
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .pause(500);
+    browser.waitUntil(log.hitCountEquals(2));
 
-    var hitData = browser
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].eventCategory, 'Page Visibility');
-    assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert.equal(hitData[0].eventValue, 2); // 1500-2499ms rounds to 2 seconds.
-    assert.equal(hitData[0].metric1, 2); // 1500-2499ms rounds to 2 seconds.
-
-    assert.equal(hitData[1].eventCategory, 'Page Visibility');
-    assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'hidden => visible');
-    assert.equal(hitData[1].eventValue, 1); // 500-1499ms rounds to 1 second.
-    assert.equal(hitData[1].metric2, 1); // 500-1499ms rounds to 1 second.
+    var hits = log.getHits();
+    assert.strictEqual(hits.length, 2);
+    assert.strictEqual(hits[0].ev, '2'); // 1500-2499ms rounds to 2 seconds.
+    assert.strictEqual(hits[0].cm1, '2'); // 1500-2499ms rounds to 2 seconds.
+    assert.strictEqual(hits[1].ev, '1'); // 500-1499ms rounds to 1 second.
+    assert.strictEqual(hits[1].cm2, '1'); // 500-1499ms rounds to 1 second.
   });
 
-
-  it('should not send any hidden events if the session has timed out',
+  it('should not send any hidden events if the session has expired',
       function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+    });
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
-        })
-        .pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
+    openTab();
+    log.assertNoHitsReceived();
 
-    var hitData = browser
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 0);
-
-    // Closes the new tab.
-    browser.element('body').keys(command + 'w' + command);
+    closeTab();
   });
-
 
   it('should preemptively start all new session hits with a pageview',
       function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+    });
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
-        })
-        .pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
-
-    var hitData = browser
-        .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .execute(ga.getHitData)
-        .value;
+    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
+    browser.waitUntil(log.hitCountEquals(2));
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].hitType, 'pageview');
-    assert.equal(hitData[1].eventCategory, 'Uncategorized');
-    assert.equal(hitData[1].eventAction, 'inactive');
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[1].ec, 'Uncategorized');
+    assert.strictEqual(hits[1].ea, 'inactive');
   });
-
 
   it('should not send visible events when starting a new session', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+    });
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
-        })
-        .pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
+    openTab();
+    closeTab();
 
-    var hitData = browser
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
+    browser.waitUntil(log.hitCountEquals(1));
 
     // Expects a pageview in lieu of a visible event because the session
-    // has timed out.
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].hitType, 'pageview');
+    // has expired.
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].t, 'pageview');
   });
-
 
   it('should support customizing the change template', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(requirePageVisibilityTracker_changeTemplate);
 
-    var hitData = browser
-        .execute(requirePageVisibilityTracker_changeTemplate)
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
+    openTab();
+    closeTab();
 
-    assert.equal(hitData.length, 2);
-    assert.equal(hitData[0].eventLabel, 'visible >> hidden');
-    assert.equal(hitData[1].eventLabel, 'hidden >> visible');
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].el, 'visible >> hidden');
+    assert.strictEqual(hits[1].el, 'hidden >> visible');
   });
-
 
   it('should support customizing any field via the fieldsObj', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+      browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+        fieldsObj: {
+          dimension1: 'pageVisibilityTracker',
+          nonInteraction: false
+        }
+      });
 
-      var hitData = browser
-          .execute(ga.run, 'require', 'pageVisibilityTracker', {
-            fieldsObj: {
-              dimension1: 'pageVisibilityTracker',
-              nonInteraction: false
-            }
-          })
-          .element('body').keys(command + 't' + command) // Opens a new tab.
-          .element('body').keys(command + 'w' + command) // Closes the new tab.
-          .execute(ga.getHitData)
-          .value;
+      openTab();
 
-      assert.equal(hitData.length, 2);
-      assert.equal(hitData[0].eventCategory, 'Page Visibility');
-      assert.equal(hitData[0].eventAction, 'change');
-      assert.equal(hitData[0].eventLabel, 'visible => hidden');
-      assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
-      assert.equal(hitData[0].nonInteraction, false);
-      assert.equal(hitData[1].eventCategory, 'Page Visibility');
-      assert.equal(hitData[1].eventAction, 'change');
-      assert.equal(hitData[1].eventLabel, 'hidden => visible');
-      assert.equal(hitData[1].dimension1, 'pageVisibilityTracker');
-      assert.equal(hitData[1].nonInteraction, false);
+      closeTab();
+
+      browser.waitUntil(log.hitCountEquals(2));
+
+      var hits = log.getHits();
+      assert.strictEqual(hits[0].cd1, 'pageVisibilityTracker');
+      assert.strictEqual(hits[0].ni, '0');
+      assert.strictEqual(hits[1].cd1, 'pageVisibilityTracker');
+      assert.strictEqual(hits[1].ni, '0');
   });
-
 
   it('should support specifying a hit filter', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(requirePageVisibilityTracker_hitFilter);
 
-    var hitData = browser
-        .execute(requirePageVisibilityTracker_hitFilter)
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
+    openTab();
+    closeTab();
 
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].eventCategory, 'Page Visibility');
-    assert.equal(hitData[0].eventAction, 'change');
-    assert.equal(hitData[0].eventLabel, 'visible => hidden');
-    assert.equal(hitData[0].dimension1, 'pageVisibilityTracker');
+    browser.waitUntil(log.hitCountEquals(1));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits.length, 1);
+    assert.strictEqual(hits[0].el, 'hidden => visible');
+    assert.strictEqual(hits[0].cd1, 'pageVisibilityTracker');
   });
 
-
   it('should reset the session timeout when other hits are sent', function() {
+    if (!browserSupportsTabs()) return;
 
-    if (notSupportedInBrowser()) return;
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+    });
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
 
-    browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker', {
-          sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
-        })
-        .pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
+    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
 
-    browser
-        .execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive')
-        .pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
+    openTab();
+    closeTab();
 
-    var hitData = browser
-        .element('body').keys(command + 't' + command) // Opens a new tab.
-        .element('body').keys(command + 'w' + command) // Closes the new tab.
-        .execute(ga.getHitData)
-        .value;
+    browser.waitUntil(log.hitCountEquals(3));
 
-    assert.equal(hitData.length, 3);
-    assert.equal(hitData[0].eventCategory, 'Uncategorized');
-    assert.equal(hitData[0].eventAction, 'inactive');
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Uncategorized');
+    assert.strictEqual(hits[0].ea, 'inactive');
 
     // Since the event above resets the session timeout, opening a new
     // tab will still be considered within the session timeout.
-    assert.equal(hitData[1].eventCategory, 'Page Visibility');
-    assert.equal(hitData[1].eventAction, 'change');
-    assert.equal(hitData[1].eventLabel, 'visible => hidden');
-    assert.equal(hitData[2].eventCategory, 'Page Visibility');
-    assert.equal(hitData[2].eventAction, 'change');
-    assert.equal(hitData[2].eventLabel, 'hidden => visible');
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'visible => hidden');
+    assert.strictEqual(hits[2].ec, 'Page Visibility');
+    assert.strictEqual(hits[2].ea, 'change');
+    assert.strictEqual(hits[2].el, 'hidden => visible');
   });
-
 
   it('includes usage params with all hits', function() {
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].devId, constants.DEV_ID);
-    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '40' = '001000000' in hex
-    assert.equal(hitData[0][constants.USAGE_PARAM], '40');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '40');
   });
 
+  describe('remove', function() {
+    it('destroys all bound events and functionality', function() {
+      browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+      openTab();
+      closeTab();
+
+      browser.waitUntil(log.hitCountEquals(2));
+      log.removeHits();
+      browser.execute(ga.run, 'pageVisibilityTracker:remove');
+
+      openTab();
+      closeTab();
+      log.assertNoHitsReceived();
+    });
+  });
 });
 
 
 /**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
+ * @return {boolean} True if the current browser works with the open/close
+ * tab methods defined in this file.
  */
-function notSupportedInBrowser() {
-  // TODO(philipwalton): Opening and switching between tabs is not very well
-  // supported in webdriver, so we currently only test in Firefox.
-  return browserCaps.browserName != 'firefox';
+function browserSupportsTabs() {
+  var browserCaps = browser.session().value;
+  // Internet explorer opens target="_blank" links in a new window, not tab.
+  return browserCaps.browserName != 'internet explorer';
 }
 
 
@@ -391,8 +349,8 @@ function requirePageVisibilityTracker_hitFilter() {
   ga('require', 'pageVisibilityTracker', {
     hitFilter: function(model) {
       var visibilityState = model.get('eventLabel');
-      if (visibilityState == 'hidden => visible') {
-        throw 'Exclude changes to visible';
+      if (visibilityState == 'visible => hidden') {
+        throw 'Exclude changes to hidden';
       }
       else {
         model.set('dimension1', 'pageVisibilityTracker', true);

@@ -15,7 +15,6 @@
  */
 
 
-var crypto = require('crypto');
 var express = require('express');
 var fs = require('fs-extra');
 var path = require('path');
@@ -30,26 +29,20 @@ var server;
 var LOG_PATH = './test/logs';
 
 
-function createHash(string) {
-  return crypto.createHash('md5').update(string).digest('hex');
-}
-
-
 function getLogFile(testId) {
-  return path.join(LOG_PATH, createHash(testId) + '.log');
+  return path.join(LOG_PATH, testId + '.log');
 }
 
 
 module.exports = {
   start: function start(done) {
-    fs.ensureDirSync('./test/logs');
-
     var app = express();
     app.use(serveStatic('./'));
 
     app.get('/collect/:testId', function(request, response) {
       var payload = url.parse(request.url).query;
       var logFile = getLogFile(request.params.testId);
+      fs.ensureDirSync('./test/logs');
       fs.appendFileSync(logFile, payload + '\n');
       response.end();
     });
@@ -61,6 +54,7 @@ module.exports = {
       }).on('end', function() {
         var payload = Buffer.concat(chunks).toString();
         var logFile = getLogFile(request.params.testId);
+        fs.ensureDirSync('./test/logs');
         fs.appendFileSync(logFile, payload + '\n');
       });
       response.end();
@@ -77,12 +71,15 @@ module.exports = {
   getHitLogs: function(testId) {
     var logFile = getLogFile(testId);
     if (fs.existsSync(logFile)) {
-      return fs.readFileSync(logFile, 'utf-8')
-          .trim()
-          .split('\n')
-          .map(function(hit) {
-            return qs.parse(hit);
-          });
+      var contents;
+      try {
+        contents = fs.readFileSync(logFile, 'utf-8');
+      } catch(e) {
+        process.stderr.write(e + '\n');
+      }
+      return contents.trim().split('\n').map(function(hit) {
+        return qs.parse(hit);
+      });
     } else {
       return [];
     }
