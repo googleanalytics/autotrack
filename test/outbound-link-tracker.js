@@ -268,8 +268,11 @@ function browserSupportsShadowDom() {
  */
 function browserSupportsRightClick() {
   var browserCaps = browser.session().value;
-  // https://github.com/webdriverio/webdriverio/issues/1419
-  return browserCaps.browserName != 'safari';
+  return !(
+      // https://github.com/webdriverio/webdriverio/issues/1419
+      browserCaps.browserName == 'safari' ||
+      // https://github.com/SeleniumHQ/selenium/issues/2285
+      browserCaps.browserName == 'firefox');
 }
 
 
@@ -279,7 +282,8 @@ function browserSupportsRightClick() {
  */
 function browserSupportsAreaClicks() {
   var browserCaps = browser.session().value;
-  return browserCaps.browserName != 'internet explorer';
+  return !(browserCaps.browserName == 'internet explorer' ||
+      browserCaps.browserName == 'safari');
 }
 
 
