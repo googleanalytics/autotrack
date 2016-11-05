@@ -33,6 +33,7 @@ var log;
 
 
 describe('pageVisibilityTracker', function() {
+  this.retries(4);
 
   beforeEach(function() {
     testId = uuid();
@@ -50,7 +51,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should send events when the visibility state changes', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
@@ -69,7 +70,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should track the elapsed time between events', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
@@ -84,7 +85,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should send hidden events as non-interaction events', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
@@ -99,7 +100,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should use custom metric values if specified', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       visibleMetricIndex: 1,
@@ -121,7 +122,7 @@ describe('pageVisibilityTracker', function() {
 
   it('should not send any hidden events if the session has expired',
       function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
@@ -136,7 +137,7 @@ describe('pageVisibilityTracker', function() {
 
   it('should preemptively start all new session hits with a pageview',
       function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
@@ -155,7 +156,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should not send visible events when starting a new session', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
@@ -174,7 +175,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should support customizing the change template', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(requirePageVisibilityTracker_changeTemplate);
 
@@ -189,7 +190,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should support customizing any field via the fieldsObj', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
       browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
         fieldsObj: {
@@ -199,7 +200,6 @@ describe('pageVisibilityTracker', function() {
       });
 
       openTab();
-
       closeTab();
 
       browser.waitUntil(log.hitCountEquals(2));
@@ -212,7 +212,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should support specifying a hit filter', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(requirePageVisibilityTracker_hitFilter);
 
@@ -228,7 +228,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('should reset the session timeout when other hits are sent', function() {
-    if (!browserSupportsTabs()) return;
+    if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
@@ -273,11 +273,6 @@ describe('pageVisibilityTracker', function() {
   describe('remove', function() {
     it('destroys all bound events and functionality', function() {
       browser.execute(ga.run, 'require', 'pageVisibilityTracker');
-      openTab();
-      closeTab();
-
-      browser.waitUntil(log.hitCountEquals(2));
-      log.removeHits();
       browser.execute(ga.run, 'pageVisibilityTracker:remove');
 
       openTab();

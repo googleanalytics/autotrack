@@ -29,6 +29,7 @@ var baseUrl = browser.options.baseUrl;
 
 
 describe('outboundFormTracker', function() {
+  this.retries(4);
 
   beforeEach(function() {
     testId = uuid();
@@ -167,7 +168,7 @@ describe('outboundFormTracker', function() {
   });
 
   it('supports forms in shadow DOM and event retargetting', function() {
-    if (notSupportedInBrowser()) return;
+    if (!browserSupportsEventsInShadowDom()) return this.skip();
 
     browser.execute(ga.run, 'require', 'outboundFormTracker');
     browser.execute(simulateSubmitFromInsideShadowDom);
@@ -207,9 +208,9 @@ describe('outboundFormTracker', function() {
  * @return {boolean} True if the current browser doesn't support all features
  *    required for these tests.
  */
-function notSupportedInBrowser() {
+function browserSupportsEventsInShadowDom() {
   return browser.execute(function() {
-    return !Event.prototype.composedPath;
+    return Event.prototype.composedPath;
   }).value;
 }
 

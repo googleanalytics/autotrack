@@ -28,6 +28,7 @@ var log;
 
 
 describe('eventTracker', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/event-tracker.html');

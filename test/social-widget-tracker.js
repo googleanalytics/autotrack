@@ -28,6 +28,7 @@ var log;
 
 
 describe('socialWidgetTracker', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/social-widget-tracker.html');
@@ -49,7 +50,7 @@ describe('socialWidgetTracker', function() {
 
   it('supports tweets and follows from the official twitter widgets',
       function() {
-    if (notSupportedInBrowser()) return;
+    if (!browserDriverSupportsTwitterWidgets()) return this.skip();
 
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.waitForVisible('iframe.twitter-share-button');
@@ -94,7 +95,7 @@ describe('socialWidgetTracker', function() {
   // });
 
   it('supports customizing any field via the fieldsObj', function() {
-    if (notSupportedInBrowser()) return;
+    if (!browserDriverSupportsTwitterWidgets()) return this.skip();
 
     browser.execute(ga.run, 'require', 'socialWidgetTracker', {
       fieldsObj: {
@@ -129,7 +130,7 @@ describe('socialWidgetTracker', function() {
   });
 
   it('supports specifying a hit filter', function() {
-    if (notSupportedInBrowser()) return;
+    if (!browserDriverSupportsTwitterWidgets()) return this.skip();
 
     browser.execute(requireSocialWidgetTracker_hitFilter);
 
@@ -175,10 +176,10 @@ describe('socialWidgetTracker', function() {
  * @return {boolean} True if the current browser doesn't support all features
  *    required for these tests.
  */
-function notSupportedInBrowser() {
+function browserDriverSupportsTwitterWidgets() {
   var browserCaps = browser.session().value;
 
-  return (
+  return !(
     // TODO(philipwalton): IE and Edge are flaky with the tweet button test,
     // though they work when manually testing.
     browserCaps.browserName == 'MicrosoftEdge' ||

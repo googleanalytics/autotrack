@@ -47,6 +47,7 @@ var elementIdsByDomOrder = [
 
 
 describe('impressionTracker', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/impression-tracker.html');
@@ -69,8 +70,6 @@ describe('impressionTracker', function() {
   });
 
   it('tracks when elements are visible in the viewport', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: [
         'foo',
@@ -145,8 +144,6 @@ describe('impressionTracker', function() {
   });
 
   it('handles elements being added and removed from the DOM', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: [
         {id: 'fixture', trackFirstImpressionOnly: false},
@@ -191,8 +188,6 @@ describe('impressionTracker', function() {
   });
 
   it('uses a default threshold of 0', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: ['foo']
     });
@@ -207,8 +202,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports tracking an element either once or every time', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: [
         'foo-1',
@@ -260,8 +253,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports changing the default threshold per element', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: [
         {id: 'foo-1-1', threshold: 1},
@@ -300,8 +291,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports setting a rootMargin', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       rootMargin: '-50px 0px',
       elements: [
@@ -325,8 +314,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports declarative event binding to DOM elements', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: ['attrs-1']
     });
@@ -340,8 +327,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports customizing the attribute prefix', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       attributePrefix: 'data-ga-',
       elements: ['attrs-1', 'attrs-2']
@@ -360,8 +345,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports specifying a fields object for all hits', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: ['foo', 'bar'],
       fieldsObj: {
@@ -390,8 +373,6 @@ describe('impressionTracker', function() {
   });
 
   it('supports specifying a hit filter', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(requireImpressionTracker_hitFilter);
     browser.scroll('#foo');
     browser.waitUntil(log.hitCountEquals(1));
@@ -420,8 +401,6 @@ describe('impressionTracker', function() {
 
   describe('observeElements', function() {
     it('adds elements to be observed for intersections', function() {
-      if (notSupportedInBrowser()) return;
-
       browser.execute(ga.run, 'require', 'impressionTracker', {
         elements: [
           'foo',
@@ -466,8 +445,6 @@ describe('impressionTracker', function() {
 
   describe('unobserveElements', function() {
     it('removes elements from being observed for intersections', function() {
-      if (notSupportedInBrowser()) return;
-
       browser.execute(ga.run, 'require', 'impressionTracker', {
         elements: [
           'foo',
@@ -489,8 +466,6 @@ describe('impressionTracker', function() {
     });
 
     it('only removes elements if all properties match', function() {
-      if (notSupportedInBrowser()) return;
-
       browser.execute(ga.run, 'require', 'impressionTracker', {
         elements: [
           {id: 'foo', threshold: 0},
@@ -533,8 +508,6 @@ describe('impressionTracker', function() {
   describe('unobserveAllElements', function() {
     it('removes all elements from being observed for intersections',
         function() {
-      if (notSupportedInBrowser()) return;
-
       browser.execute(ga.run, 'require', 'impressionTracker', {
         elements: [
           'foo',
@@ -577,19 +550,6 @@ describe('impressionTracker', function() {
     });
   });
 });
-
-
-/**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
- */
-function notSupportedInBrowser() {
-  var browserCaps = browser.session().value;
-
-  // IE9 doesn't support the HTML5 History API.
-  return browserCaps.browserName == 'internet explorer' &&
-      (browserCaps.version == '9' || browserCaps.version == '10');
-}
 
 
 /**

@@ -17,13 +17,9 @@
 
 exports.config = {
   specs: [
-    './test/*.js'
+    './test/index.js',
+    './test/*-tracker.js',
   ],
-  exclude: [
-    './test/analytics.js',
-    './test/utilities.js'
-  ],
-
   maxInstances: 5,
   capabilities: getCapabilities(),
   sync: true,
@@ -52,7 +48,7 @@ function getCapabilities() {
   // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
   var capabilities = [
     {browserName: 'chrome'},
-    // {browserName: 'firefox'},
+    {browserName: 'firefox'},
     // {browserName: 'safari'},
   ];
 
@@ -60,33 +56,29 @@ function getCapabilities() {
     capabilities = [
       {
         browserName: 'chrome',
-        platform: 'Windows 10'
+        platform: 'Windows 10',
+        version: 'latest',
       },
       {
         browserName: 'firefox',
         platform: 'OS X 10.11',
-        version: '49.0'
+        version: 'latest',
       },
       {
         browserName: 'safari',
         platform: 'OS X 10.11',
-        version: '10.0'
+        version: '10.0',
       },
       {
         browserName: 'safari',
-        platform: 'OS X 10.8',
-        version: '6'
+        platform: 'OS X 10.11',
+        version: '9',
       },
       {
         browserName: 'internet explorer',
         platform: 'Windows 8.1',
-        version: '11'
+        version: '11',
       },
-      {
-        browserName: 'internet explorer',
-        platform: 'Windows 7',
-        version: '9'
-      }
       // TODO(philipwalton) Edge webdriver does not fully support enough of the
       // webdriver features to rely on. Wait for full support and then re-add:
       // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/

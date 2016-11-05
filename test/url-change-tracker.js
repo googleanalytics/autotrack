@@ -29,6 +29,7 @@ var baseUrl = browser.options.baseUrl;
 
 
 describe('urlTracker', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/url-change-tracker.html');
@@ -49,8 +50,6 @@ describe('urlTracker', function() {
   });
 
   it('captures URL changes via pushState and popstate', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'urlChangeTracker');
 
     browser.click('#foo');
@@ -91,8 +90,6 @@ describe('urlTracker', function() {
 
   it('updates the tracker but does not send hits when using replaceState',
       function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'urlChangeTracker');
 
     browser.click('#replace');
@@ -108,8 +105,6 @@ describe('urlTracker', function() {
   });
 
   it('does not capture hash changes', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'urlChangeTracker');
 
     browser.click('#hash');
@@ -124,8 +119,6 @@ describe('urlTracker', function() {
   });
 
   it('supports customizing what is considered a change', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(requireUrlChangeTrackerTracker_shouldTrackUrlChange);
 
     browser.click('#foo');
@@ -151,8 +144,6 @@ describe('urlTracker', function() {
   });
 
   it('supports customizing any field via the fieldsObj', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'urlChangeTracker', {
       fieldsObj: {
         dimension1: 'urlChangeTracker'
@@ -179,7 +170,6 @@ describe('urlTracker', function() {
 
   it('supports specifying a hit filter', function() {
 
-    if (notSupportedInBrowser()) return;
 
     browser.execute(requireUrlChangeTrackerTracker_hitFilter);
 
@@ -212,19 +202,6 @@ describe('urlTracker', function() {
   });
 
 });
-
-
-/**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
- */
-function notSupportedInBrowser() {
-  var browserCaps = browser.session().value;
-
-  // IE9 doesn't support the HTML5 History API.
-  return browserCaps.browserName == 'internet explorer' &&
-      browserCaps.version == '9';
-}
 
 
 /**

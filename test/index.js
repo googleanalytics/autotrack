@@ -28,6 +28,7 @@ var log;
 
 
 describe('index', function() {
+  this.retries(4);
 
   beforeEach(function() {
     testId = uuid();

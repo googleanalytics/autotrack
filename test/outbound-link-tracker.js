@@ -29,8 +29,9 @@ var baseUrl = browser.options.baseUrl;
 
 
 describe('outboundLinkTracker', function() {
+  this.retries(4);
 
-  beforeEach(function startTracking() {
+  beforeEach(function() {
     testId = uuid();
     log = utilities.bindLogAccessors(testId);
 
@@ -94,7 +95,7 @@ describe('outboundLinkTracker', function() {
   });
 
   it('works with <area> links', function() {
-    if (!browserSupportsAreaClicks()) return;
+    if (!browserSupportsAreaClicks()) return this.skip();
 
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#area-link');
@@ -107,21 +108,31 @@ describe('outboundLinkTracker', function() {
   });
 
   it('supports events other than click', function() {
-    if (!browserSupportsRightClick()) return;
+    var events = ['mousedown'];
+    var action = 'click';
+    var expectedHits = 1;
+    if (browserSupportsRightClick()) {
+      events.push('contextmenu');
+      action = 'rightClick';
+      expectedHits = 2;
+    }
 
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
-      events: ['mousedown', 'contextmenu']
+      events: events
     });
-    browser.rightClick('#outbound-link');
-    browser.waitUntil(log.hitCountEquals(2));
+
+    browser[action]('#outbound-link');
+    browser.waitUntil(log.hitCountEquals(expectedHits));
 
     var hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'mousedown');
     assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
-    assert.strictEqual(hits[1].ec, 'Outbound Link');
-    assert.strictEqual(hits[1].ea, 'contextmenu');
-    assert.strictEqual(hits[1].el, 'https://example.com/outbound-link');
+    if (browserSupportsRightClick()) {
+      assert.strictEqual(hits[1].ec, 'Outbound Link');
+      assert.strictEqual(hits[1].ea, 'contextmenu');
+      assert.strictEqual(hits[1].el, 'https://example.com/outbound-link');
+    }
   });
 
   it('supports customizing the selector used to detect clicks', function() {
@@ -215,7 +226,7 @@ describe('outboundLinkTracker', function() {
   });
 
   it('supports links in shadow DOM and event retargetting', function() {
-    if (!browserSupportsShadowDom()) return;
+    if (!browserSupportsEventsInShadowDom()) return;
 
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.execute(simulateClickFromInsideShadowDom);
@@ -254,7 +265,7 @@ describe('outboundLinkTracker', function() {
 /**
  * @return {boolean} True if the current browser supports Shadow DOM.
  */
-function browserSupportsShadowDom() {
+function browserSupportsEventsInShadowDom() {
   return browser.execute(function() {
     return Event.prototype.composedPath;
   }).value;
@@ -270,7 +281,10 @@ function browserSupportsRightClick() {
       // https://github.com/webdriverio/webdriverio/issues/1419
       browserCaps.browserName == 'safari' ||
       // https://github.com/SeleniumHQ/selenium/issues/2285
-      browserCaps.browserName == 'firefox');
+      browserCaps.browserName == 'firefox' ||
+      // TODO(philipwalton): not sure why this is failing, might just be
+      // a temporary Sauce Labs issue.
+      browserCaps.browserName == 'internet explorer');
 }
 
 

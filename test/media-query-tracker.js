@@ -53,6 +53,7 @@ var opts = {
 
 
 describe('mediaQueryTracker', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/autotrack.html');
@@ -74,8 +75,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('sets initial data via custom dimensions', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
@@ -86,8 +85,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('sends events when the matched media changes', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
@@ -102,8 +99,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('sends non-interactive events', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
@@ -120,8 +115,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('waits for the timeout send changes', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.setViewportSize({width: 400, height: 400}, false);
 
@@ -133,8 +126,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('supports customizing the timeout period', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'mediaQueryTracker',
         Object.assign({}, opts, {changeTimeout: 0}));
     browser.setViewportSize({width: 400, height: 400}, false);
@@ -161,8 +152,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('supports customizing the change template', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(requireMediaQueryTracker_changeTemplate);
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
@@ -173,8 +162,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('supports customizing any field via the fieldsObj', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(ga.run, 'require', 'mediaQueryTracker',
         Object.assign({}, opts, {
           changeTimeout: 0,
@@ -197,8 +184,6 @@ describe('mediaQueryTracker', function() {
   });
 
   it('supports specifying a hit filter', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(requireMediaQueryTracker_hitFilter);
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(1));
@@ -226,8 +211,6 @@ describe('mediaQueryTracker', function() {
 
   describe('remove', function() {
     it('destroys all bound events and functionality', function() {
-      if (notSupportedInBrowser()) return;
-
       browser.execute(ga.run, 'require', 'mediaQueryTracker',
           Object.assign({}, opts, {changeTimeout: 0}));
 
@@ -249,24 +232,6 @@ describe('mediaQueryTracker', function() {
     });
   });
 });
-
-
-/**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
- */
-function notSupportedInBrowser() {
-  var browserCaps = browser.session().value;
-
-  // TODO(philipwalton): Some capabilities aren't implemented, so we can't test
-  // against Edge right now. Wait for build 10532 to support setViewportSize
-  // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
-
-  // IE9 doesn't support matchMedia, so it's not tested.
-  return browserCaps.browserName == 'MicrosoftEdge' ||
-      (browserCaps.browserName == 'internet explorer' &&
-          browserCaps.version == '9');
-}
 
 
 /**

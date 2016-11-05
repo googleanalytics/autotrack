@@ -20,6 +20,7 @@ var ga = require('./analytics');
 
 
 describe('autotrack', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/autotrack.html');
@@ -30,8 +31,6 @@ describe('autotrack', function() {
   });
 
   it('logs a deprecation error when requiring autotrack directly', function() {
-    if (notSupportedInBrowser()) return;
-
     browser.execute(function() {
       if (!window.console) return;
       window.__consoleErrors__ = [];
@@ -54,17 +53,3 @@ describe('autotrack', function() {
   });
 
 });
-
-
-/**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
- */
-function notSupportedInBrowser() {
-  var browserCaps = browser.session().value;
-
-  // IE9 doesn't support `console.error`, so it's not tested.
-  return browserCaps.browserName == 'MicrosoftEdge' ||
-      (browserCaps.browserName == 'internet explorer' &&
-          browserCaps.version == '9');
-}

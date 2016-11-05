@@ -28,6 +28,7 @@ var log;
 
 
 describe('cleanUrlTracker', function() {
+  this.retries(4);
 
   before(function() {
     browser.url('/test/autotrack.html');
