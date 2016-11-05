@@ -66,14 +66,17 @@ module.exports =  {
   logHitData: function(testId) {
     var ga = window[window.GoogleAnalyticsObject || 'ga'];
     if (typeof ga == 'function') {
-      ga('set', 'sendHitTask', function(model) {
-        var hitPayload = model.get('hitPayload');
-        if ('sendBeacon' in navigator) {
-          navigator.sendBeacon('/collect/' + testId, hitPayload);
-        } else {
-          var beacon = new Image();
-          beacon.src = '/collect/' + testId + '?' + hitPayload;
-        }
+      ga(function(tracker) {
+        var index = 1;
+        tracker.set('sendHitTask', function(model) {
+          var hitPayload = model.get('hitPayload') + ('&index=' + index++);
+          if ('sendBeacon' in navigator) {
+            navigator.sendBeacon('/collect/' + testId, hitPayload);
+          } else {
+            var beacon = new Image();
+            beacon.src = '/collect/' + testId + '?' + hitPayload;
+          }
+        });
       });
     }
   },

@@ -79,6 +79,8 @@ module.exports = {
       }
       return contents.trim().split('\n').map(function(hit) {
         return qs.parse(hit);
+      }).sort(function(a, b) {
+        return Number(a.index) - Number(b.index);
       });
     } else {
       return [];
