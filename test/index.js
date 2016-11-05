@@ -35,21 +35,21 @@ describe('index', function() {
   });
 
   afterEach(function() {
-    browser.execute(ga.run, 'cleanUrlTracker:remove')
-    browser.execute(ga.run, 'eventTracker:remove')
-    browser.execute(ga.run, 'impressionTracker:remove')
-    browser.execute(ga.run, 'mediaQueryTracker:remove')
-    browser.execute(ga.run, 'outboundFormTracker:remove')
-    browser.execute(ga.run, 'outboundLinkTracker:remove')
-    browser.execute(ga.run, 'pageVisibilityTracker:remove')
-    browser.execute(ga.run, 'socialWidgetTracker:remove')
-    browser.execute(ga.run, 'urlChangeTracker:remove')
+    browser.execute(ga.run, 'cleanUrlTracker:remove');
+    browser.execute(ga.run, 'eventTracker:remove');
+    browser.execute(ga.run, 'impressionTracker:remove');
+    browser.execute(ga.run, 'mediaQueryTracker:remove');
+    browser.execute(ga.run, 'outboundFormTracker:remove');
+    browser.execute(ga.run, 'outboundLinkTracker:remove');
+    browser.execute(ga.run, 'pageVisibilityTracker:remove');
+    browser.execute(ga.run, 'socialWidgetTracker:remove');
+    browser.execute(ga.run, 'urlChangeTracker:remove');
     browser.execute(ga.run, 'remove');
     log.removeHits();
   });
 
   it('provides all plugins', function() {
-    browser.url('/test/autotrack.html')
+    browser.url('/test/autotrack.html');
     var gaplugins = browser.execute(ga.getProvidedPlugins).value;
 
     assert(gaplugins.includes('Autotrack'));
@@ -66,7 +66,7 @@ describe('index', function() {
 
   it('provides plugins even if sourced before the tracking snippet',
       function() {
-    browser.url('/test/autotrack-reorder.html')
+    browser.url('/test/autotrack-reorder.html');
 
     var gaplugins = browser.execute(ga.getProvidedPlugins).value;
     assert(gaplugins.includes('Autotrack'));
@@ -82,7 +82,7 @@ describe('index', function() {
   });
 
   it('works with all plugins required', function() {
-    browser.url('/test/autotrack.html')
+    browser.url('/test/autotrack.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
@@ -120,7 +120,7 @@ describe('index', function() {
   });
 
   it('tracks usage for all required plugins', function() {
-    browser.url('/test/autotrack.html')
+    browser.url('/test/autotrack.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');

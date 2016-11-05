@@ -23,18 +23,27 @@ var serveStatic = require('serve-static');
 var url = require('url');
 
 
-var server;
-
-
 var LOG_PATH = './test/logs';
 
 
+var server;
+
+
+/**
+ * Gets the file path to the log file for the passed test ID.
+ * @param {string} testId The test ID of the log to get.
+ * @return {string} The log's file path.
+ */
 function getLogFile(testId) {
   return path.join(LOG_PATH, testId + '.log');
 }
 
 
 module.exports = {
+  /**
+   * Starts the express log server.
+   * @param {Function} done A callback to invoke once the server is up.
+   */
   start: function start(done) {
     var app = express();
     app.use(serveStatic('./'));
@@ -63,11 +72,20 @@ module.exports = {
     server = app.listen(8080, done);
   },
 
+  /**
+   * Stops the log server and deletes the logs.
+   */
   stop: function() {
     fs.removeSync('./test/logs');
     server.close();
   },
 
+  /**
+   * Gets the log data for the passed test ID.
+   * @param {string} testId The test ID of the log to get.
+   * @return {Array} An array of hit objects sorted by index corresponding
+   *     to the order in which they were sent.
+   */
   getHitLogs: function(testId) {
     var logFile = getLogFile(testId);
     if (fs.existsSync(logFile)) {
@@ -87,6 +105,10 @@ module.exports = {
     }
   },
 
+  /**
+   * Removes the log file for the passed test ID.
+   * @param {string} testId The test ID of the log to remove.
+   */
   removeHitLogs: function(testId) {
     fs.removeSync(getLogFile(testId));
   }

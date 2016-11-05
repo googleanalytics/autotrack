@@ -17,7 +17,6 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var utilities = require('./utilities');
 
 
 describe('autotrack', function() {
@@ -41,7 +40,7 @@ describe('autotrack', function() {
         window.__consoleErrors__.push(arguments);
         window.__originalConsoleError__.apply(window.console, arguments);
       };
-    })
+    });
 
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.run, 'require', 'autotrack');

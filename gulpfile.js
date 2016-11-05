@@ -20,7 +20,6 @@
 
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
-var connect = require('connect');
 var envify = require('envify');
 var eslint = require('gulp-eslint');
 var fs = require('fs');
@@ -29,7 +28,6 @@ var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
 var ngrok = require('ngrok');
 var seleniumServerJar = require('selenium-server-standalone-jar');
-var serveStatic = require('serve-static');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var spawn = require('child_process').spawn;

@@ -49,34 +49,6 @@ describe('pageVisibilityTracker', function() {
     log.removeHits();
   });
 
-  function openTab() {
-    var prevTabIds = browser.getTabIds();
-    browser.execute(function() {
-      var a = document.createElement('a');
-      a.href = '/test/blank.html';
-      a.target = '_blank';
-      a.id = 'new-tab-link';
-      a.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
-      a.onclick = function() {document.body.removeChild(a);};
-      document.body.appendChild(a);
-    });
-    browser.element('#new-tab-link').click();
-
-    browser.pause(500);
-    browser.waitUntil(function() {
-      var newTabIds = browser.getTabIds();
-      return newTabIds.length > prevTabIds.length;
-    }, 2000, 'New tab was never opened.', 500);
-  }
-
-  function closeTab() {
-    var windowHandles = browser.windowHandles().value;
-    // Close all tabs but the first one
-    windowHandles.forEach(function(handle, index) {
-      if (index > 0) browser.switchTab(handle).close();
-    });
-  }
-
   it('should send events when the visibility state changes', function() {
     if (!browserSupportsTabs()) return;
 
@@ -328,6 +300,42 @@ function browserSupportsTabs() {
   var browserCaps = browser.session().value;
   // Internet explorer opens target="_blank" links in a new window, not tab.
   return browserCaps.browserName != 'internet explorer';
+}
+
+
+/**
+ * Opens a new tab by inserting a link with target="_blank" into the DOM
+ * and then clicking on it.
+ */
+function openTab() {
+  var prevTabIds = browser.getTabIds();
+  browser.execute(function() {
+    var a = document.createElement('a');
+    a.href = '/test/blank.html';
+    a.target = '_blank';
+    a.id = 'new-tab-link';
+    a.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
+    a.onclick = function() {document.body.removeChild(a);};
+    document.body.appendChild(a);
+  });
+  browser.element('#new-tab-link').click();
+
+  browser.pause(500);
+  browser.waitUntil(function() {
+    var newTabIds = browser.getTabIds();
+    return newTabIds.length > prevTabIds.length;
+  }, 2000, 'New tab was never opened.', 500);
+}
+
+
+/**
+ * Closes all tabs other than the oldest one.
+ */
+function closeTab() {
+  var windowHandles = browser.windowHandles().value;
+  windowHandles.forEach(function(handle, index) {
+    if (index > 0) browser.switchTab(handle).close();
+  });
 }
 
 
