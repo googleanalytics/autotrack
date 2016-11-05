@@ -20,36 +20,25 @@ var ga = require('./analytics');
 var utilities = require('./utilities');
 
 
-var browserCaps;
-
-
 describe('autotrack', function() {
 
   before(function() {
-    browserCaps = browser.session().value;
     browser.url('/test/autotrack.html');
   });
 
-
   afterEach(function() {
-    browser
-        .execute(utilities.untrackConsoleErrors)
-        .execute(ga.run, 'remove');
+    browser.execute(utilities.untrackConsoleErrors);
+    browser.execute(ga.run, 'remove');
   });
 
-
-  it('should log a deprecation error when requiring autotrack directly',
-      function() {
-
+  it('logs a deprecation error when requiring autotrack directly', function() {
     if (notSupportedInBrowser()) return;
 
-    var consoleErrors = browser
-        .execute(utilities.trackConsoleErrors)
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.run, 'require', 'autotrack')
-        .execute(utilities.getConsoleErrors)
-        .value;
+    browser.execute(utilities.trackConsoleErrors);
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'require', 'autotrack');
 
+    var consoleErrors = browser.execute(utilities.getConsoleErrors).value;
     assert(consoleErrors.length, 1);
     assert(consoleErrors[0][0].indexOf('https://goo.gl/XsXPg5') > -1);
   });
@@ -62,6 +51,8 @@ describe('autotrack', function() {
  *    required for these tests.
  */
 function notSupportedInBrowser() {
+  var browserCaps = browser.session().value;
+
   // IE9 doesn't support `console.error`, so it's not tested.
   return browserCaps.browserName == 'MicrosoftEdge' ||
       (browserCaps.browserName == 'internet explorer' &&

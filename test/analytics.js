@@ -28,7 +28,7 @@ module.exports =  {
   },
 
   getProvidedPlugins: function() {
-    return window.gaplugins;
+    return Object.keys(window.gaplugins || {});
   },
 
   getHitData: function() {
