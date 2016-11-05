@@ -242,13 +242,7 @@ describe('outboundLinkTracker', function() {
 
   describe('remove', function() {
     it('destroys all bound events and functionality', function() {
-      browser.execute(utilities.stopClickEvents);
       browser.execute(ga.run, 'require', 'outboundLinkTracker');
-      browser.click('#outbound-link');
-      browser.waitUntil(log.hitCountEquals(1));
-      assert.strictEqual(log.getHits()[0].ec, 'Outbound Link');
-      log.removeHits();
-
       browser.execute(ga.run, 'outboundLinkTracker:remove');
       browser.click('#outbound-link');
       log.assertNoHitsReceived();

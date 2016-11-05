@@ -27,18 +27,29 @@ describe('autotrack', function() {
   });
 
   afterEach(function() {
-    browser.execute(utilities.untrackConsoleErrors);
     browser.execute(ga.run, 'remove');
   });
 
   it('logs a deprecation error when requiring autotrack directly', function() {
     if (notSupportedInBrowser()) return;
 
-    browser.execute(utilities.trackConsoleErrors);
+    browser.execute(function() {
+      if (!window.console) return;
+      window.__consoleErrors__ = [];
+      window.__originalConsoleError__ = window.console.error;
+      window.console.error = function() {
+        window.__consoleErrors__.push(arguments);
+        window.__originalConsoleError__.apply(window.console, arguments);
+      };
+    })
+
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.run, 'require', 'autotrack');
 
-    var consoleErrors = browser.execute(utilities.getConsoleErrors).value;
+    var consoleErrors = browser.execute(function() {
+      return window.__consoleErrors__;
+    }).value;
+
     assert(consoleErrors.length, 1);
     assert(consoleErrors[0][0].indexOf('https://goo.gl/XsXPg5') > -1);
   });

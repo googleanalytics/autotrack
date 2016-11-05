@@ -15,9 +15,6 @@
  */
 
 
-var get = require('lodash/get');
-
-
 module.exports =  {
 
   run: function() {
@@ -29,38 +26,6 @@ module.exports =  {
 
   getProvidedPlugins: function() {
     return Object.keys(window.gaplugins || {});
-  },
-
-  getHitData: function() {
-    return window.hitData;
-  },
-
-  trackHitData: function() {
-    window.hitData = [];
-    var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    ga('set', 'sendHitTask', function(model) {
-      window.hitData.push({
-        hitType: model.get('hitType'),
-        location: model.get('location'),
-        page: model.get('page'),
-        title: model.get('title'),
-        eventCategory: model.get('eventCategory'),
-        eventAction: model.get('eventAction'),
-        eventLabel: model.get('eventLabel'),
-        eventValue: model.get('eventValue'),
-        socialNetwork: model.get('socialNetwork'),
-        socialAction: model.get('socialAction'),
-        socialTarget: model.get('socialTarget'),
-        dimension1: model.get('dimension1'),
-        dimension2: model.get('dimension2'),
-        metric1: model.get('metric1'),
-        metric2: model.get('metric2'),
-        nonInteraction: model.get('nonInteraction'),
-        devId: model.get('&did'),
-        '&_av': model.get('&_av'),
-        '&_au': model.get('&_au')
-      });
-    });
   },
 
   logHitData: function(testId) {
@@ -95,38 +60,4 @@ module.exports =  {
     var beacon = new Image();
     beacon.src = baseUrl + '/collect/' + testId + '?empty=1';
   },
-
-  hitDataMatches: function(expected, compareFunction) {
-    return function() {
-      var hitData = browser.execute(this.getHitData).value;
-      if (compareFunction) {
-        hitData = hitData.sort(compareFunction);
-      }
-      return expected.every(function(item) {
-        return get(hitData, item[0]) === item[1];
-      });
-    }.bind(this);
-  },
-
-  getTrackerData: function() {
-    var ga = window[window.GoogleAnalyticsObject || 'ga'];
-    var tracker = ga.getAll()[0];
-    return {
-      dimension1: tracker.get('dimension1'),
-      dimension2: tracker.get('dimension2')
-    };
-  },
-
-  trackerDataMatches: function(expected) {
-    return function() {
-      var trackerData = browser.execute(this.getTrackerData);
-      return expected.every(function(item) {
-        return get(trackerData.value, item[0]) === item[1];
-      });
-    }.bind(this);
-  },
-
-  clearHitData: function() {
-    window.hitData = [];
-  }
 };

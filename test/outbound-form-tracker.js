@@ -194,13 +194,7 @@ describe('outboundFormTracker', function() {
 
   describe('remove', function() {
     it('destroys all bound events and functionality', function() {
-      browser.execute(utilities.stopSubmitEvents);
       browser.execute(ga.run, 'require', 'outboundFormTracker');
-      browser.click('#outbound-submit');
-      browser.waitUntil(log.hitCountEquals(1));
-      assert.strictEqual(log.getHits()[0].ec, 'Outbound Form');
-      log.removeHits();
-
       browser.execute(ga.run, 'outboundFormTracker:remove');
       browser.click('#outbound-submit');
       log.assertNoHitsReceived();
