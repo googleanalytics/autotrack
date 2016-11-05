@@ -27,15 +27,20 @@ var SESSION_TIMEOUT_IN_MILLISECONDS = 2000; // 2 seconds
 var SESSION_TIMEOUT_IN_MINUTES = (1/60) * 2; // 2 seconds
 var BUFFER = 500; // An extra wait time to avoid flakiness
 
+
+var testId;
+var log;
+
+
 describe('pageVisibilityTracker', function() {
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
-
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.url('/test/autotrack.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function() {

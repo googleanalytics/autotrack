@@ -23,19 +23,23 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
-describe('urlTracker', function() {
+var testId;
+var log;
+var baseUrl = browser.options.baseUrl;
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
-  var baseUrl = browser.options.baseUrl;
+
+describe('urlTracker', function() {
 
   before(function() {
     browser.url('/test/url-change-tracker.html');
   });
 
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function () {

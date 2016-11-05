@@ -23,15 +23,20 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
+var testId;
+var log;
+var baseUrl = browser.options.baseUrl;
+
+
 describe('outboundFormTracker', function() {
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
-
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.url('/test/outbound-form-tracker.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function() {
@@ -81,7 +86,7 @@ describe('outboundFormTracker', function() {
     // Go back and submit a form that does match the `.form` selector.
     browser.url('/test/outbound-form-tracker.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'outboundFormTracker', {
       formSelector: '.form'
     });
@@ -103,7 +108,6 @@ describe('outboundFormTracker', function() {
     browser.waitUntil(log.hitCountEquals(1));
 
     var hits = log.getHits();
-    var baseUrl = browser.options.baseUrl;
     assert.strictEqual(hits[0].ec, 'Outbound Form');
     assert.strictEqual(hits[0].ea, 'submit');
     assert.strictEqual(hits[0].el, baseUrl + '/test/blank.html');

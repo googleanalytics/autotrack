@@ -23,18 +23,22 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
-describe('socialWidgetTracker', function() {
+var testId;
+var log;
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
+
+describe('socialWidgetTracker', function() {
 
   before(function() {
     browser.url('/test/social-widget-tracker.html');
   });
 
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function () {

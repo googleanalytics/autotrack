@@ -23,15 +23,20 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
+var testId;
+var log;
+var baseUrl = browser.options.baseUrl;
+
+
 describe('outboundLinkTracker', function() {
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
-
   beforeEach(function startTracking() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.url('/test/outbound-link-tracker.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function() {
@@ -131,7 +136,7 @@ describe('outboundLinkTracker', function() {
     // Go back and click a link that does match the `.link` selector.
     browser.url('/test/outbound-link-tracker.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
       linkSelector: '.link'
     });
@@ -151,7 +156,6 @@ describe('outboundLinkTracker', function() {
     browser.waitUntil(log.hitCountEquals(1));
 
     var hits = log.getHits();
-    var baseUrl = browser.options.baseUrl;
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, baseUrl + '/test/blank.html');

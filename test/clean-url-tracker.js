@@ -23,24 +23,28 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
-describe('cleanUrlTracker', function() {
+var testId;
+var log;
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
+
+describe('cleanUrlTracker', function() {
 
   before(function() {
     browser.url('/test/autotrack.html');
   });
 
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function() {
-    log.removeHits();
     browser.execute(ga.run, 'cleanUrlTracker:remove');
     browser.execute(ga.run, 'remove');
+    log.removeHits();
   });
 
   it('set the page field but does not modify the path by default', function() {
@@ -118,7 +122,6 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[0].cd1, undefined);
   });
 
-
   it('cleans URLs in all hits, not just the initial pageview', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
@@ -146,7 +149,6 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[3].cd1, constants.NULL_DIMENSION);
   });
 
-
   it('supports removing index filenames', function() {
     var url = 'https://example.com/foo/bar/index.html?q=qux&b=baz#hash';
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
@@ -159,7 +161,6 @@ describe('cleanUrlTracker', function() {
     var hits = log.getHits();
     assert.strictEqual(hits[0].dp, '/foo/bar/?q=qux&b=baz');
   });
-
 
   it('only removes index filenames at the end of the URL after a slash',
       function() {

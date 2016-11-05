@@ -26,6 +26,8 @@ var pkg = require('../package.json');
 var TIMEOUT = 1000;
 
 
+var testId;
+var log;
 var opts = {
   definitions: [
     {
@@ -52,17 +54,17 @@ var opts = {
 
 describe('mediaQueryTracker', function() {
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
-
   before(function() {
     browser.url('/test/autotrack.html');
   });
 
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.setViewportSize({width: 800, height: 600}, false);
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function() {
@@ -144,7 +146,7 @@ describe('mediaQueryTracker', function() {
     browser.execute(ga.run, 'mediaQueryTracker:remove');
     browser.execute(ga.run, 'remove');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
     browser.setViewportSize({width: 800, height: 600}, false);
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.setViewportSize({width: 400, height: 400}, false);

@@ -23,10 +23,16 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
+var testId;
+var log;
+
+
 describe('index', function() {
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
+  beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+  });
 
   afterEach(function() {
     browser.execute(ga.run, 'cleanUrlTracker:remove')
@@ -78,7 +84,7 @@ describe('index', function() {
   it('works with all plugins required', function() {
     browser.url('/test/autotrack.html')
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'require', 'eventTracker');
     browser.execute(ga.run, 'require', 'impressionTracker');
@@ -97,7 +103,7 @@ describe('index', function() {
   it('works when renaming the global object', function() {
     browser.url('/test/autotrack-rename.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'require', 'eventTracker');
     browser.execute(ga.run, 'require', 'impressionTracker');
@@ -116,7 +122,7 @@ describe('index', function() {
   it('tracks usage for all required plugins', function() {
     browser.url('/test/autotrack.html')
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'require', 'eventTracker');
     browser.execute(ga.run, 'require', 'impressionTracker');

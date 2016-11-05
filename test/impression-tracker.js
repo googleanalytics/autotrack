@@ -23,6 +23,8 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
+var testId;
+var log;
 var elementIdsByDomOrder = [
   'foo',
   'foo-1',
@@ -46,18 +48,18 @@ var elementIdsByDomOrder = [
 
 describe('impressionTracker', function() {
 
-  var TEST_ID = uuid();
-  var log = utilities.bindLogAccessors(TEST_ID);
-
   before(function() {
     browser.url('/test/impression-tracker.html');
     browser.setViewportSize({width: 500, height: 500}, true);
   });
 
   beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
     browser.scroll(0, 0);
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
-    browser.execute(ga.logHitData, TEST_ID);
+    browser.execute(ga.logHitData, testId);
   });
 
   afterEach(function() {
