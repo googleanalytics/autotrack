@@ -129,7 +129,7 @@ exports.config = {
   // Test reporter for stdout.
   // The following are supported: dot (default), spec, and xunit
   // see also: http://webdriver.io/guide/testrunner/reporters.html
-  // reporters: ['dot'],
+  reporters: ['spec'],
   //
   // Options to be passed to Mocha.
   // See the full list at http://mochajs.org/
@@ -208,7 +208,8 @@ function getCapabilities() {
   // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
   var capabilities = [
     {browserName: 'chrome'},
-    // {browserName: 'firefox'}
+    // {browserName: 'firefox'},
+    // {browserName: 'safari'},
   ];
 
   if (isSauceLabs) {
