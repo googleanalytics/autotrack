@@ -26,7 +26,7 @@ var fs = require('fs');
 var gulp = require('gulp');
 var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
-var ngrok = require('ngrok');
+var sauceConnectLauncher = require('sauce-connect-launcher');
 var seleniumServerJar = require('selenium-server-standalone-jar');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
@@ -34,11 +34,13 @@ var spawn = require('child_process').spawn;
 var uglify = require('gulp-uglify');
 var webdriver = require('gulp-webdriver');
 
+
 var pkg = require('./package.json');
 var server = require('./test/server');
 
 
 var seleniumServer;
+var sshTunnel;
 
 
 process.env.AUTOTRACK_VERSION = process.env.AUTOTRACK_VERSION || pkg.version;
@@ -94,9 +96,11 @@ gulp.task('lint', function () {
 
 gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
   function stopServers() {
+    sshTunnel.close();
     server.stop();
-    ngrok.kill();
-    if (!process.env.CI) seleniumServer.kill();
+    if (!process.env.CI) {
+      seleniumServer.kill();
+    }
   }
   return gulp.src('./wdio.conf.js')
       .pipe(webdriver())
@@ -105,11 +109,20 @@ gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
 
 
 gulp.task('tunnel', ['serve'], function(done) {
-  ngrok.connect(8080, function(err, url) {
-    if (err) return done(err);
-
-    process.env.BASE_URL = url;
-    done();
+  var opts = {
+    username: process.env.SAUCE_USERNAME,
+    accessKey: process.env.SAUCE_ACCESS_KEY,
+    verbose: true,
+  };
+  sauceConnectLauncher(opts, function(err, sauceConnectProcess) {
+    if (err) {
+      done(err);
+    } else {
+      process.env.BASE_URL = 'http://localhost:8080';
+      sshTunnel = sauceConnectProcess;
+      process.on('exit', sshTunnel.close.bind(sshTunnel));
+      done();
+    }
   });
 });
 

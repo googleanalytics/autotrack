@@ -50,6 +50,7 @@
     "intersection-observer": "^0.1.1",
     "mocha": "^3.1.2",
     "ngrok": "^2.2.3",
+    "sauce-connect-launcher": "^0.17.0",
     "selenium-server-standalone-jar": "^3.0.1",
     "serve-static": "^1.11.1",
     "uuid": "^2.0.3",

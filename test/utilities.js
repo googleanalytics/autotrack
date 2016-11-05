@@ -42,33 +42,15 @@ module.exports = {
       getHits: server.getHitLogs.bind(server, testId),
       removeHits: server.removeHitLogs.bind(server, testId),
       hitCountEquals: function(count) {
-        var callCount = 0;
         return function() {
-          var hits = server.getHitLogs(testId);
-          var hitCount = hits.length;
-          if (hitCount === count) {
-            return true;
-          } else {
-            callCount++;
-            if (callCount > 5 && callCount < 10) {
-              process.stdout.write(
-                  'Still waiting for ' + count + ' hits to be received\n');
-            } else if (callCount == 10) {
-              process.stdout.write(
-                  'Hmmmm, looks like waiting for hits will likely ' +
-                  'time out.\nHere are the hits received so far:\n' +
-                  JSON.stringify(hits, null, 2) + '\n');
-            }
-            return false;
-          }
+          return server.getHitLogs(testId).length === count;
         };
       },
       assertNoHitsReceived: function() {
         var browserCaps = browser.session().value;
         if (browserCaps.browserName == 'safari') {
           // Reduces flakiness in Safari.
-          var timeToWait = browser.options.baseUrl.indexOf('localhost') > -1 ?
-              500 : 2000;
+          var timeToWait = 3000;
           browser.pause(timeToWait);
           assert.strictEqual(accessors.getHits().length, 0);
         } else {

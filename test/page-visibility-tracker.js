@@ -72,17 +72,15 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return;
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
-    browser.pause(1500);
 
     openTab();
-    browser.pause(500);
-
+    browser.pause(1500);
     closeTab();
     browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
-    assert.strictEqual(hits[0].ev, '2'); // 1500-2499ms rounds to 2 seconds.
-    assert.strictEqual(hits[1].ev, '1'); // 500-1499ms rounds to 1 second.
+    assert(Number(hits[0].ev) <= 1); // <1500ms.
+    assert(Number(hits[1].ev) >= 2); // >=1500ms.
   });
 
   it('should send hidden events as non-interaction events', function() {
@@ -108,19 +106,17 @@ describe('pageVisibilityTracker', function() {
       hiddenMetricIndex: 2
     });
 
-    browser.pause(1500);
     openTab();
-    browser.pause(500);
+    browser.pause(1500);
     closeTab();
 
     browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
-    assert.strictEqual(hits.length, 2);
-    assert.strictEqual(hits[0].ev, '2'); // 1500-2499ms rounds to 2 seconds.
-    assert.strictEqual(hits[0].cm1, '2'); // 1500-2499ms rounds to 2 seconds.
-    assert.strictEqual(hits[1].ev, '1'); // 500-1499ms rounds to 1 second.
-    assert.strictEqual(hits[1].cm2, '1'); // 500-1499ms rounds to 1 second.
+    assert(Number(hits[0].ev) <= 1); // <1500ms.
+    assert(Number(hits[0].cm1) <= 1); // <1500ms.
+    assert(Number(hits[1].ev) >= 2); // >=1500ms.
+    assert(Number(hits[1].cm2) >= 2); // >=1500ms.
   });
 
   it('should not send any hidden events if the session has expired',
@@ -298,8 +294,10 @@ describe('pageVisibilityTracker', function() {
  */
 function browserSupportsTabs() {
   var browserCaps = browser.session().value;
-  // Internet explorer opens target="_blank" links in a new window, not tab.
-  return browserCaps.browserName != 'internet explorer';
+  // TODO(philipwalton): on Sauce Labs, Internet explorer and Safari open
+  // target="_blank" links in a new window, not tab.
+  return !(browserCaps.browserName == 'internet explorer' ||
+      browserCaps.browserName == 'safari');
 }
 
 
