@@ -202,11 +202,11 @@ describe('mediaQueryTracker', function() {
     browser.waitUntil(log.hitCountEquals(1));
 
     var hits = log.getHits();
-    assert.equal(hits[0].did, constants.DEV_ID);
-    assert.equal(hits[0][constants.VERSION_PARAM], pkg.version);
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '8' = '000001000' in hex
-    assert.equal(hits[0][constants.USAGE_PARAM], '8');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '8');
   });
 
   describe('remove', function() {

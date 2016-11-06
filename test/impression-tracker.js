@@ -392,11 +392,11 @@ describe('impressionTracker', function() {
     browser.waitUntil(log.hitCountEquals(1));
 
     var hits = log.getHits();
-    assert.equal(hits[0].did, constants.DEV_ID);
-    assert.equal(hits[0][constants.VERSION_PARAM], pkg.version);
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '4' = '000000100' in hex
-    assert.equal(hits[0][constants.USAGE_PARAM], '4');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '4');
   });
 
   describe('observeElements', function() {
