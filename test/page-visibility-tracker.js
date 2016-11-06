@@ -23,8 +23,8 @@ var constants = require('../lib/constants');
 var pkg = require('../package.json');
 
 
-var SESSION_TIMEOUT_IN_MILLISECONDS = 2000; // 2 seconds
-var SESSION_TIMEOUT_IN_MINUTES = (1/60) * 2; // 2 seconds
+var SESSION_TIMEOUT_IN_MILLISECONDS = 3000; // 3 seconds
+var SESSION_TIMEOUT_IN_MINUTES = (1/60) * 3; // 3 seconds
 var BUFFER = 500; // An extra wait time to avoid flakiness
 
 
@@ -75,13 +75,13 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
     openTab();
-    browser.pause(1500);
+    browser.pause(2500);
     closeTab();
     browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
-    assert(Number(hits[0].ev) <= 1); // <1500ms.
-    assert(Number(hits[1].ev) >= 2); // >=1500ms.
+    assert(Number(hits[0].ev) <= 2); // <2500ms.
+    assert(Number(hits[1].ev) >= 3); // >=2500ms.
   });
 
   it('sends hidden events as non-interaction events', function() {
@@ -108,16 +108,16 @@ describe('pageVisibilityTracker', function() {
     });
 
     openTab();
-    browser.pause(1500);
+    browser.pause(2500);
     closeTab();
 
     browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
-    assert(Number(hits[0].ev) <= 1); // <1500ms.
-    assert(Number(hits[0].cm1) <= 1); // <1500ms.
-    assert(Number(hits[1].ev) >= 2); // >=1500ms.
-    assert(Number(hits[1].cm2) >= 2); // >=1500ms.
+    assert(Number(hits[0].ev) <= 2); // <2500ms.
+    assert(Number(hits[0].cm1) <= 2); // <2500ms.
+    assert(Number(hits[1].ev) >= 3); // >=2500ms.
+    assert(Number(hits[1].cm2) >= 3); // >=2500ms.
   });
 
   it('does not send any hidden events if the session has expired', function() {
@@ -231,28 +231,33 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
     });
-    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
     browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
-    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 2);
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
+
+    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
+    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
     openTab();
     closeTab();
 
-    browser.waitUntil(log.hitCountEquals(3));
+    browser.waitUntil(log.hitCountEquals(4));
 
     var hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Uncategorized');
     assert.strictEqual(hits[0].ea, 'inactive');
+    assert.strictEqual(hits[1].ec, 'Uncategorized');
+    assert.strictEqual(hits[1].ea, 'inactive');
 
-    // Since the event above resets the session timeout, opening a new
+    // Since each event above resets the session timeout, opening a new
     // tab will still be considered within the session timeout.
-    assert.strictEqual(hits[1].ec, 'Page Visibility');
-    assert.strictEqual(hits[1].ea, 'change');
-    assert.strictEqual(hits[1].el, 'visible => hidden');
     assert.strictEqual(hits[2].ec, 'Page Visibility');
     assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'hidden => visible');
+    assert.strictEqual(hits[2].el, 'visible => hidden');
+    assert.strictEqual(hits[3].ec, 'Page Visibility');
+    assert.strictEqual(hits[3].ea, 'change');
+    assert.strictEqual(hits[3].el, 'hidden => visible');
   });
 
   it('includes usage params with all hits', function() {
