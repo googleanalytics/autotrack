@@ -16,13 +16,15 @@
 
 
 var assert = require('assert');
+var uuid = require('uuid');
 var ga = require('./analytics');
+var utilities = require('./utilities');
 var constants = require('../lib/constants');
+var pkg = require('../package.json');
 
 
-var browserCaps;
-
-
+var testId;
+var log;
 var elementIdsByDomOrder = [
   'foo',
   'foo-1',
@@ -45,586 +47,509 @@ var elementIdsByDomOrder = [
 
 
 describe('impressionTracker', function() {
+  this.retries(4);
 
   before(function() {
-    browserCaps = browser.session().value;
-
-    browser
-        .url('/test/impression-tracker.html')
-        .setViewportSize({width: 500, height: 500}, true);
+    browser.url('/test/impression-tracker.html');
+    browser.setViewportSize({width: 500, height: 500}, true);
   });
 
   beforeEach(function() {
-    browser
-        .scroll(0, 0)
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData);
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+
+    browser.scroll(0, 0);
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, testId);
   });
 
-  afterEach(function () {
-    browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'impressionTracker:remove')
-        .execute(ga.run, 'remove');
+  afterEach(function() {
+    log.removeHits();
+    browser.execute(ga.run, 'impressionTracker:remove');
+    browser.execute(ga.run, 'remove');
   });
-
 
   it('tracks when elements are visible in the viewport', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: [
+        'foo',
+        'foo-1',
+        'foo-1-1',
+        'foo-1-2',
+        'foo-2',
+        'foo-2-1',
+        'foo-2-2',
+        'bar',
+        'bar-1',
+        'bar-1-1',
+        'bar-1-2',
+        'bar-2',
+        'bar-2-1',
+        'bar-2-2'
+      ]
+    });
+    browser.scroll('#foo');
+    browser.waitUntil(log.hitCountEquals(7));
 
-    if (notSupportedInBrowser()) return;
+    var hits = log.getHits().sort(sortHitDataByEventLabel);
+    hits = hits.sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'foo');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'foo-1');
+    assert.strictEqual(hits[2].ec, 'Viewport');
+    assert.strictEqual(hits[2].ea, 'impression');
+    assert.strictEqual(hits[2].el, 'foo-1-1');
+    assert.strictEqual(hits[3].ec, 'Viewport');
+    assert.strictEqual(hits[3].ea, 'impression');
+    assert.strictEqual(hits[3].el, 'foo-1-2');
+    assert.strictEqual(hits[4].ec, 'Viewport');
+    assert.strictEqual(hits[4].ea, 'impression');
+    assert.strictEqual(hits[4].el, 'foo-2');
+    assert.strictEqual(hits[5].ec, 'Viewport');
+    assert.strictEqual(hits[5].ea, 'impression');
+    assert.strictEqual(hits[5].el, 'foo-2-1');
+    assert.strictEqual(hits[6].ec, 'Viewport');
+    assert.strictEqual(hits[6].ea, 'impression');
+    assert.strictEqual(hits[6].el, 'foo-2-2');
+    log.removeHits();
 
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: [
-            'foo',
-            'foo-1',
-            'foo-1-1',
-            'foo-1-2',
-            'foo-2',
-            'foo-2-1',
-            'foo-2-2',
-            'bar',
-            'bar-1',
-            'bar-1-1',
-            'bar-1-2',
-            'bar-2',
-            'bar-2-1',
-            'bar-2-2'
-          ]
-        })
-        .scroll('#foo')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 7],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'foo'],
-          ['[1].eventCategory', 'Viewport'],
-          ['[1].eventAction', 'impression'],
-          ['[1].eventLabel', 'foo-1'],
-          ['[2].eventCategory', 'Viewport'],
-          ['[2].eventAction', 'impression'],
-          ['[2].eventLabel', 'foo-1-1'],
-          ['[3].eventCategory', 'Viewport'],
-          ['[3].eventAction', 'impression'],
-          ['[3].eventLabel', 'foo-1-2'],
-          ['[4].eventCategory', 'Viewport'],
-          ['[4].eventAction', 'impression'],
-          ['[4].eventLabel', 'foo-2'],
-          ['[5].eventCategory', 'Viewport'],
-          ['[5].eventAction', 'impression'],
-          ['[5].eventLabel', 'foo-2-1'],
-          ['[6].eventCategory', 'Viewport'],
-          ['[6].eventAction', 'impression'],
-          ['[6].eventLabel', 'foo-2-2']
-        ]));
+    browser.scroll('#bar');
+    browser.waitUntil(log.hitCountEquals(7));
 
-    browser
-        .scroll('#bar')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 14],
-          ['[7].eventCategory', 'Viewport'],
-          ['[7].eventAction', 'impression'],
-          ['[7].eventLabel', 'bar'],
-          ['[8].eventCategory', 'Viewport'],
-          ['[8].eventAction', 'impression'],
-          ['[8].eventLabel', 'bar-1'],
-          ['[9].eventCategory', 'Viewport'],
-          ['[9].eventAction', 'impression'],
-          ['[9].eventLabel', 'bar-1-1'],
-          ['[10].eventCategory', 'Viewport'],
-          ['[10].eventAction', 'impression'],
-          ['[10].eventLabel', 'bar-1-2'],
-          ['[11].eventCategory', 'Viewport'],
-          ['[11].eventAction', 'impression'],
-          ['[11].eventLabel', 'bar-2'],
-          ['[12].eventCategory', 'Viewport'],
-          ['[12].eventAction', 'impression'],
-          ['[12].eventLabel', 'bar-2-1'],
-          ['[13].eventCategory', 'Viewport'],
-          ['[13].eventAction', 'impression'],
-          ['[13].eventLabel', 'bar-2-2']
-        ]));
+    hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'bar');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'bar-1');
+    assert.strictEqual(hits[2].ec, 'Viewport');
+    assert.strictEqual(hits[2].ea, 'impression');
+    assert.strictEqual(hits[2].el, 'bar-1-1');
+    assert.strictEqual(hits[3].ec, 'Viewport');
+    assert.strictEqual(hits[3].ea, 'impression');
+    assert.strictEqual(hits[3].el, 'bar-1-2');
+    assert.strictEqual(hits[4].ec, 'Viewport');
+    assert.strictEqual(hits[4].ea, 'impression');
+    assert.strictEqual(hits[4].el, 'bar-2');
+    assert.strictEqual(hits[5].ec, 'Viewport');
+    assert.strictEqual(hits[5].ea, 'impression');
+    assert.strictEqual(hits[5].el, 'bar-2-1');
+    assert.strictEqual(hits[6].ec, 'Viewport');
+    assert.strictEqual(hits[6].ea, 'impression');
+    assert.strictEqual(hits[6].el, 'bar-2-2');
   });
 
-
   it('handles elements being added and removed from the DOM', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: [
+        {id: 'fixture', trackFirstImpressionOnly: false},
+        {id: 'fixture-1', trackFirstImpressionOnly: false},
+        {id: 'fixture-2', trackFirstImpressionOnly: false}
+      ]
+    });
+    browser.execute(addFixtures);
+    browser.scroll('#fixture');
+    browser.waitUntil(log.hitCountEquals(3));
 
-    if (notSupportedInBrowser()) return;
+    var hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'fixture');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'fixture-1');
+    assert.strictEqual(hits[2].ec, 'Viewport');
+    assert.strictEqual(hits[2].ea, 'impression');
+    assert.strictEqual(hits[2].el, 'fixture-2');
+    log.removeHits();
 
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: [
-            {id: 'fixture', trackFirstImpressionOnly: false},
-            {id: 'fixture-1', trackFirstImpressionOnly: false},
-            {id: 'fixture-2', trackFirstImpressionOnly: false}
-          ]
-        })
-        .execute(addFixtures)
-        .scroll('#fixture')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 3],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'fixture'],
-          ['[1].eventCategory', 'Viewport'],
-          ['[1].eventAction', 'impression'],
-          ['[1].eventLabel', 'fixture-1'],
-          ['[2].eventCategory', 'Viewport'],
-          ['[2].eventAction', 'impression'],
-          ['[2].eventLabel', 'fixture-2']
-        ]));
+    browser.execute(removeFixtures);
+    browser.scroll('#foo');
+    browser.execute(addFixtures);
+    browser.scroll('#fixture');
+    browser.waitUntil(log.hitCountEquals(3));
 
-    browser
-        .execute(removeFixtures)
-        .scroll('#foo')
-        .execute(addFixtures)
-        .scroll('#fixture')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 6],
-          ['[3].eventCategory', 'Viewport'],
-          ['[3].eventAction', 'impression'],
-          ['[3].eventLabel', 'fixture'],
-          ['[4].eventCategory', 'Viewport'],
-          ['[4].eventAction', 'impression'],
-          ['[4].eventLabel', 'fixture-1'],
-          ['[5].eventCategory', 'Viewport'],
-          ['[5].eventAction', 'impression'],
-          ['[5].eventLabel', 'fixture-2']
-        ]));
+    hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'fixture');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'fixture-1');
+    assert.strictEqual(hits[2].ec, 'Viewport');
+    assert.strictEqual(hits[2].ea, 'impression');
+    assert.strictEqual(hits[2].el, 'fixture-2');
 
     browser.execute(removeFixtures);
   });
 
-
   it('uses a default threshold of 0', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: ['foo']
+    });
+    // Scrolls so #foo is only 0% visible but on the viewport border.
+    browser.scroll('#foo', 0, -500);
+    browser.waitUntil(log.hitCountEquals(1));
 
-    if (notSupportedInBrowser()) return;
-
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: ['foo']
-        })
-        // Scrolls so #foo is only 0% visible but on the viewport border.
-        .scroll('#foo', 0, -500)
-        .waitUntil(ga.hitDataMatches([
-          ['length', 1],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'foo']
-        ]));
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'foo');
   });
-
 
   it('supports tracking an element either once or every time', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: [
+        'foo-1',
+        {id: 'foo-2', trackFirstImpressionOnly: false},
+        'bar-1',
+        {id: 'bar-2', trackFirstImpressionOnly: false}
+      ]
+    });
+    browser.scroll('#foo');
+    browser.waitUntil(log.hitCountEquals(2));
 
-    if (notSupportedInBrowser()) return;
+    var hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'foo-1');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'foo-2');
+    log.removeHits();
 
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: [
-            'foo-1',
-            {id: 'foo-2', trackFirstImpressionOnly: false},
-            'bar-1',
-            {id: 'bar-2', trackFirstImpressionOnly: false}
-          ]
-        })
-        .scroll('#foo')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 2],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'foo-1'],
-          ['[1].eventCategory', 'Viewport'],
-          ['[1].eventAction', 'impression'],
-          ['[1].eventLabel', 'foo-2']
-        ]));
+    browser.scroll('#bar');
+    browser.waitUntil(log.hitCountEquals(2));
 
-    browser
-        .scroll('#bar')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 4],
-          ['[2].eventCategory', 'Viewport'],
-          ['[2].eventAction', 'impression'],
-          ['[2].eventLabel', 'bar-1'],
-          ['[3].eventCategory', 'Viewport'],
-          ['[3].eventAction', 'impression'],
-          ['[3].eventLabel', 'bar-2']
-        ]));
+    hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'bar-1');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'bar-2');
+    log.removeHits();
 
-    browser
-        .scroll('#foo')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 5],
-          ['[4].eventCategory', 'Viewport'],
-          ['[4].eventAction', 'impression'],
-          ['[4].eventLabel', 'foo-2']
-        ]));
+    browser.scroll('#foo');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    browser
-        .scroll('#bar')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 6],
-          ['[5].eventCategory', 'Viewport'],
-          ['[5].eventAction', 'impression'],
-          ['[5].eventLabel', 'bar-2']
-        ]));
+    hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'foo-2');
+    log.removeHits();
+
+    browser.scroll('#bar');
+    browser.waitUntil(log.hitCountEquals(1));
+
+    hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'bar-2');
   });
-
 
   it('supports changing the default threshold per element', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: [
+        {id: 'foo-1-1', threshold: 1},
+        {id: 'foo-1-2', threshold: .66},
+        {id: 'foo-2-1', threshold: .33},
+        {id: 'foo-2-2', threshold: 0}
+      ]
+    });
+    // Scrolls so #foo is only 25% visible
+    browser.scroll('#foo', 0, -475);
+    browser.waitUntil(log.hitCountEquals(1));
 
-    if (notSupportedInBrowser()) return;
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].el, 'foo-2-2');
 
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: [
-            {id: 'foo-1-1', threshold: 1},
-            {id: 'foo-1-2', threshold: .66},
-            {id: 'foo-2-1', threshold: .33},
-            {id: 'foo-2-2', threshold: 0}
-          ]
-        })
-        // Scrolls so #foo is only 25% visible
-        .scroll('#foo', 0, -475)
-        .waitUntil(ga.hitDataMatches([
-          ['length', 1],
-          ['[0].eventLabel', 'foo-2-2']
-        ]));
+    // Scrolls so #foo is 50% visible
+    browser.scroll('#foo', 0, -450);
+    browser.waitUntil(log.hitCountEquals(2));
 
-    browser
-        // Scrolls so #foo is 50% visible
-        .scroll('#foo', 0, -450)
-        .waitUntil(ga.hitDataMatches([
-          ['length', 2],
-          ['[1].eventLabel', 'foo-2-1']
-        ]));
+    hits = log.getHits();
+    assert.strictEqual(hits[1].el, 'foo-2-1');
 
-    browser
-        // Scrolls so #foo is 75% visible
-        .scroll('#foo', 0, -425)
-        .waitUntil(ga.hitDataMatches([
-          ['length', 3],
-          ['[2].eventLabel', 'foo-1-2']
-        ]));
+    // Scrolls so #foo is 75% visible
+    browser.scroll('#foo', 0, -425);
+    browser.waitUntil(log.hitCountEquals(3));
 
-    browser
-        // Scrolls so #foo is 100% visible
-        .scroll('#foo', 0, -400)
-        .waitUntil(ga.hitDataMatches([
-          ['length', 4],
-          ['[3].eventLabel', 'foo-1-1']
-        ]));
+    hits = log.getHits();
+    assert.strictEqual(hits[2].el, 'foo-1-2');
+
+    // Scrolls so #foo is 100% visible
+    browser.scroll('#foo', 0, -400);
+    browser.waitUntil(log.hitCountEquals(4));
+
+    hits = log.getHits();
+    assert.strictEqual(hits[3].el, 'foo-1-1');
   });
-
 
   it('supports setting a rootMargin', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      rootMargin: '-50px 0px',
+      elements: [
+        {id: 'foo-1-1', threshold: 1},
+        {id: 'foo-1-2', threshold: .66},
+        {id: 'foo-2-1', threshold: .33},
+        {id: 'foo-2-2', threshold: 0}
+      ]
+    });
+    // Scrolls so #foo is 100% visible but only 50% within rootMargin.
+    browser.scroll('#foo', 0, -400);
+    browser.waitUntil(log.hitCountEquals(2));
 
-    if (notSupportedInBrowser()) return;
-
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          rootMargin: '-50px 0px',
-          elements: [
-            {id: 'foo-1-1', threshold: 1},
-            {id: 'foo-1-2', threshold: .66},
-            {id: 'foo-2-1', threshold: .33},
-            {id: 'foo-2-2', threshold: 0}
-          ]
-        })
-        // Scrolls so #foo is 100% visible but only 50% within rootMargin.
-        .scroll('#foo', 0, -400)
-        .waitUntil(ga.hitDataMatches([
-          ['length', 2],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'foo-2-1'],
-          ['[1].eventCategory', 'Viewport'],
-          ['[1].eventAction', 'impression'],
-          ['[1].eventLabel', 'foo-2-2']
-        ], sortHitDataByEventLabel));
+    var hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'foo-2-1');
+    assert.strictEqual(hits[1].ec, 'Viewport');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'foo-2-2');
   });
-
 
   it('supports declarative event binding to DOM elements', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: ['attrs-1']
+    });
+    browser.scroll('#attrs');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    if (notSupportedInBrowser()) return;
-
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: ['attrs-1']
-        })
-        .scroll('#attrs')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 1],
-          ['[0].eventCategory', 'Element'],
-          ['[0].eventAction', 'visible'],
-          ['[0].eventLabel', 'attrs-1']
-        ]));
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Element');
+    assert.strictEqual(hits[0].ea, 'visible');
+    assert.strictEqual(hits[0].el, 'attrs-1');
   });
-
 
   it('supports customizing the attribute prefix', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      attributePrefix: 'data-ga-',
+      elements: ['attrs-1', 'attrs-2']
+    });
+    browser.scroll('#attrs');
+    browser.waitUntil(log.hitCountEquals(2));
 
-    if (notSupportedInBrowser()) return;
-
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          attributePrefix: 'data-ga-',
-          elements: ['attrs-1', 'attrs-2']
-        })
-        .scroll('#attrs')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 2],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'attrs-1'],
-          ['[1].eventCategory', 'Window'],
-          ['[1].eventAction', 'impression'],
-          ['[1].eventLabel', 'attrs-2'],
-          ['[1].nonInteraction', true]
-        ]));
+    var hits = log.getHits().sort(sortHitDataByEventLabel);
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'attrs-1');
+    assert.strictEqual(hits[1].ec, 'Window');
+    assert.strictEqual(hits[1].ea, 'impression');
+    assert.strictEqual(hits[1].el, 'attrs-2');
+    assert.strictEqual(hits[1].ni, '1');
   });
-
 
   it('supports specifying a fields object for all hits', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: ['foo', 'bar'],
+      fieldsObj: {
+        eventCategory: 'Element',
+        eventAction: 'visible',
+        nonInteraction: true
+      }
+    });
+    browser.scroll('#foo');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    if (notSupportedInBrowser()) return;
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Element');
+    assert.strictEqual(hits[0].ea, 'visible');
+    assert.strictEqual(hits[0].el, 'foo');
+    assert.strictEqual(hits[0].ni, '1');
 
-    browser
-        .execute(ga.run, 'require', 'impressionTracker', {
-          elements: ['foo', 'bar'],
-          fieldsObj: {
-            eventCategory: 'Element',
-            eventAction: 'visible',
-            nonInteraction: true
-          }
-        })
-        .scroll('#foo')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 1],
-          ['[0].eventCategory', 'Element'],
-          ['[0].eventAction', 'visible'],
-          ['[0].eventLabel', 'foo'],
-          ['[0].nonInteraction', true]
-        ]));
+    browser.scroll('#bar');
+    browser.waitUntil(log.hitCountEquals(2));
 
-    browser
-        .scroll('#bar')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 2],
-          ['[1].eventCategory', 'Element'],
-          ['[1].eventAction', 'visible'],
-          ['[1].eventLabel', 'bar'],
-          ['[1].nonInteraction', true]
-        ]));
+    hits = log.getHits();
+    assert.strictEqual(hits[1].ec, 'Element');
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert.strictEqual(hits[1].el, 'bar');
+    assert.strictEqual(hits[1].ni, '1');
   });
-
 
   it('supports specifying a hit filter', function() {
+    browser.execute(requireImpressionTracker_hitFilter);
+    browser.scroll('#foo');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    if (notSupportedInBrowser()) return;
-
-    browser
-        .execute(requireImpressionTracker_hitFilter)
-        .scroll('#foo')
-        .waitUntil(ga.hitDataMatches([
-          ['length', 1],
-          ['[0].eventCategory', 'Viewport'],
-          ['[0].eventAction', 'impression'],
-          ['[0].eventLabel', 'foo-2'],
-          ['[0].nonInteraction', true],
-          ['[0].dimension1', 'one'],
-          ['[0].dimension2', 'two']
-        ]));
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Viewport');
+    assert.strictEqual(hits[0].ea, 'impression');
+    assert.strictEqual(hits[0].el, 'foo-2');
+    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].cd1, 'one');
+    assert.strictEqual(hits[0].cd2, 'two');
   });
-
 
   it('includes usage params with all hits', function() {
+    browser.execute(ga.run, 'require', 'impressionTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'impressionTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].devId, constants.DEV_ID);
-    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '4' = '000000100' in hex
-    assert.equal(hitData[0][constants.USAGE_PARAM], '4');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '4');
   });
 
-
   describe('observeElements', function() {
-
     it('adds elements to be observed for intersections', function() {
+      browser.execute(ga.run, 'require', 'impressionTracker', {
+        elements: [
+          'foo',
+          'foo-1',
+          'foo-2',
+        ]
+      });
+      browser.execute(ga.run, 'impressionTracker:observeElements', [
+        {id: 'bar', threshold: 0},
+        {id: 'bar-1', threshold: 0.5},
+        {id: 'bar-2', threshold: 1},
+      ]);
+      browser.scroll('#foo');
+      browser.waitUntil(log.hitCountEquals(3));
 
-      if (notSupportedInBrowser()) return;
+      var hits = log.getHits().sort(sortHitDataByEventLabel);
+      assert.strictEqual(hits[0].ec, 'Viewport');
+      assert.strictEqual(hits[0].ea, 'impression');
+      assert.strictEqual(hits[0].el, 'foo');
+      assert.strictEqual(hits[1].ec, 'Viewport');
+      assert.strictEqual(hits[1].ea, 'impression');
+      assert.strictEqual(hits[1].el, 'foo-1');
+      assert.strictEqual(hits[2].ec, 'Viewport');
+      assert.strictEqual(hits[2].ea, 'impression');
+      assert.strictEqual(hits[2].el, 'foo-2');
 
-      browser
-          .execute(ga.run, 'require', 'impressionTracker', {
-            elements: [
-              'foo',
-              'foo-1',
-              'foo-2',
-            ]
-          })
-          .execute(ga.run, 'impressionTracker:observeElements', [
-            {id: 'bar', threshold: 0},
-            {id: 'bar-1', threshold: 0.5},
-            {id: 'bar-2', threshold: 1},
-          ])
-          .scroll('#foo')
-          .waitUntil(ga.hitDataMatches([
-            ['length', 3],
-            ['[0].eventCategory', 'Viewport'],
-            ['[0].eventAction', 'impression'],
-            ['[0].eventLabel', 'foo'],
-            ['[1].eventCategory', 'Viewport'],
-            ['[1].eventAction', 'impression'],
-            ['[1].eventLabel', 'foo-1'],
-            ['[2].eventCategory', 'Viewport'],
-            ['[2].eventAction', 'impression'],
-            ['[2].eventLabel', 'foo-2'],
-          ], sortHitDataByEventLabel));
+      browser.scroll('#bar');
+      browser.waitUntil(log.hitCountEquals(6));
 
-      browser
-          .scroll('#bar')
-          .waitUntil(ga.hitDataMatches([
-            ['length', 6],
-            ['[3].eventCategory', 'Viewport'],
-            ['[3].eventAction', 'impression'],
-            ['[3].eventLabel', 'bar'],
-            ['[4].eventCategory', 'Viewport'],
-            ['[4].eventAction', 'impression'],
-            ['[4].eventLabel', 'bar-1'],
-            ['[5].eventCategory', 'Viewport'],
-            ['[5].eventAction', 'impression'],
-            ['[5].eventLabel', 'bar-2'],
-          ], sortHitDataByEventLabel));
+      hits = log.getHits().sort(sortHitDataByEventLabel);
+      assert.strictEqual(hits[3].ec, 'Viewport');
+      assert.strictEqual(hits[3].ea, 'impression');
+      assert.strictEqual(hits[3].el, 'bar');
+      assert.strictEqual(hits[4].ec, 'Viewport');
+      assert.strictEqual(hits[4].ea, 'impression');
+      assert.strictEqual(hits[4].el, 'bar-1');
+      assert.strictEqual(hits[5].ec, 'Viewport');
+      assert.strictEqual(hits[5].ea, 'impression');
+      assert.strictEqual(hits[5].el, 'bar-2');
     });
   });
 
-
   describe('unobserveElements', function() {
-
     it('removes elements from being observed for intersections', function() {
+      browser.execute(ga.run, 'require', 'impressionTracker', {
+        elements: [
+          'foo',
+          'foo-1',
+          'foo-2',
+        ]
+      });
+      browser.execute(ga.run, 'impressionTracker:unobserveElements', ['foo']);
+      browser.scroll('#foo');
+      browser.waitUntil(log.hitCountEquals(2));
 
-      if (notSupportedInBrowser()) return;
-
-      browser
-          .execute(ga.run, 'require', 'impressionTracker', {
-            elements: [
-              'foo',
-              'foo-1',
-              'foo-2',
-            ]
-          })
-          .execute(ga.run, 'impressionTracker:unobserveElements', ['foo'])
-          .scroll('#foo')
-          .waitUntil(ga.hitDataMatches([
-            ['length', 2],
-            ['[0].eventCategory', 'Viewport'],
-            ['[0].eventAction', 'impression'],
-            ['[0].eventLabel', 'foo-1'],
-            ['[1].eventCategory', 'Viewport'],
-            ['[1].eventAction', 'impression'],
-            ['[1].eventLabel', 'foo-2'],
-          ]));
+      var hits = log.getHits().sort(sortHitDataByEventLabel);
+      assert.strictEqual(hits[0].ec, 'Viewport');
+      assert.strictEqual(hits[0].ea, 'impression');
+      assert.strictEqual(hits[0].el, 'foo-1');
+      assert.strictEqual(hits[1].ec, 'Viewport');
+      assert.strictEqual(hits[1].ea, 'impression');
+      assert.strictEqual(hits[1].el, 'foo-2');
     });
 
     it('only removes elements if all properties match', function() {
+      browser.execute(ga.run, 'require', 'impressionTracker', {
+        elements: [
+          {id: 'foo', threshold: 0},
+          {id: 'foo-1', threshold: 0.5, trackFirstImpressionOnly: false},
+          {id: 'foo-1-1', threshold: 0.5, trackFirstImpressionOnly: false},
+          {id: 'foo-1-2', threshold: 0.5, trackFirstImpressionOnly: false},
+          {id: 'foo-2', threshold: 1, trackFirstImpressionOnly: true},
+          {id: 'foo-2-1', threshold: 1, trackFirstImpressionOnly: true},
+          {id: 'foo-2-2', threshold: 1, trackFirstImpressionOnly: true},
+        ]
+      });
+      browser.execute(ga.run, 'impressionTracker:unobserveElements', [
+        'foo',
+        'foo-1', // Mismatch.
+        {id: 'foo-1-1', threshold: 0.5}, // Mismatch.
+        {id: 'foo-2-2', threshold: 1},
+      ]);
+      browser.scroll('#foo');
+      browser.waitUntil(log.hitCountEquals(5));
 
-      if (notSupportedInBrowser()) return;
-
-      browser
-          .execute(ga.run, 'require', 'impressionTracker', {
-            elements: [
-              {id: 'foo', threshold: 0},
-              {id: 'foo-1', threshold: 0.5, trackFirstImpressionOnly: false},
-              {id: 'foo-1-1', threshold: 0.5, trackFirstImpressionOnly: false},
-              {id: 'foo-1-2', threshold: 0.5, trackFirstImpressionOnly: false},
-              {id: 'foo-2', threshold: 1, trackFirstImpressionOnly: true},
-              {id: 'foo-2-1', threshold: 1, trackFirstImpressionOnly: true},
-              {id: 'foo-2-2', threshold: 1, trackFirstImpressionOnly: true},
-            ]
-          })
-          .execute(ga.run, 'impressionTracker:unobserveElements', [
-            'foo',
-            'foo-1', // Mismatch.
-            {id: 'foo-1-1', threshold: 0.5}, // Mismatch.
-            {id: 'foo-2-2', threshold: 1},
-          ])
-          .scroll('#foo')
-          .waitUntil(ga.hitDataMatches([
-            ['length', 5],
-            ['[0].eventCategory', 'Viewport'],
-            ['[0].eventAction', 'impression'],
-            ['[0].eventLabel', 'foo-1'],
-            ['[1].eventCategory', 'Viewport'],
-            ['[1].eventAction', 'impression'],
-            ['[1].eventLabel', 'foo-1-1'],
-            ['[2].eventCategory', 'Viewport'],
-            ['[2].eventAction', 'impression'],
-            ['[2].eventLabel', 'foo-1-2'],
-            ['[3].eventCategory', 'Viewport'],
-            ['[3].eventAction', 'impression'],
-            ['[3].eventLabel', 'foo-2'],
-            ['[4].eventCategory', 'Viewport'],
-            ['[4].eventAction', 'impression'],
-            ['[4].eventLabel', 'foo-2-1'],
-          ], sortHitDataByEventLabel));
+      var hits = log.getHits().sort(sortHitDataByEventLabel);
+      assert.strictEqual(hits[0].ec, 'Viewport');
+      assert.strictEqual(hits[0].ea, 'impression');
+      assert.strictEqual(hits[0].el, 'foo-1');
+      assert.strictEqual(hits[1].ec, 'Viewport');
+      assert.strictEqual(hits[1].ea, 'impression');
+      assert.strictEqual(hits[1].el, 'foo-1-1');
+      assert.strictEqual(hits[2].ec, 'Viewport');
+      assert.strictEqual(hits[2].ea, 'impression');
+      assert.strictEqual(hits[2].el, 'foo-1-2');
+      assert.strictEqual(hits[3].ec, 'Viewport');
+      assert.strictEqual(hits[3].ea, 'impression');
+      assert.strictEqual(hits[3].el, 'foo-2');
+      assert.strictEqual(hits[4].ec, 'Viewport');
+      assert.strictEqual(hits[4].ea, 'impression');
+      assert.strictEqual(hits[4].el, 'foo-2-1');
     });
   });
 
   describe('unobserveAllElements', function() {
-
     it('removes all elements from being observed for intersections',
         function() {
+      browser.execute(ga.run, 'require', 'impressionTracker', {
+        elements: [
+          'foo',
+          'foo-1',
+          'foo-2',
+        ]
+      });
+      browser.execute(ga.run, 'impressionTracker:unobserveAllElements');
+      browser.execute(ga.run, 'impressionTracker:observeElements', [
+        'foo-1-1',
+        'foo-2-2',
+      ]);
+      browser.scroll('#foo');
+      browser.waitUntil(log.hitCountEquals(2));
 
-      if (notSupportedInBrowser()) return;
-
-      browser
-          .execute(ga.run, 'require', 'impressionTracker', {
-            elements: [
-              'foo',
-              'foo-1',
-              'foo-2',
-            ]
-          })
-          .execute(ga.run, 'impressionTracker:unobserveAllElements')
-          .execute(ga.run, 'impressionTracker:observeElements', [
-            'foo-1-1',
-            'foo-2-2',
-          ])
-          .scroll('#foo')
-          .waitUntil(ga.hitDataMatches([
-            ['length', 2],
-            ['[0].eventCategory', 'Viewport'],
-            ['[0].eventAction', 'impression'],
-            ['[0].eventLabel', 'foo-1-1'],
-            ['[1].eventCategory', 'Viewport'],
-            ['[1].eventAction', 'impression'],
-            ['[1].eventLabel', 'foo-2-2'],
-          ]));
-
+      var hits = log.getHits().sort(sortHitDataByEventLabel);
+      assert.strictEqual(hits[0].ec, 'Viewport');
+      assert.strictEqual(hits[0].ea, 'impression');
+      assert.strictEqual(hits[0].el, 'foo-1-1');
+      assert.strictEqual(hits[1].ec, 'Viewport');
+      assert.strictEqual(hits[1].ea, 'impression');
+      assert.strictEqual(hits[1].el, 'foo-2-2');
     });
-
   });
 
+  describe('remove', function() {
+    it('destroys all bound events and functionality', function() {
+      browser.execute(ga.run, 'require', 'impressionTracker', {
+        elements: [{id: 'foo', trackFirstImpressionOnly: false}]
+      });
+      browser.scroll('#foo');
+      browser.waitUntil(log.hitCountEquals(1));
+      assert.strictEqual(log.getHits()[0].el, 'foo');
+      log.removeHits();
+
+      browser.scroll(0, 0);
+      browser.execute(ga.run, 'impressionTracker:remove');
+      browser.scroll('#foo');
+      log.assertNoHitsReceived();
+    });
+  });
 });
-
-
-/**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
- */
-function notSupportedInBrowser() {
-  // IE9 doesn't support the HTML5 History API.
-  return browserCaps.browserName == 'internet explorer' &&
-      (browserCaps.version == '9' || browserCaps.version == '10');
-}
 
 
 /**
@@ -671,17 +596,18 @@ function removeFixtures() {
   document.body.removeChild(fixture);
 }
 
+
 /**
- * A comparison function that sorts hits by the `eventLabel` value.
+ * A comparison function that sorts hits by the `el` param.
  * This is needed to work around Chrome's non-deterministic firing of
  * IntersectionObserver callbacks when multiple instances are used.
  * @param {Object} a The first hit to compare.
  * @param {Object} b The second hit to compare.
- * @return {number} A negative number if a should appear first in the sorted
- *     array, and a positive number if b should appear first.
+ * @return {number} A negative number if `a` should appear first in the sorted
+ *     array, and a positive number if `b` should appear first.
  */
 function sortHitDataByEventLabel(a, b) {
-  var aDomIndex = elementIdsByDomOrder.indexOf(a.eventLabel);
-  var bDomIndex = elementIdsByDomOrder.indexOf(b.eventLabel);
+  var aDomIndex = elementIdsByDomOrder.indexOf(a.el);
+  var bDomIndex = elementIdsByDomOrder.indexOf(b.el);
   return aDomIndex - bDomIndex;
 }

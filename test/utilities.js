@@ -15,6 +15,11 @@
  */
 
 
+var assert = require('assert');
+var ga = require('./analytics');
+var server = require('./server');
+
+
 module.exports = {
 
   /**
@@ -32,109 +37,35 @@ module.exports = {
   },
 
 
-  /**
-   * Prevents the default form submit action allowing forms to be interacted
-   * with without navigating away from the current page.
-   */
-  stopSubmitEvents: function() {
-    window.__stopFormSubmits__ = function(event) {
-      event.preventDefault();
+  bindLogAccessors: function(testId) {
+    var accessors = {
+      getHits: server.getHitLogs.bind(server, testId),
+      removeHits: server.removeHitLogs.bind(server, testId),
+      hitCountEquals: function(count) {
+        return function() {
+          return server.getHitLogs(testId).length === count;
+        };
+      },
+      assertNoHitsReceived: function() {
+        var browserCaps = browser.session().value;
+        if (browserCaps.browserName == 'safari') {
+          // Reduces flakiness in Safari.
+          var timeToWait = 3000;
+          browser.pause(timeToWait);
+          assert.strictEqual(accessors.getHits().length, 0);
+        } else {
+          assert.strictEqual(accessors.getHits().length, 0);
+
+          // TODO(philipwalton): the following technique fails in Safari for
+          // unknown reasons.
+          browser.execute(ga.sendEmptyHit, browser.options.baseUrl, testId);
+          browser.waitUntil(accessors.hitCountEquals(1));
+          assert.strictEqual(accessors.getHits()[0].empty, '1');
+          accessors.removeHits();
+        }
+      }
     };
-
-    document.addEventListener('submit', window.__stopFormSubmits__);
+    return accessors;
   },
-
-
-  /**
-   * Restores normal form submit behavior.
-   */
-  unstopSubmitEvents: function() {
-    document.removeEventListener('submit', window.__stopFormSubmits__);
-  },
-
-
-  /**
-   * Sets all form element submit methods to a noop.
-   */
-  disableProgramaticFormSubmits: function() {
-    for (var i = 0, form; form = document.forms[i]; i++) {
-      form.submit = function() {};
-    }
-  },
-
-
-  /**
-   * Prevents the default link click action allowing links to be interacted
-   * with without navigating away from the current page.
-   */
-  stopClickEvents: function() {
-    window.__stopClicks__ = function(event) {
-      event.preventDefault();
-    };
-
-    document.addEventListener('click', window.__stopClicks__);
-  },
-
-
-  /**
-   * Restores normal link click behavior.
-   */
-  unstopClickEvents: function() {
-    document.removeEventListener('click', window.__stopClicks__);
-  },
-
-
-  /**
-   * Assigns a function to navigator.sendBeacon so analytics.js assumes support
-   * for the beacon transport mechanism.
-   */
-  stubBeacon: function() {
-    navigator.sendBeacon = function() {
-      return true;
-    };
-  },
-
-
-  /**
-   * Unsets navigator.sendBeacon so analytics.js assumes no support for the
-   * beacon transport mechanism.
-   */
-  stubNoBeacon: function() {
-    navigator.sendBeacon = undefined;
-  },
-
-
-  /**
-   * Wraps `console.error` and tracks calls to it.
-   */
-  trackConsoleErrors: function() {
-    if (!window.console) return;
-    window.__consoleErrors__ = [];
-    window.__originalConsoleError__ = window.console.error;
-    window.console.error = function() {
-      window.__consoleErrors__.push(arguments);
-      window.__originalConsoleError__.apply(window.console, arguments);
-    };
-  },
-
-
-  /**
-   * Restores the original `console.error`.
-   */
-  untrackConsoleErrors: function() {
-    if (!window.console) return;
-    delete window.__consoleErrors__;
-    window.console.error = window.__originalConsoleError__ ||
-        window.console.error;
-  },
-
-
-  /**
-   * Returns all console error call arguments since tracking started.
-   * @return {Array} The list of console error call arguments.
-   */
-  getConsoleErrors: function() {
-    return window.__consoleErrors__;
-  }
 
 };

@@ -16,140 +16,131 @@
 
 
 var assert = require('assert');
+var uuid = require('uuid');
 var ga = require('./analytics');
+var utilities = require('./utilities');
 var constants = require('../lib/constants');
+var pkg = require('../package.json');
+
+
+var testId;
+var log;
 
 
 describe('index', function() {
+  this.retries(4);
+
+  beforeEach(function() {
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
+  });
 
   afterEach(function() {
-    browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'cleanUrlTracker:remove')
-        .execute(ga.run, 'eventTracker:remove')
-        .execute(ga.run, 'impressionTracker:remove')
-        .execute(ga.run, 'mediaQueryTracker:remove')
-        .execute(ga.run, 'outboundFormTracker:remove')
-        .execute(ga.run, 'outboundLinkTracker:remove')
-        .execute(ga.run, 'pageVisibilityTracker:remove')
-        .execute(ga.run, 'socialWidgetTracker:remove')
-        .execute(ga.run, 'urlChangeTracker:remove')
-        .execute(ga.run, 'remove');
+    browser.execute(ga.run, 'cleanUrlTracker:remove');
+    browser.execute(ga.run, 'eventTracker:remove');
+    browser.execute(ga.run, 'impressionTracker:remove');
+    browser.execute(ga.run, 'mediaQueryTracker:remove');
+    browser.execute(ga.run, 'outboundFormTracker:remove');
+    browser.execute(ga.run, 'outboundLinkTracker:remove');
+    browser.execute(ga.run, 'pageVisibilityTracker:remove');
+    browser.execute(ga.run, 'socialWidgetTracker:remove');
+    browser.execute(ga.run, 'urlChangeTracker:remove');
+    browser.execute(ga.run, 'remove');
+    log.removeHits();
   });
 
+  it('provides all plugins', function() {
+    browser.url('/test/autotrack.html');
+    var gaplugins = browser.execute(ga.getProvidedPlugins).value;
 
-  it('should provide all plugins', function() {
-
-    var gaplugins = browser
-        .url('/test/autotrack.html')
-        .execute(ga.getProvidedPlugins)
-        .value;
-
-    assert(gaplugins.Autotrack);
-    assert(gaplugins.CleanUrlTracker);
-    assert(gaplugins.EventTracker);
-    assert(gaplugins.ImpressionTracker);
-    assert(gaplugins.MediaQueryTracker);
-    assert(gaplugins.OutboundFormTracker);
-    assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.PageVisibilityTracker);
-    assert(gaplugins.SocialWidgetTracker);
-    assert(gaplugins.UrlChangeTracker);
+    assert(gaplugins.includes('Autotrack'));
+    assert(gaplugins.includes('CleanUrlTracker'));
+    assert(gaplugins.includes('EventTracker'));
+    assert(gaplugins.includes('ImpressionTracker'));
+    assert(gaplugins.includes('MediaQueryTracker'));
+    assert(gaplugins.includes('OutboundFormTracker'));
+    assert(gaplugins.includes('OutboundLinkTracker'));
+    assert(gaplugins.includes('PageVisibilityTracker'));
+    assert(gaplugins.includes('SocialWidgetTracker'));
+    assert(gaplugins.includes('UrlChangeTracker'));
   });
 
-
-  it('should provide plugins even if sourced before the tracking snippet',
+  it('provides plugins even if sourced before the tracking snippet',
       function() {
+    browser.url('/test/autotrack-reorder.html');
 
-    var gaplugins = browser
-        .url('/test/autotrack-reorder.html')
-        .execute(ga.getProvidedPlugins)
-        .value;
-
-    assert(gaplugins.Autotrack);
-    assert(gaplugins.CleanUrlTracker);
-    assert(gaplugins.ImpressionTracker);
-    assert(gaplugins.EventTracker);
-    assert(gaplugins.MediaQueryTracker);
-    assert(gaplugins.OutboundFormTracker);
-    assert(gaplugins.OutboundLinkTracker);
-    assert(gaplugins.PageVisibilityTracker);
-    assert(gaplugins.SocialWidgetTracker);
-    assert(gaplugins.UrlChangeTracker);
+    var gaplugins = browser.execute(ga.getProvidedPlugins).value;
+    assert(gaplugins.includes('Autotrack'));
+    assert(gaplugins.includes('CleanUrlTracker'));
+    assert(gaplugins.includes('ImpressionTracker'));
+    assert(gaplugins.includes('EventTracker'));
+    assert(gaplugins.includes('MediaQueryTracker'));
+    assert(gaplugins.includes('OutboundFormTracker'));
+    assert(gaplugins.includes('OutboundLinkTracker'));
+    assert(gaplugins.includes('PageVisibilityTracker'));
+    assert(gaplugins.includes('SocialWidgetTracker'));
+    assert(gaplugins.includes('UrlChangeTracker'));
   });
 
+  it('works with all plugins required', function() {
+    browser.url('/test/autotrack.html');
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'cleanUrlTracker');
+    browser.execute(ga.run, 'require', 'eventTracker');
+    browser.execute(ga.run, 'require', 'impressionTracker');
+    browser.execute(ga.run, 'require', 'outboundLinkTracker');
+    browser.execute(ga.run, 'require', 'mediaQueryTracker');
+    browser.execute(ga.run, 'require', 'outboundFormTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'socialWidgetTracker');
+    browser.execute(ga.run, 'require', 'urlChangeTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-  it('should work with all plugins required', function() {
-
-    var hitData = browser
-        .url('/test/autotrack.html')
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-        .execute(ga.run, 'require', 'cleanUrlTracker')
-        .execute(ga.run, 'require', 'eventTracker')
-        .execute(ga.run, 'require', 'impressionTracker')
-        .execute(ga.run, 'require', 'outboundLinkTracker')
-        .execute(ga.run, 'require', 'mediaQueryTracker')
-        .execute(ga.run, 'require', 'outboundFormTracker')
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .execute(ga.run, 'require', 'socialWidgetTracker')
-        .execute(ga.run, 'require', 'urlChangeTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
+    assert.strictEqual(log.getHits()[0].t, 'pageview');
   });
 
+  it('works when renaming the global object', function() {
+    browser.url('/test/autotrack-rename.html');
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'cleanUrlTracker');
+    browser.execute(ga.run, 'require', 'eventTracker');
+    browser.execute(ga.run, 'require', 'impressionTracker');
+    browser.execute(ga.run, 'require', 'outboundLinkTracker');
+    browser.execute(ga.run, 'require', 'mediaQueryTracker');
+    browser.execute(ga.run, 'require', 'outboundFormTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'socialWidgetTracker');
+    browser.execute(ga.run, 'require', 'urlChangeTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-  it('should work with renaming the global object', function() {
-
-    var hitData = browser
-        .url('/test/autotrack-rename.html')
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-        .execute(ga.run, 'require', 'cleanUrlTracker')
-        .execute(ga.run, 'require', 'eventTracker')
-        .execute(ga.run, 'require', 'impressionTracker')
-        .execute(ga.run, 'require', 'outboundLinkTracker')
-        .execute(ga.run, 'require', 'mediaQueryTracker')
-        .execute(ga.run, 'require', 'outboundFormTracker')
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .execute(ga.run, 'require', 'socialWidgetTracker')
-        .execute(ga.run, 'require', 'urlChangeTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
+    assert.strictEqual(log.getHits()[0].t, 'pageview');
   });
-
 
   it('tracks usage for all required plugins', function() {
+    browser.url('/test/autotrack.html');
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'cleanUrlTracker');
+    browser.execute(ga.run, 'require', 'eventTracker');
+    browser.execute(ga.run, 'require', 'impressionTracker');
+    browser.execute(ga.run, 'require', 'outboundLinkTracker');
+    browser.execute(ga.run, 'require', 'mediaQueryTracker');
+    browser.execute(ga.run, 'require', 'outboundFormTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'socialWidgetTracker');
+    browser.execute(ga.run, 'require', 'urlChangeTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .url('/test/autotrack.html')
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData)
-        .execute(ga.run, 'require', 'cleanUrlTracker')
-        .execute(ga.run, 'require', 'eventTracker')
-        .execute(ga.run, 'require', 'impressionTracker')
-        .execute(ga.run, 'require', 'outboundLinkTracker')
-        .execute(ga.run, 'require', 'mediaQueryTracker')
-        .execute(ga.run, 'require', 'outboundFormTracker')
-        .execute(ga.run, 'require', 'pageVisibilityTracker')
-        .execute(ga.run, 'require', 'socialWidgetTracker')
-        .execute(ga.run, 'require', 'urlChangeTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].devId, constants.DEV_ID);
-    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '1ff' = '111111111' in hex
-    assert.equal(hitData[0][constants.USAGE_PARAM], '1ff');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '1ff');
   });
-
 });

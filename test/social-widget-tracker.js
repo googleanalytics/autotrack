@@ -16,70 +16,69 @@
 
 
 var assert = require('assert');
+var uuid = require('uuid');
 var ga = require('./analytics');
+var utilities = require('./utilities');
 var constants = require('../lib/constants');
+var pkg = require('../package.json');
 
 
-var browserCaps;
+var testId;
+var log;
 
 
 describe('socialWidgetTracker', function() {
+  this.retries(4);
 
   before(function() {
-    browserCaps = browser.session().value;
-
     browser.url('/test/social-widget-tracker.html');
   });
 
-
   beforeEach(function() {
-    browser
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.trackHitData);
-  });
+    testId = uuid();
+    log = utilities.bindLogAccessors(testId);
 
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.logHitData, testId);
+  });
 
   afterEach(function () {
-    browser
-        .execute(ga.clearHitData)
-        .execute(ga.run, 'socialWidgetTracker:remove')
-        .execute(ga.run, 'remove');
+    browser.execute(ga.run, 'socialWidgetTracker:remove');
+    browser.execute(ga.run, 'remove');
+    log.removeHits();
   });
 
-
-  it('should support tweets and follows from the official twitter widgets',
+  it('supports tweets and follows from the official twitter widgets',
       function() {
-
-    if (notSupportedInBrowser()) return;
+    if (!browserDriverSupportsTwitterWidgets()) return this.skip();
 
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
-
     browser.waitForVisible('iframe.twitter-share-button');
     var tweetFrame = browser.element('iframe.twitter-share-button').value;
 
     browser.waitForVisible('iframe.twitter-follow-button');
     var followFrame = browser.element('iframe.twitter-follow-button').value;
 
-    browser
-        .frame(tweetFrame)
-        .click('a')
-        .frame()
-        .frame(followFrame)
-        .click('a')
-        .frame()
-        .waitUntil(ga.hitDataMatches([
-          ['[0].socialNetwork', 'Twitter'],
-          ['[0].socialAction', 'tweet'],
-          ['[0].socialTarget', 'https://example.com'],
-          ['[1].socialNetwork', 'Twitter'],
-          ['[1].socialAction', 'follow'],
-          ['[1].socialTarget', 'twitter']
-        ]));
+    browser.frame(tweetFrame);
+    browser.click('a');
+    browser.frame();
+    browser.frame(followFrame);
+    browser.click('a');
+    browser.frame();
+
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].sn, 'Twitter');
+    assert.strictEqual(hits[0].sa, 'tweet');
+    assert.strictEqual(hits[0].st, 'https://example.com');
+    assert.strictEqual(hits[1].sn, 'Twitter');
+    assert.strictEqual(hits[1].sa, 'follow');
+    assert.strictEqual(hits[1].st, 'twitter');
   });
 
-
   // TODO(philipwalton): figure out why this doesn't work...
-  // it('should support likes from the official facebook widget', function() {
+  // it('supports likes from the official facebook widget', function() {
 
   //   var mainWindow = browser
   //       .url('/test/social-widget-tracker-widgets.html')
@@ -95,10 +94,8 @@ describe('socialWidgetTracker', function() {
   //       .debug();
   // });
 
-
-  it('should support customizing any field via the fieldsObj', function() {
-
-    if (notSupportedInBrowser()) return;
+  it('supports customizing any field via the fieldsObj', function() {
+    if (!browserDriverSupportsTwitterWidgets()) return this.skip();
 
     browser.execute(ga.run, 'require', 'socialWidgetTracker', {
       fieldsObj: {
@@ -112,29 +109,28 @@ describe('socialWidgetTracker', function() {
     browser.waitForVisible('iframe.twitter-follow-button');
     var followFrame = browser.element('iframe.twitter-follow-button').value;
 
-    browser
-        .frame(tweetFrame)
-        .click('a')
-        .frame()
-        .frame(followFrame)
-        .click('a')
-        .frame()
-        .waitUntil(ga.hitDataMatches([
-          ['[0].socialNetwork', 'Twitter'],
-          ['[0].socialAction', 'tweet'],
-          ['[0].socialTarget', 'https://example.com'],
-          ['[0].nonInteraction', true],
-          ['[1].socialNetwork', 'Twitter'],
-          ['[1].socialAction', 'follow'],
-          ['[1].socialTarget', 'twitter'],
-          ['[1].nonInteraction', true]
-        ]));
+    browser.frame(tweetFrame);
+    browser.click('a');
+    browser.frame();
+    browser.frame(followFrame);
+    browser.click('a');
+    browser.frame();
+
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].sn, 'Twitter');
+    assert.strictEqual(hits[0].sa, 'tweet');
+    assert.strictEqual(hits[0].st, 'https://example.com');
+    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[1].sn, 'Twitter');
+    assert.strictEqual(hits[1].sa, 'follow');
+    assert.strictEqual(hits[1].st, 'twitter');
+    assert.strictEqual(hits[1].ni, '1');
   });
 
-
-  it('should support specifying a hit filter', function() {
-
-    if (notSupportedInBrowser()) return;
+  it('supports specifying a hit filter', function() {
+    if (!browserDriverSupportsTwitterWidgets()) return this.skip();
 
     browser.execute(requireSocialWidgetTracker_hitFilter);
 
@@ -144,38 +140,35 @@ describe('socialWidgetTracker', function() {
     browser.waitForVisible('iframe.twitter-follow-button');
     var followFrame = browser.element('iframe.twitter-follow-button').value;
 
-    browser
-        .frame(tweetFrame)
-        .click('a')
-        .frame()
-        .frame(followFrame)
-        .click('a')
-        .frame()
-        .waitUntil(ga.hitDataMatches([
-          ['[0].socialNetwork', 'Twitter'],
-          ['[0].socialAction', 'follow'],
-          ['[0].socialTarget', 'twitter'],
-          ['[0].nonInteraction', true]
-        ]));
+    browser.frame(tweetFrame);
+    browser.click('a');
+    browser.frame();
+    browser.frame(followFrame);
+    browser.click('a');
+    browser.frame();
+
+    browser.waitUntil(log.hitCountEquals(1));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].sn, 'Twitter');
+    assert.strictEqual(hits[0].sa, 'follow');
+    assert.strictEqual(hits[0].st, 'twitter');
+    assert.strictEqual(hits[0].ni, '1');
   });
 
 
   it('includes usage params with all hits', function() {
+    browser.execute(ga.run, 'require', 'socialWidgetTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
-    var hitData = browser
-        .execute(ga.run, 'require', 'socialWidgetTracker')
-        .execute(ga.run, 'send', 'pageview')
-        .execute(ga.getHitData)
-        .value;
-
-    assert.equal(hitData.length, 1);
-    assert.equal(hitData[0].devId, constants.DEV_ID);
-    assert.equal(hitData[0][constants.VERSION_PARAM], constants.VERSION);
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].did, constants.DEV_ID);
+    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
     // '80' = '010000000' in hex
-    assert.equal(hitData[0][constants.USAGE_PARAM], '80');
+    assert.strictEqual(hits[0][constants.USAGE_PARAM], '80');
   });
-
 });
 
 
@@ -183,11 +176,20 @@ describe('socialWidgetTracker', function() {
  * @return {boolean} True if the current browser doesn't support all features
  *    required for these tests.
  */
-function notSupportedInBrowser() {
-  // TODO(philipwalton): IE and Edge are flaky with the tweet button test,
-  // though they work when manually testing.
-  return browserCaps.browserName == 'MicrosoftEdge' ||
-      browserCaps.browserName == 'internet explorer';
+function browserDriverSupportsTwitterWidgets() {
+  var browserCaps = browser.session().value;
+
+  return !(
+    // TODO(philipwalton): IE and Edge are flaky with the tweet button test,
+    // though they work when manually testing.
+    browserCaps.browserName == 'MicrosoftEdge' ||
+    browserCaps.browserName == 'internet explorer' ||
+
+    // TODO(philipwalton): Safari 10 doesn't seem to detect the tweet button,
+    // nor does it like to wait for iframes.
+    (browserCaps.browserName == 'safari' &&
+        browserCaps.version.split('.')[0] > 9)
+  );
 }
 
 

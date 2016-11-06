@@ -17,53 +17,39 @@
 
 var assert = require('assert');
 var ga = require('./analytics');
-var utilities = require('./utilities');
-
-
-var browserCaps;
 
 
 describe('autotrack', function() {
+  this.retries(4);
 
   before(function() {
-    browserCaps = browser.session().value;
     browser.url('/test/autotrack.html');
   });
 
-
   afterEach(function() {
-    browser
-        .execute(utilities.untrackConsoleErrors)
-        .execute(ga.run, 'remove');
+    browser.execute(ga.run, 'remove');
   });
 
+  it('logs a deprecation error when requiring autotrack directly', function() {
+    browser.execute(function() {
+      if (!window.console) return;
+      window.__consoleErrors__ = [];
+      window.__originalConsoleError__ = window.console.error;
+      window.console.error = function() {
+        window.__consoleErrors__.push(arguments);
+        window.__originalConsoleError__.apply(window.console, arguments);
+      };
+    });
 
-  it('should log a deprecation error when requiring autotrack directly',
-      function() {
+    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'require', 'autotrack');
 
-    if (notSupportedInBrowser()) return;
-
-    var consoleErrors = browser
-        .execute(utilities.trackConsoleErrors)
-        .execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto')
-        .execute(ga.run, 'require', 'autotrack')
-        .execute(utilities.getConsoleErrors)
-        .value;
+    var consoleErrors = browser.execute(function() {
+      return window.__consoleErrors__;
+    }).value;
 
     assert(consoleErrors.length, 1);
     assert(consoleErrors[0][0].indexOf('https://goo.gl/XsXPg5') > -1);
   });
 
 });
-
-
-/**
- * @return {boolean} True if the current browser doesn't support all features
- *    required for these tests.
- */
-function notSupportedInBrowser() {
-  // IE9 doesn't support `console.error`, so it's not tested.
-  return browserCaps.browserName == 'MicrosoftEdge' ||
-      (browserCaps.browserName == 'internet explorer' &&
-          browserCaps.version == '9');
-}
