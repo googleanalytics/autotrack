@@ -2,6 +2,13 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+## Master (unreleased)
+
+- Update outboundLinkTracker to not use target="_blank" ever
+- Fix the in-code version not being automatically updated
+- Fix cleanUrlTracker updating `page` on the tracker not just the hit
+- Fix outboundFormTracker `formSelector` option not being applied
+
 ## 1.1.0 (2016-10-18)
 
 - Add impressionTracker methods to observe and unobserve elements (#111)
