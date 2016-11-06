@@ -50,7 +50,7 @@ describe('pageVisibilityTracker', function() {
     log.removeHits();
   });
 
-  it('should send events when the visibility state changes', function() {
+  it('sends events when the visibility state changes', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -69,7 +69,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[1].el, 'hidden => visible');
   });
 
-  it('should track the elapsed time between events', function() {
+  it('tracks the elapsed time between events', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -84,7 +84,7 @@ describe('pageVisibilityTracker', function() {
     assert(Number(hits[1].ev) >= 2); // >=1500ms.
   });
 
-  it('should send hidden events as non-interaction events', function() {
+  it('sends hidden events as non-interaction events', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -99,7 +99,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[1].ni, undefined);
   });
 
-  it('should use custom metric values if specified', function() {
+  it('uses custom metric values if specified', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
@@ -120,8 +120,7 @@ describe('pageVisibilityTracker', function() {
     assert(Number(hits[1].cm2) >= 2); // >=1500ms.
   });
 
-  it('should not send any hidden events if the session has expired',
-      function() {
+  it('does not send any hidden events if the session has expired', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
@@ -135,8 +134,7 @@ describe('pageVisibilityTracker', function() {
     closeTab();
   });
 
-  it('should preemptively start all new session hits with a pageview',
-      function() {
+  it('preemptivelys start all new session hits with a pageview', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
@@ -155,7 +153,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[1].ea, 'inactive');
   });
 
-  it('should not send visible events when starting a new session', function() {
+  it('does not send visible events when starting a new session', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
@@ -174,7 +172,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].t, 'pageview');
   });
 
-  it('should support customizing the change template', function() {
+  it('supports customizing the change template', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(requirePageVisibilityTracker_changeTemplate);
@@ -189,7 +187,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[1].el, 'hidden >> visible');
   });
 
-  it('should support customizing any field via the fieldsObj', function() {
+  it('supports customizing any field via the fieldsObj', function() {
     if (!browserSupportsTabs()) return this.skip();
 
       browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
@@ -211,7 +209,7 @@ describe('pageVisibilityTracker', function() {
       assert.strictEqual(hits[1].ni, '0');
   });
 
-  it('should support specifying a hit filter', function() {
+  it('supports specifying a hit filter', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(requirePageVisibilityTracker_hitFilter);
@@ -227,7 +225,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].cd1, 'pageVisibilityTracker');
   });
 
-  it('should reset the session timeout when other hits are sent', function() {
+  it('resets the session timeout when other hits are sent', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
