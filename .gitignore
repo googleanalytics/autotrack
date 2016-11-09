@@ -2,6 +2,10 @@ node_modules
 npm-debug.log
 .DS_Store
 
+# Generated test files
+test/unit/index.js
+test/unit/index.js.map
+
 # Local SauceLabs test runner
 /sauce.sh
 
