@@ -19,6 +19,7 @@ var assert = require('assert');
 var sinon = require('sinon');
 var session = require('../../lib/session');
 var storage = require('../../lib/storage');
+var now = require('../../lib/utilities').now;
 
 
 var TRACKING_ID = 'UA-12345-1';
@@ -27,6 +28,7 @@ var MINUTES = 60 * 1000;
 
 describe('session', function() {
   var tracker;
+  var store = storage.bindAccessors(TRACKING_ID, 'session');
 
   beforeEach(function(done) {
     localStorage.clear();
@@ -46,11 +48,11 @@ describe('session', function() {
     it('logs the time of the last interaction hit', function() {
       session.initSessionControl(tracker);
 
-      var now = +new Date();
+      var timeBeforePageview = now();
       tracker.send('pageview');
 
-      var lastHitTime = storage.get(TRACKING_ID, 'hitTime');
-      assert(lastHitTime >= now);
+      var lastHitTime = store.get().hitTime;
+      assert(lastHitTime >= timeBeforePageview);
 
       session.restoreSessionControl(tracker);
     });
@@ -62,7 +64,7 @@ describe('session', function() {
       tracker.send('timing', 'foo', 'bar');
       tracker.send('data');
 
-      var lastHitTime = storage.get(TRACKING_ID, 'hitTime');
+      var lastHitTime = store.get().hitTime;
       assert(!lastHitTime);
 
       session.restoreSessionControl(tracker);
@@ -96,13 +98,12 @@ describe('session', function() {
     });
   });
 
-
   describe('hasExpired', function() {
     it('returns true if the last hit was too long ago', function() {
-      storage.set(TRACKING_ID, {hitTime: +new Date() - (60 * MINUTES)});
+      store.set({hitTime: now() - (60 * MINUTES)});
       assert(session.hasExpired(tracker, 30));
 
-      storage.set(TRACKING_ID, {hitTime: +new Date() - (15 * MINUTES)});
+      store.set({hitTime: now() - (15 * MINUTES)});
       assert(!session.hasExpired(tracker, 30));
     });
 
@@ -121,7 +122,7 @@ describe('session', function() {
       dateTimeFormatStub.onCall(1).returns('9/14/1982');
       dateTimeFormatStub.returns('9/14/1982');
 
-      storage.set(TRACKING_ID, {hitTime: +new Date() - (15 * MINUTES)});
+      store.set({hitTime: now() - (15 * MINUTES)});
 
       // The stubs above should return difference dates for now vs the last
       // hit, so even though 30 minutes hasn't passed, the session has expired.
@@ -134,7 +135,7 @@ describe('session', function() {
     });
 
     it('does not error in browsers with no time zone support', function() {
-      storage.set(TRACKING_ID, {hitTime: +new Date()});
+      store.set({hitTime: now()});
 
       assert.doesNotThrow(function() {
         session.hasExpired(tracker, 30, 'America/Los_Angeles');
