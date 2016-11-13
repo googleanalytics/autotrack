@@ -35,34 +35,50 @@ describe('storage', function() {
     it('reads data from localStorage for the passed tracking ID', function() {
       localStorage.setItem(AUTOTRACK_LOCAL_STORAGE_KEY, JSON.stringify({
         properties: {
-          'UA-12345-1': {foo: 12345},
-          'UA-67890-1': {bar: 67890},
+          'UA-12345-1': {foo: 123},
+          'UA-67890-1': {bar: 456},
         }
       }));
 
-      assert.strictEqual(storage.get('UA-12345-1', 'foo'), 12345);
-      assert.strictEqual(storage.get('UA-67890-1', 'bar'), 67890);
+      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
+      assert.deepEqual(storage.get('UA-67890-1'), {bar: 456});
     });
 
-    it('optionally reads data from a source string', function() {
-      var event = {
-        newValue: JSON.stringify({
-          properties: {
-            'UA-12345-1': {foo: 12345},
-            'UA-67890-1': {bar: 67890},
-          }
-        })
-      };
-
-      assert.strictEqual(
-          storage.get('UA-12345-1', 'foo', event.newValue), 12345);
-
-      assert.strictEqual(
-          storage.get('UA-67890-1', 'bar', event.newValue), 67890);
+    it('returns an empty object if no property data is set', function() {
+      assert.deepEqual(storage.get('UA-NOT-SET'), {});
     });
 
-    it('returns undefined if no property data is set', function() {
-      assert.strictEqual(storage.get('UA-NOT-SET', 'foo'), undefined);
+    it('accepts an optional namespace', function() {
+      localStorage.setItem(AUTOTRACK_LOCAL_STORAGE_KEY, JSON.stringify({
+        properties: {
+          'UA-12345-1': {
+            'foo': 123,
+            'bar': 456,
+            'ns:qux': 'QUX',
+            'ns:baz': 'BAZ',
+          },
+        }
+      }));
+
+      assert.deepEqual(storage.get('UA-12345-1', 'ns'), {
+        qux: 'QUX',
+        baz: 'BAZ',
+      });
+    });
+
+    it('returns an empty object if no namespace items are found', function() {
+      localStorage.setItem(AUTOTRACK_LOCAL_STORAGE_KEY, JSON.stringify({
+        properties: {
+          'UA-12345-1': {
+            'foo': 123,
+            'bar': 456,
+            'ns:qux': 'QUX',
+            'ns:baz': 'BAZ',
+          },
+        }
+      }));
+
+      assert.deepEqual(storage.get('UA-12345-1', 'noNS'), {});
     });
 
     it('does not error if localStorage is not supported', function() {
@@ -70,26 +86,35 @@ describe('storage', function() {
       delete window.localStorage;
 
       assert.doesNotThrow(function() {
-        storage.get('UA-12345-1', 'foo');
+        storage.get('UA-12345-1');
+        storage.get('UA-12345-1', 'ns');
       });
 
       window.localStorage = ls;
     });
 
-    it('does not error if given an unparseable source string', function() {
-      assert.doesNotThrow(function() {
-        storage.get('UA-12345-1', 'foo', 'unparseable');
-      });
-    });
   });
 
   describe('set', function() {
     it('writes data to localStorage for the passed tracking ID', function() {
-      storage.set('UA-12345-1', {foo: 12345});
-      storage.set('UA-67890-1', {bar: 67890});
+      storage.set('UA-12345-1', {foo: 123});
+      storage.set('UA-67890-1', {bar: 456});
 
-      assert.strictEqual(storage.get('UA-12345-1', 'foo'), 12345);
-      assert.strictEqual(storage.get('UA-67890-1', 'bar'), 67890);
+      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
+      assert.deepEqual(storage.get('UA-67890-1'), {bar: 456});
+    });
+
+    it('accepts an optional namespace to return', function() {
+      storage.set('UA-12345-1', 'ns', {foo: 123, bar: 456});
+
+      assert.deepEqual(storage.get('UA-12345-1', 'ns'), {
+        foo: 123,
+        bar: 456
+      });
+      assert.deepEqual(storage.get('UA-12345-1'), {
+        'ns:foo': 123,
+        'ns:bar': 456
+      });
     });
 
     it('does not error if localStorage is not supported', function() {
@@ -97,7 +122,84 @@ describe('storage', function() {
       delete window.localStorage;
 
       assert.doesNotThrow(function() {
-        storage.set('UA-12345-1', {foo: 12345});
+        storage.set('UA-12345-1', {foo: 123});
+      });
+
+      window.localStorage = ls;
+    });
+  });
+
+  describe('clear', function() {
+    it('clear all data for the passed tracking ID', function() {
+      storage.set('UA-12345-1', {
+        'foo': 123,
+        'ns:bar': 456,
+        'ns:qux': 789,
+      });
+
+      storage.clear('UA-12345-1');
+
+      assert.deepEqual(storage.get('UA-12345-1'), {});
+    });
+
+    it('clears an optional namespace for the passed tracking ID', function() {
+      storage.set('UA-12345-1', {
+        'foo': 123,
+        'ns:bar': 456,
+        'ns:qux': 789,
+      });
+
+      storage.clear('UA-12345-1', 'ns');
+
+      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
+    });
+
+    it('does not error if localStorage is not supported', function() {
+      var ls = window.localStorage;
+      delete window.localStorage;
+
+      assert.doesNotThrow(function() {
+        storage.clear('UA-12345-1');
+        storage.clear('UA-12345-1', 'ns');
+      });
+
+      window.localStorage = ls;
+    });
+  });
+
+  describe('bindAccessors', function() {
+    it('binds methods to the tracking ID and namespace', function() {
+      var bound = storage.bindAccessors('UA-12345-1', 'ns');
+      storage.set('UA-12345-1', {'foo': 123});
+
+      bound.set({
+        bar: 456,
+        qux: 789,
+      });
+      assert.deepEqual(storage.get('UA-12345-1'), {
+        'foo': 123,
+        'ns:bar': 456,
+        'ns:qux': 789,
+      });
+
+      assert.deepEqual(bound.get(), {
+        bar: 456,
+        qux: 789,
+      });
+
+      bound.clear();
+      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
+    });
+
+    it('does not error if localStorage is not supported', function() {
+      var ls = window.localStorage;
+      delete window.localStorage;
+
+      assert.doesNotThrow(function() {
+        var bound = storage.bindAccessors('UA-12345-1', 'ns');
+        bound.set({foo: 123});
+        bound.get();
+        bound.clear('ns');
       });
 
       window.localStorage = ls;
