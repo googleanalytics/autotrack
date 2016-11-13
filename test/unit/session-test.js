@@ -98,13 +98,13 @@ describe('session', function() {
     });
   });
 
-  describe('hasExpired', function() {
+  describe('isExpired', function() {
     it('returns true if the last hit was too long ago', function() {
       store.set({hitTime: now() - (60 * MINUTES)});
-      assert(session.hasExpired(tracker, 30));
+      assert(session.isExpired(tracker, 30));
 
       store.set({hitTime: now() - (15 * MINUTES)});
-      assert(!session.hasExpired(tracker, 30));
+      assert(!session.isExpired(tracker, 30));
     });
 
     it('returns true if a new day has started', function() {
@@ -126,10 +126,10 @@ describe('session', function() {
 
       // The stubs above should return difference dates for now vs the last
       // hit, so even though 30 minutes hasn't passed, the session has expired.
-      assert(session.hasExpired(tracker, 30, 'America/Los_Angeles'));
+      assert(session.isExpired(tracker, 30, 'America/Los_Angeles'));
 
       // In this assertion the current hit and last hit occur on the same day.
-      assert(!session.hasExpired(tracker, 30, 'America/Los_Angeles'));
+      assert(!session.isExpired(tracker, 30, 'America/Los_Angeles'));
 
       restoreDateTimeFormat();
     });
@@ -138,7 +138,7 @@ describe('session', function() {
       store.set({hitTime: now()});
 
       assert.doesNotThrow(function() {
-        session.hasExpired(tracker, 30, 'America/Los_Angeles');
+        session.isExpired(tracker, 30, 'America/Los_Angeles');
       });
     });
   });
