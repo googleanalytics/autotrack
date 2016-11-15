@@ -179,7 +179,7 @@ describe('pageVisibilityTracker', function() {
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
     log.removeHits();
 
-    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
+    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'unimportant');
     browser.waitUntil(log.hitCountEquals(2));
 
     // Expects non-pageview hits queued to be sent after the session has timed
@@ -187,7 +187,7 @@ describe('pageVisibilityTracker', function() {
     var hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[1].ec, 'Uncategorized');
-    assert.strictEqual(hits[1].ea, 'inactive');
+    assert.strictEqual(hits[1].ea, 'unimportant');
   });
 
   it('resets the session timeout when other hits are sent', function() {
@@ -199,10 +199,10 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
-    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
+    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'unimportant');
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
-    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'inactive');
+    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'unimportant');
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
     openNewTab();
@@ -216,9 +216,9 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[1].ea, 'change');
     assert.strictEqual(hits[1].el, 'visible');
     assert.strictEqual(hits[2].ec, 'Uncategorized');
-    assert.strictEqual(hits[2].ea, 'inactive');
+    assert.strictEqual(hits[2].ea, 'unimportant');
     assert.strictEqual(hits[3].ec, 'Uncategorized');
-    assert.strictEqual(hits[3].ea, 'inactive');
+    assert.strictEqual(hits[3].ea, 'unimportant');
 
     // Since each hit above resets the session timeout, opening a new
     // tab will still be considered within the session timeout.
@@ -658,7 +658,7 @@ describe('pageVisibilityTracker', function() {
     var session1End = +new Date();
 
     // Manually expire session 1
-    expireSession(30 * 60 * 1000);
+    expireSession();
 
     var session2Start = +new Date();
 
@@ -756,8 +756,128 @@ describe('pageVisibilityTracker', function() {
     // Assert s2TotalTime is within 2 seconds of s2ElapsedTime.
     assert(s2TotalTime >= s2ElapsedTime - 2 &&
         s2TotalTime <= s2ElapsedTime + 2);
+  });
+
+  it('sends heartbeat events when visible if enabled', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    var sessionStart = +new Date();
+    var tab1 = browser.getCurrentTabId();
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleMetricIndex: 1,
+      hiddenMetricIndex: 2,
+      heartbeatTimeout: 1/60,
+    });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(4));
+
+    var tab2 = openNewTab('/test/blank.html');
+    browser.pause(2000); // No heartbeat events should be sent here.
+
+    var hits = log.getHits();
+    assert.strictEqual(hits.length, 5);
+
+    assert(hits[0].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
+    // Tab 1 change:visible
+    assert(hits[1].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'visible');
+    // Tab 1 heartbeat
+    assert(hits[2].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[2].ea, 'heartbeat');
+    assert.strictEqual(hits[2].el, 'visible');
+    assert(Number(hits[2].cm1) > 0);
+    // Tab 1 heartbeat
+    assert(hits[3].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[3].ea, 'heartbeat');
+    assert.strictEqual(hits[3].el, 'visible');
+    assert(Number(hits[3].cm1) > 0);
+    // Tab 1 change:hidden
+    assert(hits[4].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[4].ea, 'change');
+    assert.strictEqual(hits[4].el, 'hidden');
+
+    closeAllButFirstTab();
+    browser.waitUntil(log.hitCountEquals(8));
+    var sessionEnd = +new Date();
+
+    var hits = log.getHits();
+    // Tab 1 change:visible
+    assert(hits[5].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[5].ea, 'change');
+    assert.strictEqual(hits[5].el, 'visible');
+    assert(Number(hits[5].cm2) > 0);
+    // Tab 1 heartbeat
+    assert(hits[6].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[6].ea, 'heartbeat');
+    assert.strictEqual(hits[6].el, 'visible');
+    assert(Number(hits[6].cm1) > 0);
+    // Tab 1 heartbeat
+    assert(hits[7].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[7].ea, 'heartbeat');
+    assert.strictEqual(hits[7].el, 'visible');
+    assert(Number(hits[7].cm1) > 0);
+
+    var totalVisibleTime = getTotalVisibleTime(hits);
+    var totalHiddenTime = getTotalHiddenTime(hits);
+    var totalTime = getTotalTime(hits);
+    var sessionTime = Math.round((sessionEnd - sessionStart) / 1000);
+
+    assert(totalVisibleTime + totalHiddenTime == totalTime);
+    // Assert totalTime is within 2 seconds of session time.
+    assert(totalTime >= sessionTime - 2 && totalTime <= sessionTime + 2);
 
     log.removeHits();
+  });
+
+  it('stops sending heartbeats when the session expires', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    var session1Start = +new Date();
+    var tab1 = browser.getCurrentTabId();
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleMetricIndex: 1,
+      hiddenMetricIndex: 2,
+      heartbeatTimeout: 1/60,
+    });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(4));
+    var session1End = +new Date();
+    var hits1 = log.getHits();
+    log.removeHits();
+
+    expireSession();
+    browser.pause(3000);
+    log.assertNoHitsReceived();
+
+    var session2Start = +new Date();
+    // An interaction hit should trigger more heartsbeats.
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(3));
+    var session2End = +new Date();
+    var hits2 = log.getHits();
+    expireSession();
+
+    var s1TotalVisibleTime = getTotalVisibleTime(hits1);
+    var s1TotalHiddenTime = getTotalHiddenTime(hits1);
+    var s1TotalTime = getTotalTime(hits1);
+    var s1ElapsedTime = Math.round((session1End - session1Start) / 1000);
+
+    assert(s1TotalVisibleTime + s1TotalHiddenTime == s1TotalTime);
+    // Assert s1TotalTime is within 2 seconds of s1ElapsedTime.
+    assert(s1TotalTime >= s1ElapsedTime - 2 &&
+        s1TotalTime <= s1ElapsedTime + 2);
+
+    var s2TotalVisibleTime = getTotalVisibleTime(hits2);
+    var s2TotalHiddenTime = getTotalHiddenTime(hits2);
+    var s2TotalTime = getTotalTime(hits2);
+    var s2ElapsedTime = Math.round((session2End - session2Start) / 1000);
+
+    assert(s2TotalVisibleTime + s2TotalHiddenTime == s2TotalTime);
+    // Assert s2TotalTime is within 2 seconds of s2ElapsedTime.
+    assert(s2TotalTime >= s2ElapsedTime - 2 &&
+        s2TotalTime <= s2ElapsedTime + 2);
   });
 
   it('supports customizing any field via the fieldsObj', function() {
