@@ -50,6 +50,7 @@ module.exports = {
 
     app.get('/collect/:testId', function(request, response) {
       var payload = url.parse(request.url).query;
+      logPayload(payload);
       var logFile = getLogFile(request.params.testId);
       fs.ensureDirSync('./test/logs');
       fs.appendFileSync(logFile, payload + '\n');
@@ -62,6 +63,7 @@ module.exports = {
         chunks.push(chunk);
       }).on('end', function() {
         var payload = Buffer.concat(chunks).toString();
+        logPayload(payload);
         var logFile = getLogFile(request.params.testId);
         fs.ensureDirSync('./test/logs');
         fs.appendFileSync(logFile, payload + '\n');
@@ -113,3 +115,36 @@ module.exports = {
     fs.removeSync(getLogFile(testId));
   }
 };
+
+
+/**
+ * Accepts a hit payload and logs the relevant params to the console if
+ * the `AUTOTRACK_ENV` environment variable is set to 'debug'.
+ * @param {string} payload The hit payload.
+ */
+function logPayload(payload) {
+  if (process.env.AUTOTRACK_ENV == 'debug') {
+    var paramsToIgnore = [
+      'v',
+      'did',
+      'tid',
+      'a',
+      'z',
+      'ul',
+      'de',
+      'sd',
+      'sr',
+      'vp',
+      'je',
+      'fl',
+      'jid',
+    ];
+    var hit = qs.parse(payload);
+    process.stdout.write('-------------------------------------\n');
+    Object.keys(hit).forEach(function(key) {
+      if (!(key.charAt(0) === '_' || paramsToIgnore.includes(key))) {
+        process.stdout.write('  ' + key + ': ' + hit[key] + '\n');
+      }
+    });
+  }
+}
