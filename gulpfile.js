@@ -22,6 +22,7 @@ var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
 var eslint = require('gulp-eslint');
 var fs = require('fs');
+var globby = require('globby');
 var gulp = require('gulp');
 var gulpIf = require('gulp-if');
 var gutil = require('gulp-util');
@@ -30,6 +31,7 @@ var seleniumServerJar = require('selenium-server-standalone-jar');
 var source = require('vinyl-source-stream');
 var sourcemaps = require('gulp-sourcemaps');
 var spawn = require('child_process').spawn;
+var through = require('through2');
 var uglify = require('gulp-uglify');
 var webdriver = require('gulp-webdriver');
 
@@ -53,7 +55,7 @@ function isProd() {
 }
 
 
-gulp.task('javascript', function(done) {
+gulp.task('javascript', function() {
   // Gets the license string from this file (the first 15 lines),
   // and adds an @license tag.
   var license = fs.readFileSync(__filename, 'utf-8')
@@ -62,20 +64,15 @@ gulp.task('javascript', function(done) {
 
   var version = '/*! autotrack.js v' + pkg.version + ' */';
 
-  browserify('./', {
-    debug: true
+  return browserify('./', {
+    debug: true,
+    transform: [envify],
   })
   .bundle()
-
-  // TODO(philipwalton): Add real error handling.
-  // This temporary hack fixes an issue with tasks not restarting in
-  // watch mode after a syntax error is fixed.
-  .on('error', function(err) { gutil.beep(); done(err); })
-  .on('end', done)
-
   .pipe(source('./autotrack.js'))
   .pipe(buffer())
   .pipe(sourcemaps.init({loadMaps: true}))
+  .on('error', gutil.log)
   .pipe(gulpIf(isProd(), uglify({
     output: {preamble: license + '\n\n' + version}
   })))
@@ -84,8 +81,40 @@ gulp.task('javascript', function(done) {
 });
 
 
+gulp.task('javascript:unit', function () {
+  // From the browserify with glob recipe:
+  // https://goo.gl/UprlbI
+  var bundledStream = through();
+
+  bundledStream
+      .pipe(source('index.js'))
+      .pipe(buffer())
+      .pipe(sourcemaps.init({loadMaps: true}))
+      .on('error', gutil.log)
+      .pipe(sourcemaps.write('./'))
+      .pipe(gulp.dest('./test/unit/'));
+
+  globby(['./test/unit/**/*-test.js']).then(function(entries) {
+    browserify({
+      entries: entries,
+      debug: true,
+      transform: [envify]
+    }).bundle().pipe(bundledStream);
+  }).catch(function(err) {
+    bundledStream.emit('error', err);
+  });
+
+  return bundledStream;
+});
+
+
 gulp.task('lint', function () {
-  return gulp.src(['gulpfile.js', 'lib/**/*.js', 'test/**/*.js'])
+  return gulp.src([
+        'gulpfile.js',
+        'lib/**/*.js',
+        'test/**/*.js',
+        '!test/unit/index.js',
+      ])
       .pipe(eslint())
       .pipe(eslint.format())
       .pipe(eslint.failAfterError());
@@ -103,6 +132,11 @@ gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
   return gulp.src('./wdio.conf.js')
       .pipe(webdriver())
       .on('end', stopServers);
+});
+
+
+gulp.task('test:unit', ['javascript', 'javascript:unit'], function(done) {
+  spawn('./node_modules/.bin/easy-sauce', {stdio: [0, 1, 2]}).on('end', done);
 });
 
 
@@ -125,7 +159,7 @@ gulp.task('tunnel', ['serve'], function(done) {
 });
 
 
-gulp.task('serve', ['javascript'], function(done) {
+gulp.task('serve', ['javascript', 'javascript:unit'], function(done) {
   server.start(done);
   process.on('exit', server.stop.bind(server));
 });
@@ -147,6 +181,10 @@ gulp.task('selenium', function(done) {
 
 gulp.task('watch', ['serve'], function() {
   gulp.watch('./lib/**/*.js', ['javascript']);
+  gulp.watch([
+    './lib/**/*.js',
+    './test/unit/**/*-test.js'
+  ], ['javascript:unit']);
 });
 
 
