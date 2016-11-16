@@ -17,8 +17,7 @@
 
 var assert = require('assert');
 var sinon = require('sinon');
-var session = require('../../lib/session');
-var storage = require('../../lib/storage');
+var Session = require('../../lib/session');
 var now = require('../../lib/utilities').now;
 
 
@@ -26,10 +25,8 @@ var TRACKING_ID = 'UA-12345-1';
 var MINUTES = 60 * 1000;
 
 
-describe('session', function() {
+describe('Session', function() {
   var tracker;
-  var store = storage.bindAccessors(TRACKING_ID, 'session');
-
   beforeEach(function(done) {
     localStorage.clear();
     window.ga('create', TRACKING_ID, 'auto');
@@ -44,67 +41,71 @@ describe('session', function() {
     window.ga('remove');
   });
 
-  describe('initSessionControl', function() {
-    it('logs the time of the last interaction hit', function() {
-      session.initSessionControl(tracker);
+  describe('constructor', function() {
+    it('sets the passed args on the instance', function() {
+      var session = new Session(tracker, 123, 'America/Los_Angeles');
 
-      var timeBeforePageview = now();
-      tracker.send('pageview');
+      assert.strictEqual(session.tracker, tracker);
+      assert.strictEqual(session.timeout, 123);
+      assert.strictEqual(session.timeZone, 'America/Los_Angeles');
 
-      var lastHitTime = store.get().hitTime;
-      assert(lastHitTime >= timeBeforePageview);
-
-      session.restoreSessionControl(tracker);
+      session.destroy();
     });
 
-    it('does not log the time of non-interaction hits', function() {
-      session.initSessionControl(tracker);
+    it('uses the default timeout if not set', function() {
+      var session = new Session(tracker);
 
-      tracker.send('pageview', {nonInteraction: true});
-      tracker.send('timing', 'foo', 'bar');
-      tracker.send('data');
+      assert.strictEqual(session.tracker, tracker);
+      assert.strictEqual(session.timeout, Session.DEFAULT_TIMEOUT);
+      assert.strictEqual(session.timeZone, undefined);
 
-      var lastHitTime = store.get().hitTime;
-      assert(!lastHitTime);
-
-      session.restoreSessionControl(tracker);
+      session.destroy();
     });
 
-    it('sends hits normally after logging', function() {
-      var sendHitTaskStub = sinon.stub();
-      tracker.set('sendHitTask', sendHitTaskStub);
-      session.initSessionControl(tracker);
+    it('overrides the sendHitTask and stores the original', function() {
+      var oldSendHitTask = tracker.get('sendHitTask');
+      var session = new Session(tracker);
 
-      tracker.send('pageview');
-      assert(sendHitTaskStub.calledOnce);
+      assert.strictEqual(session.oldSendHitTask, oldSendHitTask);
+      assert.strictEqual(
+          session.tracker.get('sendHitTask'),
+          session.sendHitTask);
 
-      session.restoreSessionControl(tracker);
+      session.destroy();
     });
-  });
 
-  describe('restoreSessionControl', function() {
-    it('stop logging and restores the original sendHitTask', function() {
-      var sendHitTaskStub = sinon.stub();
-      tracker.set('sendHitTask', sendHitTaskStub);
+    it('does not create more than one instance per tracking ID', function() {
+      var session1 = new Session(tracker);
+      var session2 = new Session(tracker);
 
-      session.initSessionControl(tracker);
-      assert.notStrictEqual(tracker.get('sendHitTask'), sendHitTaskStub);
+      assert.strictEqual(session1, session2);
 
-      session.restoreSessionControl(tracker);
-      assert.strictEqual(tracker.get('sendHitTask'), sendHitTaskStub);
+      session1.destroy();
+      session2.destroy(); // Not really needed.
+    });
 
-      tracker.send('pageview');
-      assert(sendHitTaskStub.calledOnce);
+    it('adds a listener for storage changes', function() {
+      var session = new Session(tracker);
+
+      assert.strictEqual(
+          session.store.storageDidChangeInAnotherWindow,
+          session.handleStorage);
+
+      session.destroy();
     });
   });
 
   describe('isExpired', function() {
     it('returns true if the last hit was too long ago', function() {
-      store.set({hitTime: now() - (60 * MINUTES)});
-      assert(session.isExpired(tracker, 30));
+      var session = new Session(tracker);
 
-      store.set({hitTime: now() - (15 * MINUTES)});
-      assert(!session.isExpired(tracker, 30));
+      session.store.set({hitTime: now() - (60 * MINUTES)});
+      assert(session.isExpired());
+
+      session.store.set({hitTime: now() - (15 * MINUTES)});
+      assert(!session.isExpired());
+
+      session.destroy();
     });
 
     it('returns true if a new day has started', function() {
@@ -122,24 +123,229 @@ describe('session', function() {
       dateTimeFormatStub.onCall(1).returns('9/14/1982');
       dateTimeFormatStub.returns('9/14/1982');
 
-      store.set({hitTime: now() - (15 * MINUTES)});
+      var session = new Session(tracker, 30, 'America/Los_Angeles');
+      session.store.set({hitTime: now() - (15 * MINUTES)});
 
       // The stubs above should return difference dates for now vs the last
       // hit, so even though 30 minutes hasn't passed, the session has expired.
-      assert(session.isExpired(tracker, 30, 'America/Los_Angeles'));
+      assert(session.isExpired());
 
       // In this assertion the current hit and last hit occur on the same day.
-      assert(!session.isExpired(tracker, 30, 'America/Los_Angeles'));
+      assert(!session.isExpired());
 
+      session.destroy();
       restoreDateTimeFormat();
     });
 
     it('does not error in browsers with no time zone support', function() {
-      store.set({hitTime: now()});
+      var session = new Session(tracker, 30, 'America/Los_Angeles');
+      session.store.set({hitTime: now()});
 
       assert.doesNotThrow(function() {
-        session.isExpired(tracker, 30, 'America/Los_Angeles');
+        session.isExpired();
       });
+
+      session.destroy();
+    });
+  });
+
+  describe('isLastTrackerInteractionFromPreviousSession', function() {
+    it('returns true if the tracker\'s last known interaction hit was ' +
+        'from the previous session', function() {
+      var session = new Session(tracker);
+
+      // A timing hit is not interaction, but to previous session data exists,
+      // so it's inconclusive.
+      tracker.send('timing');
+      assert(!session.isLastTrackerInteractionFromPreviousSession());
+
+      // A pageview hit is interaction, but still no previous session data
+      // exists, so err on the side of caution.
+      tracker.send('pageview');
+      assert(!session.isLastTrackerInteractionFromPreviousSession());
+
+      // Manually trigger the `handleStorage()` method, similar to how it
+      // would happen if a hit were sent in another tab after expiration.
+      var oldSessionData = session.store.get();
+      var newSessionData = {
+        hitTime: now(),
+        sessionCount: oldSessionData.sessionCount + 1,
+      };
+      session.store.set(newSessionData);
+      session.handleStorage(newSessionData, oldSessionData);
+
+      // Since an interaction hit was sent prior to the sesson count
+      // increasing, the last hit is known to be from the previous session.
+      assert(session.isLastTrackerInteractionFromPreviousSession());
+
+      session.destroy();
+    });
+  });
+
+  describe('sendHitTask', function() {
+    it('sends the hit normally prior to doing additional work', function() {
+      var sendHitTaskStub = sinon.stub();
+      tracker.set('sendHitTask', sendHitTaskStub);
+
+      var session = new Session(tracker);
+      tracker.send('pageview');
+      assert(sendHitTaskStub.calledOnce);
+
+      session.destroy();
+    });
+
+    it('logs the time of the last interaction hit', function() {
+      var session = new Session(tracker);
+
+      var timeBeforePageview = now();
+      tracker.send('pageview');
+
+      var lastHitTime = session.store.get().hitTime;
+      assert(lastHitTime >= timeBeforePageview);
+
+      session.destroy();
+    });
+
+    it('does not log the time of non-interaction hits', function() {
+      var session = new Session(tracker);
+
+      tracker.send('pageview', {nonInteraction: true});
+      tracker.send('timing', 'foo', 'bar');
+      tracker.send('data');
+
+      var lastHitTime = session.store.get().hitTime;
+      assert(!lastHitTime);
+
+      session.destroy();
+    });
+
+    it('increments the session count after interaction hits ' +
+        'if the previous session expired', function() {
+      var session = new Session(tracker);
+      assert.strictEqual(session.store.get().sessionCount, 0);
+
+      tracker.send('pageview');
+      assert.strictEqual(session.store.get().sessionCount, 0);
+      assert.strictEqual(session.sessionCount_, 0);
+
+      // Manually expire the session.
+      session.store.set({hitTime: now() - (60 * MINUTES)});
+
+      // Send a non-interaction hit.
+      tracker.send('timing');
+      assert.strictEqual(session.store.get().sessionCount, 0);
+      assert.strictEqual(session.sessionCount_, 0);
+
+      tracker.send('pageview');
+      assert.strictEqual(session.store.get().sessionCount, 1);
+      assert.strictEqual(session.sessionCount_, 1);
+
+      session.destroy();
+    });
+
+    it('invokes the newSessionDidStart method after interaction hits  ' +
+        'if the previous session expired', function() {
+      var session = new Session(tracker);
+      sinon.spy(Session.prototype, 'newSessionDidStart');
+
+      tracker.send('pageview');
+      assert(!Session.prototype.newSessionDidStart.called);
+
+      // Manually expire the session.
+      session.store.set({hitTime: now() - (60 * MINUTES)});
+
+      // Send a non-interaction hit.
+      tracker.send('timing');
+      assert(!Session.prototype.newSessionDidStart.called);
+
+      tracker.send('pageview');
+      assert(Session.prototype.newSessionDidStart.calledOnce);
+
+      Session.prototype.newSessionDidStart.restore();
+      session.destroy();
+    });
+
+    it('invokes the initialScreenOrPageviewDidSend method ' +
+        'once a pageview or screenview is sent', function() {
+      var session1 = new Session(tracker);
+      sinon.spy(Session.prototype, 'initialScreenOrPageviewDidSend');
+
+      tracker.send('event', 'foo', 'bar');
+      assert(!Session.prototype.initialScreenOrPageviewDidSend.called);
+
+      tracker.send('pageview');
+      assert(Session.prototype.initialScreenOrPageviewDidSend.calledOnce);
+
+      Session.prototype.initialScreenOrPageviewDidSend.restore();
+      session1.destroy();
+
+      var session2 = new Session(tracker);
+      sinon.spy(Session.prototype, 'initialScreenOrPageviewDidSend');
+
+      tracker.send('event', 'foo', 'bar');
+      assert(!Session.prototype.initialScreenOrPageviewDidSend.called);
+
+      tracker.send('screenview');
+      assert(Session.prototype.initialScreenOrPageviewDidSend.calledOnce);
+
+      Session.prototype.initialScreenOrPageviewDidSend.restore();
+      session2.destroy();
+    });
+  });
+
+  describe('handleStorage', function() {
+    it('invokes newSessionDidStartInAnotherWindow if a new session ' +
+        'has started in another window', function() {
+      sinon.spy(Session.prototype, 'newSessionDidStartInAnotherWindow');
+
+      var session = new Session(tracker);
+
+      // Manually trigger the `handleStorage()` method, similar to how it
+      // would happen if a hit were sent in another tab after expiration.
+      var oldSessionData = session.store.get();
+      var newSessionData = {
+        hitTime: now(),
+        sessionCount: oldSessionData.sessionCount + 1,
+      };
+      session.store.set(newSessionData);
+      session.handleStorage(newSessionData, oldSessionData);
+
+      assert(Session.prototype.newSessionDidStartInAnotherWindow.calledOnce);
+
+      Session.prototype.newSessionDidStartInAnotherWindow.restore();
+      session.destroy();
+    });
+  });
+
+  describe('destroy', function() {
+    it('restores the original sendHitTask', function() {
+      var sendHitTaskStub = sinon.stub();
+      tracker.set('sendHitTask', sendHitTaskStub);
+
+      var session = new Session(tracker);
+      assert.notStrictEqual(tracker.get('sendHitTask'), sendHitTaskStub);
+
+      session.destroy();
+      assert.strictEqual(tracker.get('sendHitTask'), sendHitTaskStub);
+
+      tracker.send('pageview');
+      assert(sendHitTaskStub.calledOnce);
+    });
+
+    it('removes the instance from the global store', function() {
+      var session1 = new Session(tracker);
+      var session2 = new Session(tracker);
+
+      assert.strictEqual(session1, session2);
+
+      session1.destroy();
+      session2.destroy();
+
+      var session3 = new Session(tracker);
+      assert.notStrictEqual(session3, session1);
+      assert.notStrictEqual(session3, session2);
+
+      session3.destroy();
     });
   });
 });
