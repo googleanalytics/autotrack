@@ -16,13 +16,11 @@
 
 
 var assert = require('assert');
-var storage = require('../../lib/storage');
+var sinon = require('sinon');
+var Store = require('../../lib/storage');
 
 
-var AUTOTRACK_LOCAL_STORAGE_KEY = 'autotrack';
-
-
-describe('storage', function() {
+describe('Store', function() {
   beforeEach(function() {
     localStorage.clear();
   });
@@ -31,54 +29,98 @@ describe('storage', function() {
     localStorage.clear();
   });
 
+  describe('constuctor', function() {
+    it('creates a localStorage key from the tracking ID and namespace',
+        function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      assert.strictEqual(store1.key, 'autotrack:UA-12345-1:ns1');
+
+      var store2 = new Store('UA-67890-1', 'ns2', {default: true});
+      assert.strictEqual(store2.key, 'autotrack:UA-67890-1:ns2');
+
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('does not create multiple instances for the same key', function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
+      var store3 = new Store('UA-12345-1', 'ns1');
+
+      assert.strictEqual(store1, store3);
+      assert.notStrictEqual(store1, store2);
+
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('stores the optional defaults object on the instance', function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      assert.deepEqual(store1.defaults, {});
+
+      var store2 = new Store('UA-67890-1', 'ns2', {default: true});
+      assert.deepEqual(store2.defaults, {default: true});
+
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('adds a single event listener for the storage event', function() {
+      sinon.spy(window, 'addEventListener');
+
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
+
+      assert(window.addEventListener.calledOnce);
+
+      store1.destroy();
+      store2.destroy();
+
+      window.addEventListener.restore();
+    });
+  });
+
   describe('get', function() {
-    it('reads data from localStorage for the passed tracking ID', function() {
-      localStorage.setItem(AUTOTRACK_LOCAL_STORAGE_KEY, JSON.stringify({
-        properties: {
-          'UA-12345-1': {foo: 123},
-          'UA-67890-1': {bar: 456},
-        }
-      }));
+    it('reads data from localStorage for the store key', function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
 
-      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
-      assert.deepEqual(storage.get('UA-67890-1'), {bar: 456});
+      localStorage.setItem(store1.key, JSON.stringify({foo: 12, bar: 34}));
+      localStorage.setItem(store2.key, JSON.stringify({qux: 56, baz: 78}));
+
+      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
+      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+
+      store1.destroy();
+      store2.destroy();
     });
 
-    it('returns an empty object if no property data is set', function() {
-      assert.deepEqual(storage.get('UA-NOT-SET'), {});
+    it('returns the default data if the store is missing or corrupted',
+        function() {
+      var store1 = new Store('UA-12345-1', 'ns1', {default: true, foo: 1});
+      var store2 = new Store('UA-67890-1', 'ns2', {default: true, qux: 2});
+
+      localStorage.setItem(store1.key, 'bad data');
+
+      assert.deepEqual(store1.get(), {default: true, foo: 1});
+      assert.deepEqual(store2.get(), {default: true, qux: 2});
+
+      store1.destroy();
+      store2.destroy();
     });
 
-    it('accepts an optional namespace', function() {
-      localStorage.setItem(AUTOTRACK_LOCAL_STORAGE_KEY, JSON.stringify({
-        properties: {
-          'UA-12345-1': {
-            'foo': 123,
-            'bar': 456,
-            'ns:qux': 'QUX',
-            'ns:baz': 'BAZ',
-          },
-        }
-      }));
+    it('merges the stored data with the defaults', function() {
+      var store1 = new Store('UA-12345-1', 'ns1', {default: true, foo: 1});
+      var store2 = new Store('UA-67890-1', 'ns2', {default: true, qux: 2});
 
-      assert.deepEqual(storage.get('UA-12345-1', 'ns'), {
-        qux: 'QUX',
-        baz: 'BAZ',
-      });
-    });
+      localStorage.setItem(store1.key, JSON.stringify({foo: 12, bar: 34}));
+      localStorage.setItem(store2.key, JSON.stringify({qux: 56, baz: 78}));
 
-    it('returns an empty object if no namespace items are found', function() {
-      localStorage.setItem(AUTOTRACK_LOCAL_STORAGE_KEY, JSON.stringify({
-        properties: {
-          'UA-12345-1': {
-            'foo': 123,
-            'bar': 456,
-            'ns:qux': 'QUX',
-            'ns:baz': 'BAZ',
-          },
-        }
-      }));
+      assert.deepEqual(store1.get(), {default: true, foo: 12, bar: 34});
+      assert.deepEqual(store2.get(), {default: true, qux: 56, baz: 78});
 
-      assert.deepEqual(storage.get('UA-12345-1', 'noNS'), {});
+      store1.destroy();
+      store2.destroy();
     });
 
     it('does not error if localStorage is not supported', function() {
@@ -86,8 +128,9 @@ describe('storage', function() {
       delete window.localStorage;
 
       assert.doesNotThrow(function() {
-        storage.get('UA-12345-1');
-        storage.get('UA-12345-1', 'ns');
+        var store = new Store('UA-12345-1', 'ns1', {default: true, foo: 1});
+        store.get();
+        store.destroy();
       });
 
       window.localStorage = ls;
@@ -96,25 +139,18 @@ describe('storage', function() {
   });
 
   describe('set', function() {
-    it('writes data to localStorage for the passed tracking ID', function() {
-      storage.set('UA-12345-1', {foo: 123});
-      storage.set('UA-67890-1', {bar: 456});
+    it('writes data to localStorage for store key', function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
 
-      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
-      assert.deepEqual(storage.get('UA-67890-1'), {bar: 456});
-    });
+      store1.set({foo: 12, bar: 34});
+      store2.set({qux: 56, baz: 78});
 
-    it('accepts an optional namespace to return', function() {
-      storage.set('UA-12345-1', 'ns', {foo: 123, bar: 456});
+      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
+      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
 
-      assert.deepEqual(storage.get('UA-12345-1', 'ns'), {
-        foo: 123,
-        bar: 456
-      });
-      assert.deepEqual(storage.get('UA-12345-1'), {
-        'ns:foo': 123,
-        'ns:bar': 456
-      });
+      store1.destroy();
+      store2.destroy();
     });
 
     it('does not error if localStorage is not supported', function() {
@@ -122,7 +158,9 @@ describe('storage', function() {
       delete window.localStorage;
 
       assert.doesNotThrow(function() {
-        storage.set('UA-12345-1', {foo: 123});
+        var store = new Store('UA-12345-1', 'ns1');
+        store.set({foo: 12, bar: 34});
+        store.destroy();
       });
 
       window.localStorage = ls;
@@ -130,28 +168,26 @@ describe('storage', function() {
   });
 
   describe('clear', function() {
-    it('clear all data for the passed tracking ID', function() {
-      storage.set('UA-12345-1', {
-        'foo': 123,
-        'ns:bar': 456,
-        'ns:qux': 789,
-      });
+    it('removes the key from localStorage', function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
 
-      storage.clear('UA-12345-1');
+      store1.set({foo: 12, bar: 34});
+      store2.set({qux: 56, baz: 78});
 
-      assert.deepEqual(storage.get('UA-12345-1'), {});
-    });
+      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
+      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
 
-    it('clears an optional namespace for the passed tracking ID', function() {
-      storage.set('UA-12345-1', {
-        'foo': 123,
-        'ns:bar': 456,
-        'ns:qux': 789,
-      });
+      store1.clear();
+      store2.clear();
 
-      storage.clear('UA-12345-1', 'ns');
+      assert.deepEqual(store1.get(), {});
+      assert.deepEqual(store2.get(), {});
+      assert.strictEqual(localStorage.getItem(store1.key), null);
+      assert.strictEqual(localStorage.getItem(store2.key), null);
 
-      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
+      store1.destroy();
+      store2.destroy();
     });
 
     it('does not error if localStorage is not supported', function() {
@@ -159,50 +195,108 @@ describe('storage', function() {
       delete window.localStorage;
 
       assert.doesNotThrow(function() {
-        storage.clear('UA-12345-1');
-        storage.clear('UA-12345-1', 'ns');
+        var store1 = new Store('UA-12345-1', 'ns1');
+        var store2 = new Store('UA-67890-1', 'ns2');
+        store1.set({foo: 12, bar: 34});
+        store2.set({qux: 56, baz: 78});
+        store1.clear();
+        store2.clear();
+        store1.destroy();
+        store2.destroy();
       });
 
       window.localStorage = ls;
     });
   });
 
-  describe('bindAccessors', function() {
-    it('binds methods to the tracking ID and namespace', function() {
-      var bound = storage.bindAccessors('UA-12345-1', 'ns');
-      storage.set('UA-12345-1', {'foo': 123});
+  describe('storageDidChangeInAnotherWindow', function() {
+    it('is invoked with changes when the storage event fires', function() {
+      var changeSpy = sinon.spy(
+          Store.prototype, 'storageDidChangeInAnotherWindow');
 
-      bound.set({
-        bar: 456,
-        qux: 789,
-      });
-      assert.deepEqual(storage.get('UA-12345-1'), {
-        'foo': 123,
-        'ns:bar': 456,
-        'ns:qux': 789,
-      });
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
+      var storageEvent;
 
-      assert.deepEqual(bound.get(), {
-        bar: 456,
-        qux: 789,
-      });
+      try {
+        storageEvent = new StorageEvent('storage', {
+          key: store1.key,
+          oldValue: JSON.stringify({foo: 12, bar: 34}),
+          newValue: JSON.stringify({foo: 'CHANGED!', bar: 34}),
+        });
+      } catch(err) {
+        // Browser doesn't support event contructors.
+        changeSpy.restore();
+        return this.skip();
+      }
 
-      bound.clear();
-      assert.deepEqual(storage.get('UA-12345-1'), {foo: 123});
+      window.dispatchEvent(storageEvent);
+      assert(changeSpy.calledOnce);
+      assert(changeSpy.firstCall.calledOn(store1));
+      assert.deepEqual(changeSpy.firstCall.args[0], {foo: 'CHANGED!', bar: 34});
+      assert.deepEqual(changeSpy.firstCall.args[1], {foo: 12, bar: 34});
+
+      try {
+        storageEvent = new StorageEvent('storage', {
+          key: store2.key,
+          oldValue: JSON.stringify({qux: 56, baz: 78}),
+          newValue: JSON.stringify({qux: 56, bar: null}),
+        });
+      } catch(err) {
+        // Browser doesn't support event contructors.
+        changeSpy.restore();
+        return this.skip();
+      }
+
+      window.dispatchEvent(storageEvent);
+      assert(changeSpy.calledTwice);
+      assert(changeSpy.secondCall.calledOn(store2));
+      assert.deepEqual(changeSpy.secondCall.args[0], {qux: 56, bar: null});
+      assert.deepEqual(changeSpy.secondCall.args[1], {qux: 56, baz: 78});
+
+      changeSpy.restore();
+      store1.destroy();
+      store2.destroy();
+    });
+  });
+
+  describe('destroy', function() {
+    it('removes the instance from the global store', function() {
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-12345-1', 'ns1');
+
+      assert.strictEqual(store1, store2);
+
+      store1.destroy();
+      store2.destroy();
+
+      var store3 = new Store('UA-12345-1', 'ns1');
+      assert.notStrictEqual(store3, store1);
+      assert.notStrictEqual(store3, store2);
+
+      store3.destroy();
     });
 
-    it('does not error if localStorage is not supported', function() {
-      var ls = window.localStorage;
-      delete window.localStorage;
+    it('removes the storage listener when the last instance is destroyed',
+        function() {
+      sinon.spy(window, 'addEventListener');
+      sinon.spy(window, 'removeEventListener');
 
-      assert.doesNotThrow(function() {
-        var bound = storage.bindAccessors('UA-12345-1', 'ns');
-        bound.set({foo: 123});
-        bound.get();
-        bound.clear('ns');
-      });
+      var store1 = new Store('UA-12345-1', 'ns1');
+      var store2 = new Store('UA-67890-1', 'ns2');
 
-      window.localStorage = ls;
+      assert(window.addEventListener.calledOnce);
+      var listener = window.addEventListener.firstCall.args[0];
+
+      store1.destroy();
+      assert(!window.removeEventListener.called);
+
+      store2.destroy();
+      assert(window.removeEventListener.calledOnce);
+      assert(window.removeEventListener.alwaysCalledWith(listener));
+
+      window.addEventListener.restore();
+      window.removeEventListener.restore();
     });
   });
 });
