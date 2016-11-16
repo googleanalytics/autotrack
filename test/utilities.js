@@ -46,6 +46,11 @@ module.exports = {
           return server.getHitLogs(testId).length === count;
         };
       },
+      hitCountIsAtLeast: function(count) {
+        return function() {
+          return server.getHitLogs(testId).length >= count;
+        };
+      },
       assertNoHitsReceived: function() {
         var browserCaps = browser.session().value;
         if (browserCaps.browserName == 'safari') {

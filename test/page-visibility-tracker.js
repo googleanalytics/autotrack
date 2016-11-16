@@ -167,7 +167,8 @@ describe('pageVisibilityTracker', function() {
     closeAllButFirstTab();
   });
 
-  it('preemptivelys start all new session hits with a pageview', function() {
+  it('sends a pageview before a visible event if the session has expired',
+      function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
@@ -179,15 +180,16 @@ describe('pageVisibilityTracker', function() {
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
     log.removeHits();
 
-    browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'unimportant');
+    openNewTab();
+    closeAllButFirstTab();
     browser.waitUntil(log.hitCountEquals(2));
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
     var hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
-    assert.strictEqual(hits[1].ec, 'Uncategorized');
-    assert.strictEqual(hits[1].ea, 'unimportant');
+    assert.strictEqual(hits[1].ea, 'change');
+    assert.strictEqual(hits[1].el, 'visible');
   });
 
   it('resets the session timeout when other hits are sent', function() {
@@ -317,17 +319,15 @@ describe('pageVisibilityTracker', function() {
     browser.close(tab1); // Close window1 and switch to tab1.
     browser.waitUntil(log.hitCountEquals(5));
 
-    var storedPropertyData = browser.execute(function() {
-      return JSON.parse(localStorage.getItem('autotrack'))
-          .properties['UA-12345-1'];
+    var storedSessionData = browser.execute(function() {
+      return JSON.parse(localStorage.getItem(
+          'autotrack:UA-12345-1:plugins/page-visibility-tracker'));
     }).value;
 
     // Use the references to make the linter happy.
     assert(tab1 && window1);
 
-    assert.strictEqual(
-        storedPropertyData['plugins/page-visibility-tracker:state'],
-        'visible');
+    assert.strictEqual(storedSessionData.state, 'visible');
   });
 
   it('stores a hidden state if a tab/window is closed ' +
@@ -355,17 +355,15 @@ describe('pageVisibilityTracker', function() {
     browser.close(tab2); // Close window1 and switch to tab2.
     browser.waitUntil(log.hitCountEquals(6));
 
-    var storedPropertyData = browser.execute(function() {
-      return JSON.parse(localStorage.getItem('autotrack'))
-          .properties['UA-12345-1'];
+    var storedSessionData = browser.execute(function() {
+      return JSON.parse(localStorage.getItem(
+          'autotrack:UA-12345-1:plugins/page-visibility-tracker'));
     }).value;
 
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && window1);
 
-    assert.strictEqual(
-        storedPropertyData['plugins/page-visibility-tracker:state'],
-        'hidden');
+    assert.strictEqual(storedSessionData.state, 'hidden');
   });
 
   it('does not double report when 2+ tabs are used simultaneously', function() {
@@ -670,7 +668,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.close(tab1); // Close tab2 and go to tab1.
 
-    browser.waitUntil(log.hitCountEquals(12));
+    browser.waitUntil(log.hitCountEquals(13));
     var session2End = +new Date();
 
     // Use the references to make the linter happy.
@@ -730,11 +728,14 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[10].el, 'hidden');
     assert(Number(hits[10].cm1) > 0);
     // tab2 (no change events)
-    // tab1 change:visible
+    // tab1 pageview (due to tracker not being active in current session)
     assert(hits[11].dl.endsWith('?tab=1'));
-    assert.strictEqual(hits[11].ea, 'change');
-    assert.strictEqual(hits[11].el, 'visible');
-    assert(Number(hits[11].cm2) > 0);
+    assert.strictEqual(hits[11].t, 'pageview');
+    // tab1 change:visible
+    assert(hits[12].dl.endsWith('?tab=1'));
+    assert.strictEqual(hits[12].ea, 'change');
+    assert.strictEqual(hits[12].el, 'visible');
+    assert(Number(hits[12].cm2) > 0);
     // Session 2 end
 
     var s1TotalVisibleTime = getTotalVisibleTime(hits.slice(0, 8));
@@ -774,6 +775,9 @@ describe('pageVisibilityTracker', function() {
     var tab2 = openNewTab('/test/blank.html');
     browser.pause(2000); // No heartbeat events should be sent here.
 
+    // Use the references to make the linter happy.
+    assert(tab1 && tab2);
+
     var hits = log.getHits();
     assert.strictEqual(hits.length, 5);
 
@@ -802,7 +806,7 @@ describe('pageVisibilityTracker', function() {
     browser.waitUntil(log.hitCountEquals(8));
     var sessionEnd = +new Date();
 
-    var hits = log.getHits();
+    hits = log.getHits();
     // Tab 1 change:visible
     assert(hits[5].dl.endsWith('?tab=1'));
     assert.strictEqual(hits[5].ea, 'change');
@@ -858,6 +862,9 @@ describe('pageVisibilityTracker', function() {
     var session2End = +new Date();
     var hits2 = log.getHits();
     expireSession();
+
+    // Use the references to make the linter happy.
+    assert(tab1)
 
     var s1TotalVisibleTime = getTotalVisibleTime(hits1);
     var s1TotalHiddenTime = getTotalHiddenTime(hits1);
@@ -963,10 +970,15 @@ describe('pageVisibilityTracker', function() {
  */
 function browserSupportsTabs() {
   var browserCaps = browser.session().value;
-  // TODO(philipwalton): on Sauce Labs, Internet explorer and Safari open
-  // target="_blank" links in a new window, not tab.
-  return !(browserCaps.browserName == 'internet explorer' ||
-      browserCaps.browserName == 'safari');
+  return !(
+      // TODO(philipwalton): on Sauce Labs, Internet explorer and Safari open
+      // target="_blank" links in a new window, not tab.
+      browserCaps.browserName == 'internet explorer' ||
+      browserCaps.browserName == 'safari' ||
+      // TODO(philipwalton): Firefox driver (not the regular browser) emits
+      // visibility change events in the wrong order.
+      // https://bugzilla.mozilla.org/show_bug.cgi?id=1318098
+      browserCaps.browserName == 'firefox');
 }
 
 
@@ -1054,10 +1066,12 @@ function closeAllButFirstTab() {
  */
 function expireSession() {
   browser.execute(function() {
-    var storedData = JSON.parse(localStorage.getItem('autotrack'));
-    storedData.properties['UA-12345-1']['session:hitTime'] =
-       +new Date(1970, 0, 1);
-    localStorage.setItem('autotrack', JSON.stringify(storedData));
+    var storedSessionData = JSON.parse(
+        localStorage.getItem('autotrack:UA-12345-1:session'));
+
+    storedSessionData.hitTime = +new Date(1970, 0, 1);
+    localStorage.setItem('autotrack:UA-12345-1:session',
+        JSON.stringify(storedSessionData));
   });
 }
 

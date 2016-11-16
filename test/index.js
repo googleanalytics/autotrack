@@ -96,7 +96,7 @@ describe('index', function() {
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.execute(ga.run, 'require', 'urlChangeTracker');
     browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
+    browser.waitUntil(log.hitCountIsAtLeast(1));
 
     assert.strictEqual(log.getHits()[0].t, 'pageview');
   });
@@ -115,7 +115,7 @@ describe('index', function() {
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.execute(ga.run, 'require', 'urlChangeTracker');
     browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
+    browser.waitUntil(log.hitCountIsAtLeast(1));
 
     assert.strictEqual(log.getHits()[0].t, 'pageview');
   });
@@ -134,7 +134,7 @@ describe('index', function() {
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.execute(ga.run, 'require', 'urlChangeTracker');
     browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
+    browser.waitUntil(log.hitCountIsAtLeast(1));
 
     var hits = log.getHits();
     assert.strictEqual(hits[0].did, constants.DEV_ID);

@@ -37,7 +37,9 @@ module.exports =  {
           var hitIndex = +(localStorage.getItem('hitcounter') || 0) + 1;
           var hitTime = +new Date();
           var hitPayload = model.get('hitPayload') +
-              '&_ht=' + hitTime + '&_hi=' + hitIndex;
+              '&time=' + hitTime + '&index=' + hitIndex;
+
+          oldSendHitTask(model);
 
           if ('sendBeacon' in navigator) {
             navigator.sendBeacon('/collect/' + testId, hitPayload);
@@ -46,7 +48,6 @@ module.exports =  {
             beacon.src = '/collect/' + testId + '?' + hitPayload;
           }
           localStorage.setItem('hitcounter', hitIndex);
-          oldSendHitTask(model);
         });
       });
     }
