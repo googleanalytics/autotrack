@@ -37,13 +37,13 @@
   "devDependencies": {
     "browserify": "^13.1.1",
     "easy-sauce": "^0.4.1",
-    "eslint": "^3.9.1",
+    "eslint": "^3.10.2",
     "express": "^4.14.0",
     "fs-extra": "^1.0.0",
     "globby": "^6.1.0",
     "gulp": "^3.9.1",
     "gulp-eslint": "^3.0.1",
-    "gulp-if": "^2.0.1",
+    "gulp-if": "^2.0.2",
     "gulp-sourcemaps": "^2.2.0",
     "gulp-uglify": "^2.0.0",
     "gulp-util": "^3.0.7",
@@ -51,7 +51,7 @@
     "intersection-observer": "^0.1.1",
     "mocha": "^3.1.2",
     "ngrok": "^2.2.3",
-    "sauce-connect-launcher": "^0.17.0",
+    "sauce-connect-launcher": "^1.0.0",
     "selenium-server-standalone-jar": "^3.0.1",
     "serve-static": "^1.11.1",
     "sinon": "sinonjs/sinon#v2.0.0-pre.2",
@@ -59,9 +59,9 @@
     "uuid": "^2.0.3",
     "vinyl-buffer": "^1.0.0",
     "vinyl-source-stream": "^1.1.0",
-    "wdio-mocha-framework": "^0.5.0",
+    "wdio-mocha-framework": "^0.5.4",
     "wdio-sauce-service": "^0.2.5",
-    "webdriverio": "^4.3.0"
+    "webdriverio": "^4.4.0"
   },
   "easySauce": {
     "testPath": "/test/unit/",
