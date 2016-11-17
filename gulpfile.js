@@ -20,7 +20,6 @@
 
 var browserify = require('browserify');
 var buffer = require('vinyl-buffer');
-var envify = require('envify');
 var eslint = require('gulp-eslint');
 var fs = require('fs');
 var gulp = require('gulp');
@@ -66,7 +65,6 @@ gulp.task('javascript', function(done) {
   browserify('./', {
     debug: true
   })
-  .transform(envify)
   .bundle()
 
   // TODO(philipwalton): Add real error handling.

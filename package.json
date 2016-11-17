@@ -36,7 +36,6 @@
   },
   "devDependencies": {
     "browserify": "^13.1.1",
-    "envify": "^3.4.1",
     "eslint": "^3.9.1",
     "express": "^4.14.0",
     "fs-extra": "^1.0.0",
