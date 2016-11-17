@@ -856,7 +856,7 @@ describe('pageVisibilityTracker', function() {
     log.assertNoHitsReceived();
 
     var session2Start = +new Date();
-    // An interaction hit should trigger more heartsbeats.
+    // An interaction hit should trigger more heartbeats.
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(3));
     var session2End = +new Date();
@@ -1069,7 +1069,7 @@ function expireSession() {
     var storedSessionData = JSON.parse(
         localStorage.getItem('autotrack:UA-12345-1:session'));
 
-    storedSessionData.hitTime = +new Date(1970, 0, 1);
+    storedSessionData.hitTime = 946713600000; // The year 2000!
     localStorage.setItem('autotrack:UA-12345-1:session',
         JSON.stringify(storedSessionData));
   });
