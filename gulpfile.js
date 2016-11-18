@@ -66,7 +66,6 @@ gulp.task('javascript', function() {
 
   return browserify('./', {
     debug: true,
-    transform: [envify],
   })
   .bundle()
   .pipe(source('./autotrack.js'))
@@ -98,7 +97,6 @@ gulp.task('javascript:unit', function () {
     browserify({
       entries: entries,
       debug: true,
-      transform: [envify]
     }).bundle().pipe(bundledStream);
   }).catch(function(err) {
     bundledStream.emit('error', err);
