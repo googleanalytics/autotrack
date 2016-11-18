@@ -5,9 +5,11 @@ node_js:
 
 before_install:
 - |
-    if ! git diff --name-only $TRAVIS_COMMIT_RANGE | grep -E '^\.js|test/'
+    echo "Checking $TRAVIS_COMMIT_RANGE for code file changes"
+    if ! git diff --name-only $TRAVIS_COMMIT_RANGE \
+        | grep -E '(\.(js|yml|json)$)|(^(test|lib))/'
     then
-      echo "No source or test files were update. Stopping CI build."
+      echo "No code files were update. Stopping CI build."
       exit
     fi
 
