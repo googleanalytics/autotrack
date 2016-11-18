@@ -3,14 +3,18 @@ language: node_js
 node_js:
   - "6"
 
+# If a valid commit range exits, check that it has changes to code files.
 before_install:
 - |
-    echo "Checking $TRAVIS_COMMIT_RANGE for code file changes"
-    if ! git diff --name-only $TRAVIS_COMMIT_RANGE \
-        | grep -E '(\.(js|yml|json)$)|(^(test|lib))/'
+    if git diff --name-only $TRAVIS_COMMIT_RANGE | grep -qE '.+'
     then
-      echo "No code files were update. Stopping CI build."
-      exit
+      echo "Checking $TRAVIS_COMMIT_RANGE for code file changes"
+      if ! git diff --name-only $TRAVIS_COMMIT_RANGE \
+          | grep -E '(\.(js|yml|json)$)|(^(test|lib))/'
+      then
+        echo "No code files were update. Stopping CI build."
+        exit
+      fi
     fi
 
 env:
