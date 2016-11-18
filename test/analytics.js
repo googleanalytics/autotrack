@@ -34,7 +34,7 @@ module.exports =  {
       ga(function(tracker) {
         var oldSendHitTask = tracker.get('sendHitTask');
         tracker.set('sendHitTask', function(model) {
-          var hitIndex = +(localStorage.getItem('hitcounter') || 0) + 1;
+          var hitIndex = +(localStorage.getItem('hitcounter') || -1) + 1;
           var hitTime = +new Date();
           var hitPayload = model.get('hitPayload') +
               '&time=' + hitTime + '&index=' + hitIndex;
