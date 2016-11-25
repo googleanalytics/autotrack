@@ -109,7 +109,7 @@ The `outboundLinkTracker` plugin sends hits with the following values. To custom
   </tr>
 </table>
 
-**Note:** the reference to `link` in the table above refers to the `<a>` element being clicked. The reference to `event` refers to the event being dispatched by the user interaction.
+**Note:** the reference to `link` in the table above refers to the `<a>` or `<area>` element being clicked. The reference to `event` refers to the event being dispatched by the user interaction.
 
 ## Methods
 
