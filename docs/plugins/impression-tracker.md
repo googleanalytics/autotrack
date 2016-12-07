@@ -66,7 +66,7 @@ The following table outlines all possible configuration options for the `impress
   <tr valign="top">
     <td><code>rootMargin</code></td>
     <td><code>string</code></td>
-    <td>A CSS margin string accepting pixel or percentage values. It is passed as the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>rootMargin</code></a> option to the <code>IntersectionObserver</code> instance, which is used to expand or contract the viewport area to change when an element is considered visible. For example: the string <code>'-20px 0'</code> would contract the viewport by 20 pixels on the top and bottom sides, and all element visibility calculations would be based on that rather than the full viewport dimensions.</td>
+    <td>A CSS margin string accepting pixel or percentage values. It is passed as the <a href="https://developer.mozilla.org/en-US/docs/Web/API/IntersectionObserver#Properties"><code>rootMargin</code></a> option to the <code>IntersectionObserver</code> instance, which is used to expand or contract the viewport area to change when an element is considered visible. For example: the string <code>'-20px 0px'</code> would contract the viewport by 20 pixels on the top and bottom sides, and all element visibility calculations would be based on that rather than the full viewport dimensions.</td>
   </tr>
   <tr valign="top">
     <td><code>fieldsObj</code></td>
