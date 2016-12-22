@@ -3,4 +3,8 @@ npm-debug.log
 .DS_Store
 
 # Local SauceLabs test runner
-sauce.sh
+/sauce.sh
+
+# Local analytics.js
+/analytics.js
+/analytics_debug.js
