@@ -73,10 +73,10 @@ describe('history', function() {
       assert(spy1.calledTwice);
       assert(spy2.calledTwice);
 
-      assert(!spy1.firstCall.args[0]);
-      assert(!spy2.firstCall.args[0]);
-      assert.strictEqual(spy1.secondCall.args[0], true);
-      assert.strictEqual(spy2.secondCall.args[0], true);
+      assert.strictEqual(spy1.firstCall.args[0], true);
+      assert.strictEqual(spy2.firstCall.args[0], true);
+      assert.strictEqual(spy1.secondCall.args[0], false);
+      assert.strictEqual(spy2.secondCall.args[0], false);
 
       historyWatcher.removeListener(spy1);
       historyWatcher.removeListener(spy2);
