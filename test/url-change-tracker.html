@@ -38,18 +38,21 @@
     foo.addEventListener('click', function(event) {
       event.preventDefault();
       history.pushState({}, 'Foo', 'foo.html');
+      document.title = 'Foo';
       fooPage();
     });
 
     bar.addEventListener('click', function(event) {
       event.preventDefault();
       history.pushState({}, 'Bar', './bar.html');
+      document.title = 'Bar';
       barPage();
     });
 
     qux.addEventListener('click', function(event) {
       event.preventDefault();
       history.pushState({}, 'Qux', this.href);
+      document.title = 'Qux';
       quxPage();
     });
 
@@ -67,19 +70,25 @@
       if (location.href.indexOf('foo.html') > -1) return fooPage();
       if (location.href.indexOf('bar.html') > -1) return barPage();
       if (location.href.indexOf('qux.html') > -1) return quxPage();
+
+      // Else
       content.innerHTML = '';
+      document.title = 'Home';
     });
 
     function fooPage() {
       content.innerHTML = 'Foo';
+      document.title = 'Foo';
     }
 
     function barPage() {
       content.innerHTML = 'Bar';
+      document.title = 'Bar';
     }
 
     function quxPage() {
       content.innerHTML = 'Qux';
+      document.title = 'Qux';
     }
   </script>
 
