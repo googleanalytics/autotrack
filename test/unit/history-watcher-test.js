@@ -18,7 +18,7 @@
 var assert = require('assert');
 var dispatch = require('dom-utils/lib/dispatch');
 var sinon = require('sinon');
-var history = require('../../lib/history');
+var historyWatcher = require('../../lib/history-watcher');
 
 
 var nativePushState = window.history.pushState;
@@ -35,21 +35,21 @@ describe('history', function() {
   describe('addListener', function() {
     it('adds a single listener to the history watcher', function() {
       var spy = sinon.spy();
-      history.addListener(spy);
+      historyWatcher.addListener(spy);
 
       window.history.pushState({}, 'Foo', 'foo.html');
       assert(spy.calledOnce);
 
-      history.removeListener(spy);
+      historyWatcher.removeListener(spy);
     });
 
     it('supports adding multiple listeners to the history watcher', function() {
       var spy1 = sinon.spy();
       var spy2 = sinon.spy();
       var spy3 = sinon.spy();
-      history.addListener(spy1);
-      history.addListener(spy2);
-      history.addListener(spy3);
+      historyWatcher.addListener(spy1);
+      historyWatcher.addListener(spy2);
+      historyWatcher.addListener(spy3);
 
       window.history.pushState({}, 'Foo', 'foo.html');
       window.history.pushState({}, 'Bar', 'bar.html');
@@ -57,16 +57,16 @@ describe('history', function() {
       assert(spy2.calledTwice);
       assert(spy3.calledTwice);
 
-      history.removeListener(spy1);
-      history.removeListener(spy2);
-      history.removeListener(spy3);
+      historyWatcher.removeListener(spy1);
+      historyWatcher.removeListener(spy2);
+      historyWatcher.removeListener(spy3);
     });
 
     it('indicates whether the history was updated or replaced', function() {
       var spy1 = sinon.spy();
       var spy2 = sinon.spy();
-      history.addListener(spy1);
-      history.addListener(spy2);
+      historyWatcher.addListener(spy1);
+      historyWatcher.addListener(spy2);
 
       window.history.pushState({}, 'Foo', 'foo.html');
       window.history.replaceState({}, 'Bar', 'bar.html');
@@ -78,15 +78,15 @@ describe('history', function() {
       assert.strictEqual(spy1.secondCall.args[0], true);
       assert.strictEqual(spy2.secondCall.args[0], true);
 
-      history.removeListener(spy1);
-      history.removeListener(spy2);
+      historyWatcher.removeListener(spy1);
+      historyWatcher.removeListener(spy2);
     });
 
     it('invokes listeners on popstate', function() {
       var spy1 = sinon.spy();
       var spy2 = sinon.spy();
-      history.addListener(spy1);
-      history.addListener(spy2);
+      historyWatcher.addListener(spy1);
+      historyWatcher.addListener(spy2);
 
       window.history.pushState({}, 'Foo', 'foo.html');
       dispatch(window, 'popstate');
@@ -94,20 +94,20 @@ describe('history', function() {
       assert(spy1.calledTwice);
       assert(spy2.calledTwice);
 
-      history.removeListener(spy1);
-      history.removeListener(spy2);
+      historyWatcher.removeListener(spy1);
+      historyWatcher.removeListener(spy2);
     });
   });
 
   describe('removeListener', function() {
     it('removes a listener from the history watcher', function() {
       var spy = sinon.spy();
-      history.addListener(spy);
+      historyWatcher.addListener(spy);
 
       window.history.pushState({}, 'Foo', 'foo.html');
       assert(spy.calledOnce);
 
-      history.removeListener(spy);
+      historyWatcher.removeListener(spy);
 
       window.history.pushState({}, 'Bar', 'bar.html');
       assert(spy.calledOnce);
@@ -118,9 +118,9 @@ describe('history', function() {
       var spy1 = sinon.spy();
       var spy2 = sinon.spy();
       var spy3 = sinon.spy();
-      history.addListener(spy1);
-      history.addListener(spy2);
-      history.addListener(spy3);
+      historyWatcher.addListener(spy1);
+      historyWatcher.addListener(spy2);
+      historyWatcher.addListener(spy3);
 
       window.history.pushState({}, 'Foo', 'foo.html');
       window.history.replaceState({}, 'Bar', 'bar.html');
@@ -129,8 +129,8 @@ describe('history', function() {
       assert.strictEqual(spy2.callCount, 3);
       assert.strictEqual(spy3.callCount, 3);
 
-      history.removeListener(spy1);
-      history.removeListener(spy2);
+      historyWatcher.removeListener(spy1);
+      historyWatcher.removeListener(spy2);
       window.history.pushState({}, 'Qux', 'qux.html');
       dispatch(window, 'popstate');
 
@@ -141,7 +141,7 @@ describe('history', function() {
       assert.notEqual(window.history.pushState, nativePushState);
       assert.notEqual(window.history.replaceState, nativeReplaceState);
 
-      history.removeListener(spy3);
+      historyWatcher.removeListener(spy3);
 
       assert.equal(window.history.pushState, nativePushState);
       assert.equal(window.history.replaceState, nativeReplaceState);
