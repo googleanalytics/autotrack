@@ -44,9 +44,6 @@ var seleniumServer;
 var sshTunnel;
 
 
-process.env.AUTOTRACK_VERSION = process.env.AUTOTRACK_VERSION || pkg.version;
-
-
 /**
  * @return {boolean} True if NODE_ENV is production.
  */
