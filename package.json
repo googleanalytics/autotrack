@@ -55,6 +55,7 @@
     "selenium-server-standalone-jar": "^3.0.1",
     "serve-static": "^1.11.1",
     "sinon": "sinonjs/sinon#v2.0.0-pre.2",
+    "splittable": "^4.0.0",
     "through2": "^2.0.1",
     "uuid": "^2.0.3",
     "vinyl-buffer": "^1.0.0",
