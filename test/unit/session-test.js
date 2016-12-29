@@ -137,6 +137,17 @@ describe('Session', function() {
       restoreDateTimeFormat();
     });
 
+    it('returns true if the previous hit ended the session', function() {
+      var session = new Session(tracker);
+
+      tracker.send('pageview');
+      tracker.send('event', 'cat', 'act', {sessionControl: 'end'});
+
+      assert(session.isExpired());
+
+      session.destroy();
+    });
+
     it('does not error in browsers with no time zone support', function() {
       var session = new Session(tracker, 30, 'America/Los_Angeles');
       session.store.set({hitTime: now()});
@@ -156,7 +167,7 @@ describe('Session', function() {
 
       // A timing hit is not interaction, but to previous session data exists,
       // so it's inconclusive.
-      tracker.send('timing');
+      tracker.send('timing', 'foo', 'bar', 100);
       assert(!session.isLastTrackerInteractionFromPreviousSession());
 
       // A pageview hit is interaction, but still no previous session data
@@ -194,33 +205,23 @@ describe('Session', function() {
       session.destroy();
     });
 
-    it('logs the time of the last interaction hit', function() {
+    it('logs the time of the last hit', function() {
       var session = new Session(tracker);
 
       var timeBeforePageview = now();
       tracker.send('pageview');
-
       var lastHitTime = session.store.get().hitTime;
       assert(lastHitTime >= timeBeforePageview);
 
-      session.destroy();
-    });
-
-    it('does not log the time of non-interaction hits', function() {
-      var session = new Session(tracker);
-
-      tracker.send('pageview', {nonInteraction: true});
-      tracker.send('timing', 'foo', 'bar');
-      tracker.send('data');
-
-      var lastHitTime = session.store.get().hitTime;
-      assert(!lastHitTime);
+      var timeBeforeTimingHit = now();
+      tracker.send('timing', 'foo', 'bar', 1000);
+      lastHitTime = session.store.get().hitTime;
+      assert(lastHitTime >= timeBeforeTimingHit);
 
       session.destroy();
     });
 
-    it('increments the session count after interaction hits ' +
-        'if the previous session expired', function() {
+    it('increments the session count when new sessions start', function() {
       var session = new Session(tracker);
       assert.strictEqual(session.store.get().sessionCount, 0);
 
@@ -229,21 +230,27 @@ describe('Session', function() {
       assert.strictEqual(session.sessionCount_, 0);
 
       // Manually expire the session.
-      session.store.set({hitTime: now() - (60 * MINUTES)});
-
-      // Send a non-interaction hit.
-      tracker.send('timing');
-      assert.strictEqual(session.store.get().sessionCount, 0);
-      assert.strictEqual(session.sessionCount_, 0);
+      session.store.set({isExpired: true});
 
       tracker.send('pageview');
       assert.strictEqual(session.store.get().sessionCount, 1);
       assert.strictEqual(session.sessionCount_, 1);
 
+      // Expire the session via sessionControl.
+      tracker.send('event', 'cat', 'act', {sessionControl: 'end'});
+      tracker.send('pageview');
+      assert.strictEqual(session.store.get().sessionCount, 2);
+      assert.strictEqual(session.sessionCount_, 2);
+
+      // Start a new session via sessionControl.
+      tracker.send('pageview', {sessionControl: 'start'});
+      assert.strictEqual(session.store.get().sessionCount, 3);
+      assert.strictEqual(session.sessionCount_, 3);
+
       session.destroy();
     });
 
-    it('invokes the newSessionDidStart method after interaction hits  ' +
+    it('invokes the newSessionDidStart method after hits ' +
         'if the previous session expired', function() {
       var session = new Session(tracker);
       sinon.spy(Session.prototype, 'newSessionDidStart');
@@ -252,44 +259,21 @@ describe('Session', function() {
       assert(!Session.prototype.newSessionDidStart.called);
 
       // Manually expire the session.
-      session.store.set({hitTime: now() - (60 * MINUTES)});
+      session.store.set({isExpired: true});
 
-      // Send a non-interaction hit.
-      tracker.send('timing');
-      assert(!Session.prototype.newSessionDidStart.called);
-
+      // Send an interaction hit.
       tracker.send('pageview');
       assert(Session.prototype.newSessionDidStart.calledOnce);
 
+      // Manually expire the session.
+      session.store.set({isExpired: true});
+
+      // Send a non-interaction hit.
+      tracker.send('timing', 'foo', 'bar', 100);
+      assert(Session.prototype.newSessionDidStart.called);
+
       Session.prototype.newSessionDidStart.restore();
       session.destroy();
-    });
-
-    it('invokes the initialScreenOrPageviewDidSend method ' +
-        'once a pageview or screenview is sent', function() {
-      var session1 = new Session(tracker);
-      sinon.spy(Session.prototype, 'initialScreenOrPageviewDidSend');
-
-      tracker.send('event', 'foo', 'bar');
-      assert(!Session.prototype.initialScreenOrPageviewDidSend.called);
-
-      tracker.send('pageview');
-      assert(Session.prototype.initialScreenOrPageviewDidSend.calledOnce);
-
-      Session.prototype.initialScreenOrPageviewDidSend.restore();
-      session1.destroy();
-
-      var session2 = new Session(tracker);
-      sinon.spy(Session.prototype, 'initialScreenOrPageviewDidSend');
-
-      tracker.send('event', 'foo', 'bar');
-      assert(!Session.prototype.initialScreenOrPageviewDidSend.called);
-
-      tracker.send('screenview');
-      assert(Session.prototype.initialScreenOrPageviewDidSend.calledOnce);
-
-      Session.prototype.initialScreenOrPageviewDidSend.restore();
-      session2.destroy();
     });
   });
 
