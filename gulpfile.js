@@ -18,30 +18,29 @@
 /* eslint require-jsdoc: "off" */
 
 
-var browserify = require('browserify');
-var buffer = require('vinyl-buffer');
-var eslint = require('gulp-eslint');
-var fs = require('fs');
-var globby = require('globby');
-var gulp = require('gulp');
-var gulpIf = require('gulp-if');
-var gutil = require('gulp-util');
-var sauceConnectLauncher = require('sauce-connect-launcher');
-var seleniumServerJar = require('selenium-server-standalone-jar');
-var source = require('vinyl-source-stream');
-var sourcemaps = require('gulp-sourcemaps');
-var spawn = require('child_process').spawn;
-var through = require('through2');
-var uglify = require('gulp-uglify');
-var webdriver = require('gulp-webdriver');
+const babelify = require('babelify');
+const browserify = require('browserify');
+const buffer = require('vinyl-buffer');
+const eslint = require('gulp-eslint');
+const fs = require('fs');
+const globby = require('globby');
+const gulp = require('gulp');
+const gulpIf = require('gulp-if');
+const gutil = require('gulp-util');
+const sauceConnectLauncher = require('sauce-connect-launcher');
+const seleniumServerJar = require('selenium-server-standalone-jar');
+const source = require('vinyl-source-stream');
+const sourcemaps = require('gulp-sourcemaps');
+const {spawn} = require('child_process');
+const through = require('through2');
+const uglify = require('gulp-uglify');
+const webdriver = require('gulp-webdriver');
+const pkg = require('./package.json');
+const server = require('./test/server');
 
 
-var pkg = require('./package.json');
-var server = require('./test/server');
-
-
-var seleniumServer;
-var sshTunnel;
+let seleniumServer;
+let sshTunnel;
 
 
 /**
@@ -55,15 +54,17 @@ function isProd() {
 gulp.task('javascript', function() {
   // Gets the license string from this file (the first 15 lines),
   // and adds an @license tag.
-  var license = fs.readFileSync(__filename, 'utf-8')
+  const license = fs.readFileSync(__filename, 'utf-8')
       .split('\n').slice(0, 15)
       .join('\n').replace(/^\/\*\*/, '/**\n * @license');
 
-  var version = '/*! autotrack.js v' + pkg.version + ' */';
+  const version = '/*! autotrack.js v' + pkg.version + ' */';
 
   return browserify('./', {
     debug: true,
+    detectGlobals: false,
   })
+  .transform(babelify, {presets: ['es2015']})
   .bundle()
   .pipe(source('./autotrack.js'))
   .pipe(buffer())
@@ -80,7 +81,7 @@ gulp.task('javascript', function() {
 gulp.task('javascript:unit', function () {
   // From the browserify with glob recipe:
   // https://goo.gl/UprlbI
-  var bundledStream = through();
+  const bundledStream = through();
 
   bundledStream
       .pipe(source('index.js'))
@@ -91,10 +92,10 @@ gulp.task('javascript:unit', function () {
       .pipe(gulp.dest('./test/unit/'));
 
   globby(['./test/unit/**/*-test.js']).then(function(entries) {
-    browserify({
-      entries: entries,
-      debug: true,
-    }).bundle().pipe(bundledStream);
+    browserify({entries: entries, debug: true})
+        .transform(babelify, {presets: ['es2015']})
+        .bundle()
+        .pipe(bundledStream);
   }).catch(function(err) {
     bundledStream.emit('error', err);
   });
@@ -136,7 +137,7 @@ gulp.task('test:unit', ['javascript', 'javascript:unit'], function(done) {
 
 
 gulp.task('tunnel', ['serve'], function(done) {
-  var opts = {
+  const opts = {
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
     verbose: true,
