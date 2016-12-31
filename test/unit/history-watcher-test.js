@@ -15,136 +15,159 @@
  */
 
 
-var assert = require('assert');
-var dispatch = require('dom-utils/lib/dispatch');
-var sinon = require('sinon');
-var historyWatcher = require('../../lib/history-watcher');
+import assert from 'assert';
+import dispatch from 'dom-utils/lib/dispatch';
+import sinon from 'sinon';
+import EventEmitter from '../../lib/event-emitter';
+import getHistoryWatcher, {HistoryWatcher} from '../../lib/history-watcher';
 
 
-var nativePushState = window.history.pushState;
-var nativeReplaceState = window.history.replaceState;
+const nativePushState = window.history.pushState;
+const nativeReplaceState = window.history.replaceState;
 
 
-describe('history', function() {
-  var title = document.title;
-  var path = location.pathname + location.search;
-  afterEach(function() {
+describe('HistoryWatcher', () => {
+  const title = document.title;
+  const path = location.pathname + location.search;
+
+  afterEach(() => {
     window.history.replaceState({}, title, path);
   });
 
-  describe('addListener', function() {
-    it('adds a single listener to the history watcher', function() {
-      var spy = sinon.spy();
-      historyWatcher.addListener(spy);
+  it('extends the EventEmitter class', () => {
+    const historyWatcher = new HistoryWatcher();
 
-      window.history.pushState({}, 'Foo', 'foo.html');
-      assert(spy.calledOnce);
+    assert(historyWatcher instanceof EventEmitter);
 
-      historyWatcher.removeListener(spy);
-    });
+    historyWatcher.destroy();
+  });
 
-    it('supports adding multiple listeners to the history watcher', function() {
-      var spy1 = sinon.spy();
-      var spy2 = sinon.spy();
-      var spy3 = sinon.spy();
-      historyWatcher.addListener(spy1);
-      historyWatcher.addListener(spy2);
-      historyWatcher.addListener(spy3);
+  it('invokes handlers after the history changes via pushState', () => {
+    const historyWatcher = new HistoryWatcher();
 
-      window.history.pushState({}, 'Foo', 'foo.html');
-      window.history.pushState({}, 'Bar', 'bar.html');
-      assert(spy1.calledTwice);
-      assert(spy2.calledTwice);
-      assert(spy3.calledTwice);
+    const spy1 = sinon.spy();
+    const spy2 = sinon.spy();
+    const spy3 = sinon.spy();
+    historyWatcher.on('pushstate', spy1);
+    historyWatcher.on('pushstate', spy2);
+    historyWatcher.on('pushstate', spy3);
 
-      historyWatcher.removeListener(spy1);
-      historyWatcher.removeListener(spy2);
-      historyWatcher.removeListener(spy3);
-    });
+    window.history.pushState({}, 'Foo', 'foo.html');
+    window.history.pushState({}, 'Bar', 'bar.html');
+    assert(spy1.calledTwice);
+    assert(spy2.calledTwice);
+    assert(spy3.calledTwice);
 
-    it('indicates whether the history was updated or replaced', function() {
-      var spy1 = sinon.spy();
-      var spy2 = sinon.spy();
-      historyWatcher.addListener(spy1);
-      historyWatcher.addListener(spy2);
+    assert.deepEqual(spy1.firstCall.args, [{}, 'Foo', 'foo.html']);
+    assert.deepEqual(spy1.secondCall.args, [{}, 'Bar', 'bar.html']);
+    assert.deepEqual(spy2.firstCall.args, [{}, 'Foo', 'foo.html']);
+    assert.deepEqual(spy2.secondCall.args, [{}, 'Bar', 'bar.html']);
+    assert.deepEqual(spy3.firstCall.args, [{}, 'Foo', 'foo.html']);
+    assert.deepEqual(spy3.secondCall.args, [{}, 'Bar', 'bar.html']);
 
-      window.history.pushState({}, 'Foo', 'foo.html');
-      window.history.replaceState({}, 'Bar', 'bar.html');
-      assert(spy1.calledTwice);
-      assert(spy2.calledTwice);
+    historyWatcher.destroy();
+  });
 
-      assert.strictEqual(spy1.firstCall.args[0], true);
-      assert.strictEqual(spy2.firstCall.args[0], true);
-      assert.strictEqual(spy1.secondCall.args[0], false);
-      assert.strictEqual(spy2.secondCall.args[0], false);
+  it('invokes handlers after the history changes via replaceState', () => {
+    const historyWatcher = new HistoryWatcher();
 
-      historyWatcher.removeListener(spy1);
-      historyWatcher.removeListener(spy2);
-    });
+    const spy1 = sinon.spy();
+    const spy2 = sinon.spy();
+    const spy3 = sinon.spy();
+    historyWatcher.on('replacestate', spy1);
+    historyWatcher.on('replacestate', spy2);
+    historyWatcher.on('replacestate', spy3);
 
-    it('invokes listeners on popstate', function() {
-      var spy1 = sinon.spy();
-      var spy2 = sinon.spy();
-      historyWatcher.addListener(spy1);
-      historyWatcher.addListener(spy2);
+    window.history.replaceState({}, 'Foo', 'foo.html');
+    window.history.replaceState({}, 'Bar', 'bar.html');
+    assert(spy1.calledTwice);
+    assert(spy2.calledTwice);
+    assert(spy3.calledTwice);
 
-      window.history.pushState({}, 'Foo', 'foo.html');
-      dispatch(window, 'popstate');
+    assert.deepEqual(spy1.firstCall.args, [{}, 'Foo', 'foo.html']);
+    assert.deepEqual(spy1.secondCall.args, [{}, 'Bar', 'bar.html']);
+    assert.deepEqual(spy2.firstCall.args, [{}, 'Foo', 'foo.html']);
+    assert.deepEqual(spy2.secondCall.args, [{}, 'Bar', 'bar.html']);
+    assert.deepEqual(spy3.firstCall.args, [{}, 'Foo', 'foo.html']);
+    assert.deepEqual(spy3.secondCall.args, [{}, 'Bar', 'bar.html']);
 
-      assert(spy1.calledTwice);
-      assert(spy2.calledTwice);
+    historyWatcher.destroy();
+  });
 
-      historyWatcher.removeListener(spy1);
-      historyWatcher.removeListener(spy2);
+  it('invokes handlers after the history changes via popstate', () => {
+    const historyWatcher = new HistoryWatcher();
+    const spy1 = sinon.spy();
+    const spy2 = sinon.spy();
+    historyWatcher.on('popstate', spy1);
+    historyWatcher.on('popstate', spy2);
+    dispatch(window, 'popstate');
+
+    assert(spy1.calledOnce);
+    assert(spy2.calledOnce);
+
+    historyWatcher.destroy();
+  });
+
+  it('invokes handlers after running the native methods', () => {
+    const historyWatcher = new HistoryWatcher();
+    const handler1 = () => assert(location.href.indexOf('foo.html') > -1);
+    const handler2 = () => assert(location.href.indexOf('bar.html') > -1);
+
+    historyWatcher.on('pushstate', handler1);
+    historyWatcher.on('replacestate', handler2);
+
+    window.history.pushState({}, 'Foo', 'foo.html');
+    window.history.replaceState({}, 'Bar', 'bar.html');
+
+    historyWatcher.destroy();
+  });
+
+
+  describe('constructor', () => {
+    it('overrides the native push and replace state methods', () => {
+      assert.equal(window.history.pushState, nativePushState);
+      assert.equal(window.history.replaceState, nativeReplaceState);
+
+      const historyWatcher = new HistoryWatcher();
+
+      assert.equal(
+          window.history.pushState,
+          historyWatcher.handlePushState_);
+      assert.equal(
+          window.history.replaceState,
+          historyWatcher.handleReplaceState_);
+
+      historyWatcher.destroy();
     });
   });
 
-  describe('removeListener', function() {
-    it('removes a listener from the history watcher', function() {
-      var spy = sinon.spy();
-      historyWatcher.addListener(spy);
-
-      window.history.pushState({}, 'Foo', 'foo.html');
-      assert(spy.calledOnce);
-
-      historyWatcher.removeListener(spy);
-
-      window.history.pushState({}, 'Bar', 'bar.html');
-      assert(spy.calledOnce);
-
-    });
-
-    it('unwraps history methods if all listeners are removed', function() {
-      var spy1 = sinon.spy();
-      var spy2 = sinon.spy();
-      var spy3 = sinon.spy();
-      historyWatcher.addListener(spy1);
-      historyWatcher.addListener(spy2);
-      historyWatcher.addListener(spy3);
-
-      window.history.pushState({}, 'Foo', 'foo.html');
-      window.history.replaceState({}, 'Bar', 'bar.html');
-      dispatch(window, 'popstate');
-      assert.strictEqual(spy1.callCount, 3);
-      assert.strictEqual(spy2.callCount, 3);
-      assert.strictEqual(spy3.callCount, 3);
-
-      historyWatcher.removeListener(spy1);
-      historyWatcher.removeListener(spy2);
-      window.history.pushState({}, 'Qux', 'qux.html');
-      dispatch(window, 'popstate');
-
-      assert.strictEqual(spy1.callCount, 3);
-      assert.strictEqual(spy2.callCount, 3);
-      assert.strictEqual(spy3.callCount, 5);
-
+  describe('destroy', () => {
+    it('removes all handlers and restores native methods', () => {
+      const historyWatcher = new HistoryWatcher();
       assert.notEqual(window.history.pushState, nativePushState);
       assert.notEqual(window.history.replaceState, nativeReplaceState);
 
-      historyWatcher.removeListener(spy3);
+      const spy = sinon.spy();
+      historyWatcher.on('pushstate', spy);
+
+      window.history.pushState({}, 'Foo', 'foo.html');
+      assert(spy.calledOnce);
+
+      historyWatcher.destroy();
+
+      window.history.pushState({}, 'Bar', 'bar.html');
+      assert(spy.calledOnce);
 
       assert.equal(window.history.pushState, nativePushState);
       assert.equal(window.history.replaceState, nativeReplaceState);
     });
+  });
+});
+
+
+describe('getHistoryWatcher', () => {
+  it('returns a singleton HistoryWatcher instance', () => {
+    assert.strictEqual(getHistoryWatcher(), getHistoryWatcher());
+    getHistoryWatcher().destroy();
   });
 });
