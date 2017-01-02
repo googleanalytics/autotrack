@@ -15,10 +15,10 @@
  */
 
 
-var assert = require('assert');
-var sinon = require('sinon');
-var Session = require('../../lib/session');
-var now = require('../../lib/utilities').now;
+import assert from 'assert';
+import sinon from 'sinon';
+import Session from '../../lib/session';
+import {now} from '../../lib/utilities';
 
 
 var TRACKING_ID = 'UA-12345-1';
