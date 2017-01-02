@@ -15,9 +15,9 @@
  */
 
 
-var assert = require('assert');
-var sinon = require('sinon');
-var Store = require('../../lib/storage');
+import assert from 'assert';
+import sinon from 'sinon';
+import Store from '../../lib/storage';
 
 
 describe('Store', function() {

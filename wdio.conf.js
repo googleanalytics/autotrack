@@ -15,6 +15,9 @@
  */
 
 
+require('babel-register');
+
+
 exports.config = {
   specs: [
     './test/index.js',
