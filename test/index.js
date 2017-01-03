@@ -53,7 +53,6 @@ describe('index', function() {
     browser.url('/test/autotrack.html');
     var gaplugins = browser.execute(ga.getProvidedPlugins).value;
 
-    assert(gaplugins.includes('Autotrack'));
     assert(gaplugins.includes('CleanUrlTracker'));
     assert(gaplugins.includes('EventTracker'));
     assert(gaplugins.includes('ImpressionTracker'));
@@ -70,7 +69,6 @@ describe('index', function() {
     browser.url('/test/autotrack-reorder.html');
 
     var gaplugins = browser.execute(ga.getProvidedPlugins).value;
-    assert(gaplugins.includes('Autotrack'));
     assert(gaplugins.includes('CleanUrlTracker'));
     assert(gaplugins.includes('ImpressionTracker'));
     assert(gaplugins.includes('EventTracker'));
@@ -98,7 +96,8 @@ describe('index', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
-    assert.strictEqual(log.getHits()[0].t, 'pageview');
+    var lastHit = log.getHits().slice(-1)[0];
+    assert.strictEqual(lastHit.t, 'pageview');
   });
 
   it('works when renaming the global object', function() {
@@ -117,7 +116,8 @@ describe('index', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
-    assert.strictEqual(log.getHits()[0].t, 'pageview');
+    var lastHit = log.getHits().slice(-1)[0];
+    assert.strictEqual(lastHit.t, 'pageview');
   });
 
   it('tracks usage for all required plugins', function() {
@@ -136,11 +136,11 @@ describe('index', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
-    var hits = log.getHits();
-    assert.strictEqual(hits[0].did, constants.DEV_ID);
-    assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
+    var lastHit = log.getHits().slice(-1)[0];
+    assert.strictEqual(lastHit.did, constants.DEV_ID);
+    assert.strictEqual(lastHit[constants.VERSION_PARAM], pkg.version);
 
     // '1ff' = '111111111' in hex
-    assert.strictEqual(hits[0][constants.USAGE_PARAM], '1ff');
+    assert.strictEqual(lastHit[constants.USAGE_PARAM], '1ff');
   });
 });
