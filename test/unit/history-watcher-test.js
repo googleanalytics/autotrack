@@ -122,7 +122,6 @@ describe('HistoryWatcher', () => {
     historyWatcher.destroy();
   });
 
-
   describe('constructor', () => {
     it('overrides the native push and replace state methods', () => {
       assert.equal(window.history.pushState, nativePushState);
@@ -130,12 +129,8 @@ describe('HistoryWatcher', () => {
 
       const historyWatcher = new HistoryWatcher();
 
-      assert.equal(
-          window.history.pushState,
-          historyWatcher.handlePushState_);
-      assert.equal(
-          window.history.replaceState,
-          historyWatcher.handleReplaceState_);
+      assert.notEqual(window.history.pushState, nativePushState);
+      assert.notEqual(window.history.replaceState, nativeReplaceState);
 
       historyWatcher.destroy();
     });
