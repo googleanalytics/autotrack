@@ -15,6 +15,7 @@
  */
 
 
+/* eslint-env node */
 /* eslint require-jsdoc: "off" */
 
 
@@ -107,7 +108,8 @@ gulp.task('javascript:unit', function () {
 gulp.task('lint', function () {
   return gulp.src([
         'gulpfile.js',
-        'lib/**/*.js',
+        'lib/*.js',
+        'lib/plugins/*.js',
         'test/**/*.js',
         '!test/unit/index.js',
       ])
