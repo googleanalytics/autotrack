@@ -39,6 +39,7 @@
     "browserify": "^13.1.1",
     "easy-sauce": "^0.4.1",
     "eslint": "^3.10.2",
+    "eslint-config-google": "^0.7.1",
     "express": "^4.14.0",
     "fs-extra": "^1.0.0",
     "globby": "^6.1.0",
