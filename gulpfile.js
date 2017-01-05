@@ -19,23 +19,23 @@
 /* eslint require-jsdoc: "off" */
 
 
-const babelify = require('babelify');
-const browserify = require('browserify');
-const buffer = require('vinyl-buffer');
+const {spawn} = require('child_process');
 const eslint = require('gulp-eslint');
 const fs = require('fs');
-const globby = require('globby');
+const glob = require('glob');
+const {compile} = require('google-closure-compiler-js');
 const gulp = require('gulp');
-const gulpIf = require('gulp-if');
 const gutil = require('gulp-util');
+const sourcemaps = require('gulp-sourcemaps');
+const webdriver = require('gulp-webdriver');
+const path = require('path');
+const {rollup} = require('rollup');
+const nodeResolve = require('rollup-plugin-node-resolve');
 const sauceConnectLauncher = require('sauce-connect-launcher');
 const seleniumServerJar = require('selenium-server-standalone-jar');
-const source = require('vinyl-source-stream');
-const sourcemaps = require('gulp-sourcemaps');
-const {spawn} = require('child_process');
-const through = require('through2');
-const uglify = require('gulp-uglify');
-const webdriver = require('gulp-webdriver');
+const {SourceMapGenerator, SourceMapConsumer} = require('source-map');
+const webpack = require('webpack');
+
 const pkg = require('./package.json');
 const server = require('./test/server');
 
@@ -52,57 +52,107 @@ function isProd() {
 }
 
 
-gulp.task('javascript', function() {
-  // Gets the license string from this file (the first 15 lines),
-  // and adds an @license tag.
-  const license = fs.readFileSync(__filename, 'utf-8')
-      .split('\n').slice(0, 15)
-      .join('\n').replace(/^\/\*\*/, '/**\n * @license');
+gulp.task('javascript', function(done) {
+  rollup({
+    entry: './lib/index.js',
+    plugins: [nodeResolve()]
+  }).then((bundle) => {
+    // In production mode, use Closure Compiler to bundle autotrack.js
+    // otherwise just output the rollup result as it's much faster.
+    if (isProd()) {
+      const rollupResult = bundle.generate({
+        format: 'es',
+        dest: 'autotrack.js',
+        sourceMap: true,
+      });
 
-  const version = '/*! autotrack.js v' + pkg.version + ' */';
+      const externs = glob.sync('./lib/externs/*.js').reduce((acc, cur) => {
+        return acc + fs.readFileSync(cur, 'utf-8');
+      }, '');
 
-  return browserify('./', {
-    debug: true,
-    detectGlobals: false,
-  })
-  .transform(babelify, {presets: ['es2015']})
-  .bundle()
-  .pipe(source('./autotrack.js'))
-  .pipe(buffer())
-  .pipe(sourcemaps.init({loadMaps: true}))
-  .on('error', gutil.log)
-  .pipe(gulpIf(isProd(), uglify({
-    output: {preamble: license + '\n\n' + version}
-  })))
-  .pipe(sourcemaps.write('./'))
-  .pipe(gulp.dest('./'));
-});
+      const closureFlags = {
+        jsCode: [{src: rollupResult.code, path: './autotrack.js'}],
+        compilationLevel: 'ADVANCED',
+        useTypesForOptimization: true,
+        outputWrapper:
+            '(function(){%output%})();\n//# sourceMappingURL=autotrack.js.map',
+        assumeFunctionWrapper: true,
+        rewritePolyfills: false,
+        warningLevel: 'VERBOSE',
+        applyInputSourceMaps: true,
+        createSourceMap: true,
+        externs: [{src: externs}],
+      };
+      const closureResult = compile(closureFlags);
 
+      if (closureResult.errors.length) {
+        done(new Error(JSON.stringify(closureResult.errors, null, 2)));
+      } else {
+        if (closureResult.warnings.length) {
+          console.log(closureResult.warnings);
+        }
 
-gulp.task('javascript:unit', function () {
-  // From the browserify with glob recipe:
-  // https://goo.gl/UprlbI
-  const bundledStream = through();
+        // Currently, closure compiler doesn't support applying its generated
+        // source map to an existing source map, so we do it manually.
+        const fromMap = JSON.parse(closureResult.sourceMap);
+        const toMap = rollupResult.map;
+        const generator = SourceMapGenerator.fromSourceMap(
+            new SourceMapConsumer(fromMap));
 
-  bundledStream
-      .pipe(source('index.js'))
-      .pipe(buffer())
-      .pipe(sourcemaps.init({loadMaps: true}))
-      .on('error', gutil.log)
-      .pipe(sourcemaps.write('./'))
-      .pipe(gulp.dest('./test/unit/'));
+        generator.applySourceMap(new SourceMapConsumer(toMap));
 
-  globby(['./test/unit/**/*-test.js']).then(function(entries) {
-    browserify({entries: entries, debug: true})
-        .transform(babelify, {presets: ['es2015']})
-        .bundle()
-        .pipe(bundledStream);
-  }).catch(function(err) {
-    bundledStream.emit('error', err);
+        fs.writeFileSync('autotrack.js', closureResult.compiledCode, 'utf-8');
+        fs.writeFileSync('autotrack.js.map', generator.toString(), 'utf-8');
+        done();
+      }
+    } else {
+      bundle.write({
+        dest: `autotrack.js`,
+        format: 'iife',
+        sourceMap: true,
+      });
+      done();
+    }
   });
-
-  return bundledStream;
 });
+
+
+gulp.task('javascript:unit', ((compiler) => {
+  const createCompiler = () => {
+    return webpack({
+      entry: glob.sync('./test/unit/*-test.js'),
+      output: {
+        path: 'test/unit',
+        filename: 'index.js',
+      },
+      devtool: '#source-map',
+      cache: {},
+      performance: {hints: false},
+      module: {
+        loaders: [{
+          test: /\.js$/,
+          exclude: [/node_modules/],
+          loader: 'babel-loader',
+          query: {
+            babelrc: false,
+            cacheDirectory: false,
+            presets: [
+              ['es2015', {'modules': false}],
+            ],
+          },
+        }],
+      },
+    });
+  };
+  const compile = (done) => {
+    (compiler || (compiler = createCompiler())).run(function(err, stats) {
+      if (err) throw new gutil.PluginError('webpack', err);
+      gutil.log('[webpack]', stats.toString('minimal'));
+      done();
+    });
+  };
+  return compile;
+})());
 
 
 gulp.task('lint', function () {
