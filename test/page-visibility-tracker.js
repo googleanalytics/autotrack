@@ -46,6 +46,9 @@ describe('pageVisibilityTracker', function() {
     testId = uuid();
     log = utilities.bindLogAccessors(testId);
     browser.url('/test/autotrack.html?tab=1');
+    browser.execute(function() {
+      localStorage.clear();
+    });
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
   });
@@ -62,18 +65,13 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     closeAllButFirstTab();
 
-    browser.waitUntil(log.hitCountEquals(3));
+    browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Page Visibility');
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
+    assert.strictEqual(hits[0].ea, 'visible');
     assert.strictEqual(hits[1].ec, 'Page Visibility');
-    assert.strictEqual(hits[1].ea, 'change');
-    assert.strictEqual(hits[1].el, 'visible => hidden');
-    assert.strictEqual(hits[2].ec, 'Page Visibility');
-    assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'hidden => visible');
+    assert.strictEqual(hits[1].ea, 'hidden');
   });
 
   it('tracks the elapsed time between events', function() {
@@ -84,10 +82,10 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     browser.pause(2000);
     closeAllButFirstTab();
-    browser.waitUntil(log.hitCountEquals(3));
+    browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
-    assert(Number(hits[2].ev) >= 2);
+    assert(Number(hits[1].ev) >= 2);
   });
 
   it('sends all events as non-interaction', function() {
@@ -98,12 +96,11 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     closeAllButFirstTab();
 
-    browser.waitUntil(log.hitCountEquals(3));
+    browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
     assert.strictEqual(hits[0].ni, '1');
     assert.strictEqual(hits[1].ni, '1');
-    assert.strictEqual(hits[2].ni, '1');
   });
 
   it('uses custom metric values if specified', function() {
@@ -119,13 +116,13 @@ describe('pageVisibilityTracker', function() {
     browser.pause(1000);
     closeAllButFirstTab();
 
-    browser.waitUntil(log.hitCountEquals(3));
+    browser.waitUntil(log.hitCountEquals(2));
 
     var hits = log.getHits();
+    assert(Number(hits[0].ev) >= 1);
+    assert(Number(hits[0].cm1) >= 1);
     assert(Number(hits[1].ev) >= 1);
-    assert(Number(hits[1].cm1) >= 1);
-    assert(Number(hits[2].ev) >= 1);
-    assert(Number(hits[2].cm2) >= 1);
+    assert(Number(hits[1].cm2) >= 1);
   });
 
   it('does not send any hidden events if the session has expired', function() {
@@ -135,8 +132,7 @@ describe('pageVisibilityTracker', function() {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
     });
 
-    // Let the session expire.
-    browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS + BUFFER);
+    expireSession();
     log.removeHits();
 
     openNewTab();
@@ -144,7 +140,7 @@ describe('pageVisibilityTracker', function() {
     closeAllButFirstTab();
   });
 
-  it('sends a pageview before a visible event if the session has expired',
+  it('sends a pageview when changing to visible if the session has expired',
       function() {
     if (!browserSupportsTabs()) return this.skip();
 
@@ -157,14 +153,12 @@ describe('pageVisibilityTracker', function() {
 
     openNewTab();
     closeAllButFirstTab();
-    browser.waitUntil(log.hitCountEquals(2));
+    browser.waitUntil(log.hitCountEquals(1));
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
     var hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
-    assert.strictEqual(hits[1].ea, 'change');
-    assert.strictEqual(hits[1].el, 'hidden => visible');
   });
 
   it('resets the session timeout when other hits are sent', function() {
@@ -185,26 +179,21 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     closeAllButFirstTab();
 
-    browser.waitUntil(log.hitCountEquals(6));
+    browser.waitUntil(log.hitCountEquals(5));
 
     var hits = log.getHits();
-    assert.strictEqual(hits[0].ec, 'Page Visibility');
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
-    assert.strictEqual(hits[1].t, 'pageview');
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[1].ec, 'Uncategorized');
+    assert.strictEqual(hits[1].ea, 'unimportant');
     assert.strictEqual(hits[2].ec, 'Uncategorized');
     assert.strictEqual(hits[2].ea, 'unimportant');
-    assert.strictEqual(hits[3].ec, 'Uncategorized');
-    assert.strictEqual(hits[3].ea, 'unimportant');
 
     // Since each hit above resets the session timeout, opening a new
     // tab will still be considered within the session timeout.
+    assert.strictEqual(hits[3].ec, 'Page Visibility');
+    assert.strictEqual(hits[3].ea, 'visible');
     assert.strictEqual(hits[4].ec, 'Page Visibility');
-    assert.strictEqual(hits[4].ea, 'change');
-    assert.strictEqual(hits[4].el, 'visible => hidden');
-    assert.strictEqual(hits[5].ec, 'Page Visibility');
-    assert.strictEqual(hits[5].ea, 'change');
-    assert.strictEqual(hits[5].el, 'hidden => visible');
+    assert.strictEqual(hits[4].ea, 'hidden');
   });
 
   it('reports hidden time when opening a new page ' +
@@ -232,7 +221,7 @@ describe('pageVisibilityTracker', function() {
     });
     browser.execute(ga.run, 'send', 'pageview');
 
-    browser.waitUntil(log.hitCountEquals(5));
+    browser.waitUntil(log.hitCountEquals(4));
     var sessionEnd = +new Date();
 
     // Use the references to make the linter happy.
@@ -240,27 +229,21 @@ describe('pageVisibilityTracker', function() {
 
     var hits = log.getHits();
 
-    // Tab 1 change:visible
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
     // Tab 1 pageview
-    assert(hits[1].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[1].t, 'pageview');
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
     // Tab 1 change:hidden
-    assert(hits[2].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'visible => hidden');
-    assert(Number(hits[2].cm1) > 0);
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert(Number(hits[1].cm1) > 0);
     // Tab 2 (no pageview or change events)
     // Tab 3 change:visible
-    assert(hits[3].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[3].ea, 'change');
-    assert.strictEqual(hits[3].el, 'hidden => visible');
-    assert(Number(hits[3].cm2) > 0);
+    assert(hits[2].dl.endsWith('tab=3'));
+    assert.strictEqual(hits[2].ea, 'hidden');
+    assert(Number(hits[2].cm2) > 0);
     // Tab 3 pageview
-    assert(hits[4].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[4].t, 'pageview');
+    assert(hits[3].dl.endsWith('tab=3'));
+    assert.strictEqual(hits[3].t, 'pageview');
 
     var totalVisibleTime = getTotalVisibleTime(hits);
     var totalHiddenTime = getTotalHiddenTime(hits);
@@ -293,7 +276,7 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'send', 'pageview');
 
     browser.close(tab1); // Close window1 and switch to tab1.
-    browser.waitUntil(log.hitCountEquals(5));
+    browser.waitUntil(log.hitCountEquals(4));
 
     var storedSessionData = browser.execute(function() {
       return JSON.parse(localStorage.getItem(
@@ -329,7 +312,7 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'send', 'pageview');
 
     browser.close(tab2); // Close window1 and switch to tab2.
-    browser.waitUntil(log.hitCountEquals(6));
+    browser.waitUntil(log.hitCountEquals(5));
 
     var storedSessionData = browser.execute(function() {
       return JSON.parse(localStorage.getItem(
@@ -371,47 +354,39 @@ describe('pageVisibilityTracker', function() {
     browser.pause(randomInteger(500, 2000));
 
     browser.close(tab1); // Close tab2 and go to tab1.
-    browser.waitUntil(log.hitCountEquals(7));
+    browser.waitUntil(log.hitCountEquals(6));
 
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3);
 
     var hits = log.getHits();
-    // Tab 1 change:visible
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
     // Tab 1 pageview
-    assert(hits[1].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[1].t, 'pageview');
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
     // Tab 1 change:hidden
-    assert(hits[2].dl.endsWith('tab=1'));
-    assert(hits[2].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'visible => hidden');
-    assert(Number(hits[2].cm1) > 0);
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert(hits[1].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert(Number(hits[1].cm1) > 0);
     // Tab 2 (no pageview or change events)
     // Tab 3 change:visible
-    assert(hits[3].dl.endsWith('tab=3'));
-    assert(hits[3].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[3].ea, 'change');
-    assert.strictEqual(hits[3].el, 'hidden => visible');
-    assert(Number(hits[3].cm2) > 0);
+    assert(hits[2].dl.endsWith('tab=3'));
+    assert(hits[2].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[2].ea, 'hidden');
+    assert(Number(hits[2].cm2) > 0);
     // Tab 3 pageview
-    assert(hits[4].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[4].t, 'pageview');
+    assert(hits[3].dl.endsWith('tab=3'));
+    assert.strictEqual(hits[3].t, 'pageview');
     // Tab 3 change:hidden
-    assert(hits[5].dl.endsWith('tab=3'));
-    assert(hits[5].dp.endsWith('tab=3'));
-    assert.strictEqual(hits[5].ea, 'change');
-    assert.strictEqual(hits[5].el, 'visible => hidden');
-    assert(Number(hits[5].cm1) > 0);
+    assert(hits[4].dl.endsWith('tab=3'));
+    assert(hits[4].dp.endsWith('tab=3'));
+    assert.strictEqual(hits[4].ea, 'visible');
+    assert(Number(hits[4].cm1) > 0);
     // Tab 2 (no change events)
     // Tab 1 change:visible
-    assert(hits[6].dl.endsWith('tab=1'));
-    assert(hits[6].dp.endsWith('tab=3'));
-    assert.strictEqual(hits[6].ea, 'change');
-    assert.strictEqual(hits[6].el, 'hidden => visible');
+    assert(hits[5].dl.endsWith('tab=1'));
+    assert(hits[5].dp.endsWith('tab=3'));
+    assert.strictEqual(hits[5].ea, 'hidden');
 
     log.removeHits();
   });
@@ -461,71 +436,59 @@ describe('pageVisibilityTracker', function() {
     browser.close(tab1); // Close tab2 and go to tab1.
     var sessionEnd = +new Date();
 
-    browser.waitUntil(log.hitCountEquals(12));
+    browser.waitUntil(log.hitCountEquals(11));
 
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3 && tab4);
 
     var hits = log.getHits();
-    // Tab 1 change:visible
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
     // Tab 1 pageview
-    assert(hits[1].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[1].t, 'pageview');
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
     // Tab 1 change:hidden
-    assert(hits[2].dl.endsWith('tab=1'));
-    assert(hits[2].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'visible => hidden');
-    assert(Number(hits[2].cm1) > 0);
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert(hits[1].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert(Number(hits[1].cm1) > 0);
     // Tab 2 change:visible
-    assert(hits[3].dl.endsWith('tab=2'));
-    assert.strictEqual(hits[3].ea, 'change');
-    assert.strictEqual(hits[3].el, 'hidden => visible');
+    assert(hits[2].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[2].ea, 'hidden');
     // Tab 2 pageview
-    assert(hits[4].dl.endsWith('tab=2'));
-    assert.strictEqual(hits[4].t, 'pageview');
+    assert(hits[3].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[3].t, 'pageview');
     // Tab 2 change:hidden
-    assert(hits[5].dl.endsWith('tab=2'));
-    assert(hits[5].dp.endsWith('tab=2'));
-    assert.strictEqual(hits[5].ea, 'change');
-    assert.strictEqual(hits[5].el, 'visible => hidden');
-    assert(Number(hits[5].cm1) > 0);
+    assert(hits[4].dl.endsWith('tab=2'));
+    assert(hits[4].dp.endsWith('tab=2'));
+    assert.strictEqual(hits[4].ea, 'visible');
+    assert(Number(hits[4].cm1) > 0);
     // Tab 3 (no pageview or change events)
     // Tab 4 change:visible
-    assert(hits[6].dl.endsWith('tab=4'));
-    assert(hits[6].dp.endsWith('tab=2'));
-    assert.strictEqual(hits[6].ea, 'change');
-    assert.strictEqual(hits[6].el, 'hidden => visible');
-    assert(Number(hits[6].cm2) > 0);
+    assert(hits[5].dl.endsWith('tab=4'));
+    assert(hits[5].dp.endsWith('tab=2'));
+    assert.strictEqual(hits[5].ea, 'hidden');
+    assert(Number(hits[5].cm2) > 0);
     // Tab 4 pageview
-    assert(hits[7].dl.endsWith('tab=4'));
-    assert.strictEqual(hits[7].t, 'pageview');
+    assert(hits[6].dl.endsWith('tab=4'));
+    assert.strictEqual(hits[6].t, 'pageview');
     // Tab 4 change:hidden
-    assert(hits[8].dl.endsWith('tab=4'));
-    assert(hits[8].dp.endsWith('tab=4'));
-    assert.strictEqual(hits[8].ea, 'change');
-    assert.strictEqual(hits[8].el, 'visible => hidden');
-    assert(Number(hits[8].cm1) > 0);
+    assert(hits[7].dl.endsWith('tab=4'));
+    assert(hits[7].dp.endsWith('tab=4'));
+    assert.strictEqual(hits[7].ea, 'visible');
+    assert(Number(hits[7].cm1) > 0);
     // Tab 3 (no change events)
     // Tab 2 change:visible
-    assert(hits[9].dl.endsWith('tab=2'));
-    assert(hits[9].dp.endsWith('tab=4'));
-    assert.strictEqual(hits[9].ea, 'change');
-    assert.strictEqual(hits[9].el, 'hidden => visible');
-    assert(Number(hits[9].cm2) > 0);
+    assert(hits[8].dl.endsWith('tab=2'));
+    assert(hits[8].dp.endsWith('tab=4'));
+    assert.strictEqual(hits[8].ea, 'hidden');
+    assert(Number(hits[8].cm2) > 0);
     // Tab 2 change:hidden
-    assert(hits[10].dl.endsWith('tab=2'));
-    assert(hits[10].dp.endsWith('tab=2'));
-    assert.strictEqual(hits[10].ea, 'change');
-    assert.strictEqual(hits[10].el, 'visible => hidden');
-    assert(Number(hits[10].cm1) > 0);
+    assert(hits[9].dl.endsWith('tab=2'));
+    assert(hits[9].dp.endsWith('tab=2'));
+    assert.strictEqual(hits[9].ea, 'visible');
+    assert(Number(hits[9].cm1) > 0);
     // Tab 1 change:visible
-    assert(hits[11].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[11].ea, 'change');
-    assert.strictEqual(hits[11].el, 'hidden => visible');
+    assert(hits[10].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[10].ea, 'hidden');
 
     var totalVisibleTime = getTotalVisibleTime(hits);
     var totalHiddenTime = getTotalHiddenTime(hits);
@@ -596,7 +559,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.close(tab1); // Close tab2 and go to tab1.
 
-    browser.waitUntil(log.hitCountEquals(13));
+    browser.waitUntil(log.hitCountEquals(12));
     var sessionEnd = +new Date();
 
     // Use the references to make the linter happy.
@@ -604,74 +567,62 @@ describe('pageVisibilityTracker', function() {
 
     var hits = log.getHits();
 
-    // tab1 change:visible
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
     // tab1 pageview
-    assert(hits[1].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[1].t, 'pageview');
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
     // tab1 change:hidden
-    assert(hits[2].dl.endsWith('tab=1'));
-    assert(hits[2].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'visible => hidden');
-    assert(Number(hits[2].cm1) > 0);
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert(hits[1].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert(Number(hits[1].cm1) > 0);
     // tab2 (no pageview or change events)
     // tab3 change:visible
-    assert(hits[3].dl.endsWith('tab=3'));
-    assert(hits[3].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[3].ea, 'change');
-    assert.strictEqual(hits[3].el, 'hidden => visible');
-    assert(Number(hits[3].cm2) > 0);
+    assert(hits[2].dl.endsWith('tab=3'));
+    assert(hits[2].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[2].ea, 'hidden');
+    assert(Number(hits[2].cm2) > 0);
     // tab3 pageview
-    assert(hits[4].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[4].t, 'pageview');
+    assert(hits[3].dl.endsWith('tab=3'));
+    assert.strictEqual(hits[3].t, 'pageview');
     // window1 change:visible
-    assert(hits[5].dl.endsWith('window=1'));
-    assert(hits[5].dp.endsWith('tab=3'));
-    assert.strictEqual(hits[5].ea, 'change');
-    assert.strictEqual(hits[5].el, 'visible => visible');
-    assert(Number(hits[5].cm1) > 0);
+    assert(hits[4].dl.endsWith('window=1'));
+    assert(hits[4].dp.endsWith('tab=3'));
+    assert.strictEqual(hits[4].ea, 'visible');
+    assert(Number(hits[4].cm1) > 0);
     // window1 pageview
-    assert(hits[6].dl.endsWith('window=1'));
-    assert.strictEqual(hits[6].t, 'pageview');
+    assert(hits[5].dl.endsWith('window=1'));
+    assert.strictEqual(hits[5].t, 'pageview');
     // window2 change:visible
-    assert(hits[7].dl.endsWith('window=2'));
-    assert(hits[7].dp.endsWith('window=1'));
-    assert.strictEqual(hits[7].ea, 'change');
-    assert.strictEqual(hits[7].el, 'visible => visible');
-    assert(Number(hits[7].cm1) > 0);
+    assert(hits[6].dl.endsWith('window=2'));
+    assert(hits[6].dp.endsWith('window=1'));
+    assert.strictEqual(hits[6].ea, 'visible');
+    assert(Number(hits[6].cm1) > 0);
     // window2 pageview
-    assert(hits[8].dl.endsWith('window=2'));
-    assert.strictEqual(hits[8].t, 'pageview');
+    assert(hits[7].dl.endsWith('window=2'));
+    assert.strictEqual(hits[7].t, 'pageview');
     // window2 change:hidden
-    assert(hits[9].dl.endsWith('window=2'));
-    assert(hits[9].dp.endsWith('window=2'));
-    assert.strictEqual(hits[9].ea, 'change');
-    assert.strictEqual(hits[9].el, 'visible => hidden');
-    assert(Number(hits[9].cm1) > 0);
+    assert(hits[8].dl.endsWith('window=2'));
+    assert(hits[8].dp.endsWith('window=2'));
+    assert.strictEqual(hits[8].ea, 'visible');
+    assert(Number(hits[8].cm1) > 0);
     // tab3 change:hidden
-    assert(hits[10].dl.endsWith('tab=3'));
+    assert(hits[9].dl.endsWith('tab=3'));
     // When multiple windows are open at the same time, the one that gets
     // reported as visible depends on a lot of unpredictable factors, so
     // simply assert it's one of the open windows.
-    assert(hits[10].dp.endsWith('tab=3') || hits[10].dp.endsWith('window=1'));
-    assert.strictEqual(hits[10].ea, 'change');
-    assert.strictEqual(hits[10].el, 'visible => hidden');
-    assert(Number(hits[10].cm1) > 0);
+    assert(hits[9].dp.endsWith('tab=3') || hits[9].dp.endsWith('window=1'));
+    assert.strictEqual(hits[9].ea, 'visible');
+    assert(Number(hits[9].cm1) > 0);
     // window1 change:hidden
-    assert(hits[11].dl.endsWith('window=1'));
-    assert(hits[11].dp.endsWith('window=1'));
-    assert.strictEqual(hits[11].ea, 'change');
-    assert.strictEqual(hits[11].el, 'visible => hidden');
-    assert(Number(hits[11].cm1) > 0);
+    assert(hits[10].dl.endsWith('window=1'));
+    assert(hits[10].dp.endsWith('window=1'));
+    assert.strictEqual(hits[10].ea, 'visible');
+    assert(Number(hits[10].cm1) > 0);
     // tab1 change:visible
-    assert(hits[12].dl.endsWith('tab=1'));
-    assert(hits[12].dp.endsWith('window=1'));
-    assert.strictEqual(hits[12].ea, 'change');
-    assert.strictEqual(hits[12].el, 'hidden => visible');
-    assert(Number(hits[12].cm2) > 0);
+    assert(hits[11].dl.endsWith('tab=1'));
+    assert(hits[11].dp.endsWith('window=1'));
+    assert.strictEqual(hits[11].ea, 'hidden');
+    assert(Number(hits[11].cm2) > 0);
 
     var totalVisibleTime = getTotalVisibleTime(hits);
     var totalHiddenTime = getTotalHiddenTime(hits);
@@ -735,7 +686,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.close(tab1); // Close tab2 and go to tab1.
 
-    browser.waitUntil(log.hitCountEquals(13));
+    browser.waitUntil(log.hitCountEquals(11));
     var session2End = +new Date();
 
     // Use the references to make the linter happy.
@@ -743,76 +694,60 @@ describe('pageVisibilityTracker', function() {
 
     var hits = log.getHits();
     // Session 1 start
-    // tab1 change:visible
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'hidden => visible');
     // tab1 pageview
-    assert(hits[1].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[1].t, 'pageview');
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
     // tab1 change:hidden
-    assert(hits[2].dl.endsWith('tab=1'));
-    assert(hits[2].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[2].ea, 'change');
-    assert.strictEqual(hits[2].el, 'visible => hidden');
-    assert(Number(hits[2].cm1) > 0);
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert(hits[1].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert(Number(hits[1].cm1) > 0);
     // tab2 (no pageview or change events)
     // tab3 change:visible
-    assert(hits[3].dl.endsWith('tab=3'));
-    assert(hits[3].dp.endsWith('tab=1'));
-    assert.strictEqual(hits[3].ea, 'change');
-    assert.strictEqual(hits[3].el, 'hidden => visible');
-    assert(Number(hits[3].cm2) > 0);
+    assert(hits[2].dl.endsWith('tab=3'));
+    assert(hits[2].dp.endsWith('tab=1'));
+    assert.strictEqual(hits[2].ea, 'hidden');
+    assert(Number(hits[2].cm2) > 0);
     // tab3 pageview
-    assert(hits[4].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[4].t, 'pageview');
+    assert(hits[3].dl.endsWith('tab=3'));
+    assert.strictEqual(hits[3].t, 'pageview');
     // tab3 change:hidden
-    assert(hits[5].dl.endsWith('tab=3'));
-    assert(hits[5].dp.endsWith('tab=3'));
-    assert.strictEqual(hits[5].ea, 'change');
-    assert.strictEqual(hits[5].el, 'visible => hidden');
-    assert(Number(hits[5].cm1) > 0);
+    assert(hits[4].dl.endsWith('tab=3'));
+    assert(hits[4].dp.endsWith('tab=3'));
+    assert.strictEqual(hits[4].ea, 'visible');
+    assert(Number(hits[4].cm1) > 0);
     // tab4 change:visible
-    assert(hits[6].dl.endsWith('tab=4'));
-    assert.strictEqual(hits[6].ea, 'change');
-    assert.strictEqual(hits[6].el, 'hidden => visible');
+    assert(hits[5].dl.endsWith('tab=4'));
+    assert.strictEqual(hits[5].ea, 'hidden');
     // tab4 pageview
-    assert(hits[7].dl.endsWith('tab=4'));
-    assert.strictEqual(hits[7].t, 'pageview');
+    assert(hits[6].dl.endsWith('tab=4'));
+    assert.strictEqual(hits[6].t, 'pageview');
     // Session 1 end
 
     // Session 2 start
     // tab4 close (no change event)
     // tab3 pageview (due to session expiring)
-    assert(hits[8].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[8].t, 'pageview');
-    // tab3 change:visible
-    assert(hits[9].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[9].ea, 'change');
-    assert.strictEqual(hits[9].el, 'hidden => visible');
-    assert.strictEqual(hits[9].cm1, undefined); // Session expired.
-    assert.strictEqual(hits[9].cm2, undefined); // Session expired.
+    assert(hits[7].dl.endsWith('tab=3'));
+    assert.strictEqual(hits[7].t, 'pageview');
     // tab3 change:hidden
-    assert(hits[10].dl.endsWith('tab=3'));
-    assert(hits[10].dp.endsWith('tab=3'));
-    assert.strictEqual(hits[10].ea, 'change');
-    assert.strictEqual(hits[10].el, 'visible => hidden');
-    assert(Number(hits[10].cm1) > 0);
+    assert(hits[8].dl.endsWith('tab=3'));
+    assert(hits[8].dp.endsWith('tab=3'));
+    assert.strictEqual(hits[8].ea, 'visible');
+    assert(Number(hits[8].cm1) > 0);
     // tab2 (no change events)
     // tab1 pageview (due to tracker not being active in current session)
-    assert(hits[11].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[11].t, 'pageview');
+    assert(hits[9].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[9].t, 'pageview');
     // tab1 change:visible
-    assert(hits[12].dl.endsWith('tab=1'));
-    assert(hits[12].dp.endsWith('tab=3'));
-    assert.strictEqual(hits[12].ea, 'change');
-    assert.strictEqual(hits[12].el, 'hidden => visible');
-    assert(Number(hits[12].cm2) > 0);
+    assert(hits[10].dl.endsWith('tab=1'));
+    assert(hits[10].dp.endsWith('tab=3'));
+    assert.strictEqual(hits[10].ea, 'hidden');
+    assert(Number(hits[10].cm2) > 0);
     // Session 2 end
 
-    var s1TotalVisibleTime = getTotalVisibleTime(hits.slice(0, 8));
-    var s1TotalHiddenTime = getTotalHiddenTime(hits.slice(0, 8));
-    var s1TotalTime = getTotalTime(hits.slice(0, 8));
+    var s1TotalVisibleTime = getTotalVisibleTime(hits.slice(0, 7));
+    var s1TotalHiddenTime = getTotalHiddenTime(hits.slice(0, 7));
+    var s1TotalTime = getTotalTime(hits.slice(0, 7));
     var s1ElapsedTime = Math.round((session1End - session1Start) / 1000);
 
     assert(s1TotalVisibleTime + s1TotalHiddenTime == s1TotalTime);
@@ -820,9 +755,9 @@ describe('pageVisibilityTracker', function() {
     assert(s1TotalTime >= s1ElapsedTime - 2 &&
         s1TotalTime <= s1ElapsedTime + 2);
 
-    var s2TotalVisibleTime = getTotalVisibleTime(hits.slice(8));
-    var s2TotalHiddenTime = getTotalHiddenTime(hits.slice(8));
-    var s2TotalTime = getTotalTime(hits.slice(8));
+    var s2TotalVisibleTime = getTotalVisibleTime(hits.slice(7));
+    var s2TotalHiddenTime = getTotalHiddenTime(hits.slice(7));
+    var s2TotalTime = getTotalTime(hits.slice(7));
     var s2ElapsedTime = Math.round((session2End - session2Start) / 1000);
 
     assert(s2TotalVisibleTime + s2TotalHiddenTime == s2TotalTime);
@@ -845,17 +780,15 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     closeAllButFirstTab();
 
-    browser.waitUntil(log.hitCountEquals(4));
+    browser.waitUntil(log.hitCountEquals(3));
 
     var hits = log.getHits();
-    assert.strictEqual(hits[0].cd1, 'pageVisibilityTracker');
-    assert.strictEqual(hits[0].ni, '0');
-    assert.strictEqual(hits[1].t, 'pageview');
-    assert.strictEqual(hits[1].ni, undefined);
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[0].ni, undefined);
+    assert.strictEqual(hits[1].cd1, 'pageVisibilityTracker');
+    assert.strictEqual(hits[1].ni, '0');
     assert.strictEqual(hits[2].cd1, 'pageVisibilityTracker');
     assert.strictEqual(hits[2].ni, '0');
-    assert.strictEqual(hits[3].cd1, 'pageVisibilityTracker');
-    assert.strictEqual(hits[3].ni, '0');
   });
 
   it('supports specifying a hit filter', function() {
@@ -870,29 +803,25 @@ describe('pageVisibilityTracker', function() {
     browser.waitUntil(log.hitCountEquals(3));
 
     var hits = log.getHits();
-    assert.strictEqual(hits[0].el, 'hidden => visible');
-    assert.strictEqual(hits[0].cd1, 'pageVisibilityTracker');
-    assert.strictEqual(hits[1].t, 'pageview');
-    assert.strictEqual(hits[2].el, 'hidden => visible');
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[1].ea, 'visible');
+    assert.strictEqual(hits[1].cd1, 'pageVisibilityTracker');
+    assert.strictEqual(hits[2].ea, 'hidden');
     assert.strictEqual(hits[2].cd1, 'pageVisibilityTracker');
   });
 
   it('includes usage params with all hits', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(2));
+    browser.waitUntil(log.hitCountEquals(1));
 
     var hits = log.getHits();
-    assert.strictEqual(hits[0].t, 'event');
+    assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
-    assert.strictEqual(hits[1].t, 'pageview');
-    assert.strictEqual(hits[1].did, constants.DEV_ID);
-    assert.strictEqual(hits[1][constants.VERSION_PARAM], pkg.version);
 
     // '40' = '001000000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '40');
-    assert.strictEqual(hits[1][constants.USAGE_PARAM], '40');
   });
 
   describe('remove', function() {
@@ -1014,7 +943,7 @@ function closeAllButFirstTab() {
 function expireSession() {
   browser.execute(function() {
     var storedSessionData = JSON.parse(
-        localStorage.getItem('autotrack:UA-12345-1:session'));
+        localStorage.getItem('autotrack:UA-12345-1:session')) || {};
 
     storedSessionData.isExpired = true;
     localStorage.setItem('autotrack:UA-12345-1:session',
