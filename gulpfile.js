@@ -26,17 +26,13 @@ const glob = require('glob');
 const {compile} = require('google-closure-compiler-js');
 const gulp = require('gulp');
 const gutil = require('gulp-util');
-const sourcemaps = require('gulp-sourcemaps');
 const webdriver = require('gulp-webdriver');
-const path = require('path');
 const {rollup} = require('rollup');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const sauceConnectLauncher = require('sauce-connect-launcher');
 const seleniumServerJar = require('selenium-server-standalone-jar');
 const {SourceMapGenerator, SourceMapConsumer} = require('source-map');
 const webpack = require('webpack');
-
-const pkg = require('./package.json');
 const server = require('./test/server');
 
 
@@ -71,7 +67,11 @@ gulp.task('javascript', function(done) {
       }, '');
 
       const closureFlags = {
-        jsCode: [{src: rollupResult.code, path: './autotrack.js'}],
+        jsCode: [{
+          src: rollupResult.code,
+          path: './autotrack.js',
+          sourceMap: rollupResult.map,
+        }],
         compilationLevel: 'ADVANCED',
         useTypesForOptimization: true,
         outputWrapper:
@@ -85,13 +85,14 @@ gulp.task('javascript', function(done) {
       };
       const closureResult = compile(closureFlags);
 
-      if (closureResult.errors.length) {
-        done(new Error(JSON.stringify(closureResult.errors, null, 2)));
+      if (closureResult.errors.length || closureResult.warnings.length) {
+        fs.writeFileSync('autotrack.js', rollupResult.code, 'utf-8');
+        const results = {
+          errors: closureResult.errors,
+          warnings: closureResult.warnings,
+        };
+        done(new Error(JSON.stringify(results, null, 2)));
       } else {
-        if (closureResult.warnings.length) {
-          console.log(closureResult.warnings);
-        }
-
         // Currently, closure compiler doesn't support applying its generated
         // source map to an existing source map, so we do it manually.
         const fromMap = JSON.parse(closureResult.sourceMap);
@@ -144,14 +145,13 @@ gulp.task('javascript:unit', ((compiler) => {
       },
     });
   };
-  const compile = (done) => {
+  return (done) => {
     (compiler || (compiler = createCompiler())).run(function(err, stats) {
       if (err) throw new gutil.PluginError('webpack', err);
       gutil.log('[webpack]', stats.toString('minimal'));
       done();
     });
   };
-  return compile;
 })());
 
 
