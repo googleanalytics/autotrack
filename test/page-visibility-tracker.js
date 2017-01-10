@@ -235,6 +235,50 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(storedSessionData.state, 'hidden');
   });
 
+  it('reports visibility if the page path changes', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.pause(randomInteger(500, 2000));
+
+    // Simulate a URL change on the tracker.
+    browser.execute(ga.run, 'set', {
+      page: '/test/autotrack.html?tab=1a',
+      title: 'Tab 1a',
+    });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.pause(randomInteger(500, 2000));
+
+    // Simulate another URL change on the tracker.
+    browser.execute(ga.run, 'set', {
+      page: '/test/autotrack.html?tab=1b',
+      title: 'Tab 1b',
+    });
+    browser.execute(ga.run, 'send', 'pageview');
+
+    browser.waitUntil(log.hitCountEquals(5));
+    var hits = log.getHits();
+
+    // Tab 1 pageview
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
+    // Tab 1 url change to tab=1a
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ea, 'track');
+    assert(Number(hits[1].ev) > 0);
+    // Pageview
+    assert(hits[2].dp.endsWith('tab=1a'));
+    assert.strictEqual(hits[2].t, 'pageview');
+    // Tab 1 url change to tab=1b
+    assert(hits[3].dp.endsWith('tab=1a'));
+    assert.strictEqual(hits[3].ea, 'track');
+    assert(Number(hits[3].ev) > 0);
+    // Pageview
+    assert(hits[4].dp.endsWith('tab=1b'));
+    assert.strictEqual(hits[4].t, 'pageview');
+  });
+
   it('reports the proper page path when 2+ tabs are used simultaneously',
         function() {
     if (!browserSupportsTabs()) return this.skip();
@@ -605,7 +649,7 @@ function browserSupportsTabs() {
       browserCaps.browserName == 'internet explorer' ||
       browserCaps.browserName == 'safari' ||
       // TODO(philipwalton): Firefox driver (not the regular browser) emits
-      // visibility change events in the wrong order.
+      // visibility change event in the wrong order.
       // https://bugzilla.mozilla.org/show_bug.cgi?id=1318098
       browserCaps.browserName == 'firefox');
 }
