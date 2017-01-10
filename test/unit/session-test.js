@@ -151,34 +151,29 @@ describe('Session', function() {
     });
   });
 
-  describe('isLastTrackerInteractionFromPreviousSession', function() {
-    it('returns true if the tracker\'s last known interaction hit was ' +
+  describe('isLastTrackerHitFromPreviousSession', function() {
+    it('returns true if the tracker\'s last known hit was ' +
         'from the previous session', function() {
       var session = new Session(tracker);
 
-      // A timing hit is not interaction, but to previous session data exists,
-      // so it's inconclusive.
-      tracker.send('timing', 'foo', 'bar', 100);
-      assert(!session.isLastTrackerInteractionFromPreviousSession());
-
-      // A pageview hit is interaction, but still no previous session data
-      // exists, so err on the side of caution.
+      // A hit is it sent, but no previous session data exists,
+      // so err on the side of caution.
       tracker.send('pageview');
-      assert(!session.isLastTrackerInteractionFromPreviousSession());
+      assert(!session.isLastTrackerHitFromPreviousSession());
 
-      // Manually trigger the `handleStorage()` method, similar to how it
-      // would happen if a hit were sent in another tab after expiration.
+      // Manually trigger the `externalSet` event, similar to how it would
+      // happen if a hit were sent in another tab after session expiration.
       var oldSessionData = session.store.get();
       var newSessionData = {
         hitTime: now(),
         sessionCount: oldSessionData.sessionCount + 1,
       };
       session.store.set(newSessionData);
-      session.handleStorage(newSessionData, oldSessionData);
+      session.store.emit('externalSet', newSessionData, oldSessionData);
 
-      // Since an interaction hit was sent prior to the sesson count
-      // increasing, the last hit is known to be from the previous session.
-      assert(session.isLastTrackerInteractionFromPreviousSession());
+      // Since a hit was sent prior to the sesson count increasing, the last
+      // hit is known to be from the previous session.
+      assert(session.isLastTrackerHitFromPreviousSession());
 
       session.destroy();
     });
@@ -227,56 +222,6 @@ describe('Session', function() {
       assert.strictEqual(session.store.get().sessionCount, 3);
       assert.strictEqual(session.sessionCount_, 3);
 
-      session.destroy();
-    });
-
-    it('invokes the newSessionDidStart method after hits ' +
-        'if the previous session expired', function() {
-      var session = new Session(tracker);
-      sinon.spy(Session.prototype, 'newSessionDidStart');
-
-      tracker.send('pageview');
-      assert(!Session.prototype.newSessionDidStart.called);
-
-      // Manually expire the session.
-      session.store.set({isExpired: true});
-
-      // Send an interaction hit.
-      tracker.send('pageview');
-      assert(Session.prototype.newSessionDidStart.calledOnce);
-
-      // Manually expire the session.
-      session.store.set({isExpired: true});
-
-      // Send a non-interaction hit.
-      tracker.send('timing', 'foo', 'bar', 100);
-      assert(Session.prototype.newSessionDidStart.called);
-
-      Session.prototype.newSessionDidStart.restore();
-      session.destroy();
-    });
-  });
-
-  describe('handleStorage', function() {
-    it('invokes newSessionDidStartInAnotherWindow if a new session ' +
-        'has started in another window', function() {
-      sinon.spy(Session.prototype, 'newSessionDidStartInAnotherWindow');
-
-      var session = new Session(tracker);
-
-      // Manually trigger the `handleStorage()` method, similar to how it
-      // would happen if a hit were sent in another tab after expiration.
-      var oldSessionData = session.store.get();
-      var newSessionData = {
-        hitTime: now(),
-        sessionCount: oldSessionData.sessionCount + 1,
-      };
-      session.store.set(newSessionData);
-      session.handleStorage(newSessionData, oldSessionData);
-
-      assert(Session.prototype.newSessionDidStartInAnotherWindow.calledOnce);
-
-      Session.prototype.newSessionDidStartInAnotherWindow.restore();
       session.destroy();
     });
   });

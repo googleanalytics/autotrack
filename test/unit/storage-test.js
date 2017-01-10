@@ -209,57 +209,6 @@ describe('Store', function() {
     });
   });
 
-  describe('storageDidChangeInAnotherWindow', function() {
-    it('is invoked with changes when the storage event fires', function() {
-      var changeSpy = sinon.spy(
-          Store.prototype, 'storageDidChangeInAnotherWindow');
-
-      var store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-      var store2 = Store.getOrCreate('UA-67890-1', 'ns2');
-      var storageEvent;
-
-      try {
-        storageEvent = new StorageEvent('storage', {
-          key: store1.key,
-          oldValue: JSON.stringify({foo: 12, bar: 34}),
-          newValue: JSON.stringify({foo: 'CHANGED!', bar: 34}),
-        });
-      } catch(err) {
-        // Browser doesn't support event contructors.
-        changeSpy.restore();
-        return this.skip();
-      }
-
-      window.dispatchEvent(storageEvent);
-      assert(changeSpy.calledOnce);
-      assert(changeSpy.firstCall.calledOn(store1));
-      assert.deepEqual(changeSpy.firstCall.args[0], {foo: 'CHANGED!', bar: 34});
-      assert.deepEqual(changeSpy.firstCall.args[1], {foo: 12, bar: 34});
-
-      try {
-        storageEvent = new StorageEvent('storage', {
-          key: store2.key,
-          oldValue: JSON.stringify({qux: 56, baz: 78}),
-          newValue: JSON.stringify({qux: 56, bar: null}),
-        });
-      } catch(err) {
-        // Browser doesn't support event contructors.
-        changeSpy.restore();
-        return this.skip();
-      }
-
-      window.dispatchEvent(storageEvent);
-      assert(changeSpy.calledTwice);
-      assert(changeSpy.secondCall.calledOn(store2));
-      assert.deepEqual(changeSpy.secondCall.args[0], {qux: 56, bar: null});
-      assert.deepEqual(changeSpy.secondCall.args[1], {qux: 56, baz: 78});
-
-      changeSpy.restore();
-      store1.destroy();
-      store2.destroy();
-    });
-  });
-
   describe('destroy', function() {
     it('removes the instance from the global store', function() {
       var store1 = Store.getOrCreate('UA-12345-1', 'ns1');
