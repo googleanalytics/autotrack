@@ -123,4 +123,18 @@ describe('EventEmitter', () => {
       assert(spy3.calledOnce);
     });
   });
+
+  describe('getEventCount', () => {
+    it('returns the total number of registered event handlers', () => {
+      const emitter = new EventEmitter();
+      const spy1 = sinon.spy();
+      const spy2 = sinon.spy();
+      const spy3 = sinon.spy();
+      emitter.on('foo', spy1);
+      emitter.on('bar', spy2);
+      emitter.on('bar', spy3);
+
+      assert.strictEqual(emitter.getEventCount(), 3);
+    });
+  });
 });
