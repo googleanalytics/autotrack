@@ -17,7 +17,7 @@
 
 import assert from 'assert';
 import sinon from 'sinon';
-import Store from '../../lib/storage';
+import Store from '../../lib/store';
 
 
 describe('Store', function() {
