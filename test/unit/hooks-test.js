@@ -17,7 +17,7 @@
 
 import assert from 'assert';
 import sinon from 'sinon';
-import Hook from '../../lib/hooks';
+import Hook from '../../lib/hook';
 
 
 const TRACKING_ID = 'UA-12345-1';
