@@ -17,14 +17,13 @@
 
 import assert from 'assert';
 import sinon from 'sinon';
-import {addHookBefore, addHookAfter,
-    removeHookBefore, removeHookAfter} from '../../lib/hooks';
+import Hook from '../../lib/hooks';
 
 
 const TRACKING_ID = 'UA-12345-1';
 
 
-describe('hooks', () => {
+describe('Hook', () => {
   let tracker;
   let originalSetMethod;
   let originalBuildHitTask;
@@ -45,48 +44,48 @@ describe('hooks', () => {
     window.ga('remove');
   });
 
-  describe('addHookBefore/addHookAfter', () => {
+  describe('static addBefore/addAfter', () => {
     it('wraps the passed method', () => {
       const callback = sinon.spy();
-      addHookBefore(tracker, 'set', callback);
+      Hook.addBefore(tracker, 'set', callback);
 
       assert.notEqual(tracker.set, originalSetMethod);
 
-      removeHookBefore(tracker, 'set', callback);
+      Hook.removeBefore(tracker, 'set', callback);
     });
 
     it('supports wrapping an analytics.js task', () => {
       const callback = sinon.spy();
-      addHookBefore(tracker, 'buildHitTask', callback);
+      Hook.addBefore(tracker, 'buildHitTask', callback);
 
       assert.notEqual(tracker.get('buildHitTask'), originalBuildHitTask);
 
-      removeHookBefore(tracker, 'buildHitTask', callback);
+      Hook.removeBefore(tracker, 'buildHitTask', callback);
     });
 
     it('does not create a new hook if one already exists', () => {
       const callback1 = sinon.spy();
       const callback2 = sinon.spy();
 
-      addHookBefore(tracker, 'set', callback1);
+      Hook.addBefore(tracker, 'set', callback1);
       var wrappedMethod1 = tracker.set;
 
-      addHookBefore(tracker, 'set', callback2);
+      Hook.addBefore(tracker, 'set', callback2);
       var wrappedMethod2 = tracker.set;
 
       assert.equal(wrappedMethod1, wrappedMethod2);
 
-      removeHookBefore(tracker, 'set', callback1);
-      removeHookBefore(tracker, 'set', callback2);
+      Hook.removeBefore(tracker, 'set', callback1);
+      Hook.removeBefore(tracker, 'set', callback2);
     });
 
     it('adds a callback to the method', () => {
       const callback = sinon.spy();
       sinon.spy(tracker, 'set');
 
-      addHookBefore(tracker, 'set', callback);
+      Hook.addBefore(tracker, 'set', callback);
       tracker.set();
-      removeHookBefore(tracker, 'set', callback);
+      Hook.removeBefore(tracker, 'set', callback);
 
       assert(callback.calledOnce);
       assert(tracker.set.calledOnce);
@@ -103,17 +102,17 @@ describe('hooks', () => {
       const after2 = () => order.push(5);
       sinon.stub(tracker, 'set', original);
 
-      addHookBefore(tracker, 'set', before1);
-      addHookBefore(tracker, 'set', before2);
-      addHookAfter(tracker, 'set', after1);
-      addHookAfter(tracker, 'set', after2);
+      Hook.addBefore(tracker, 'set', before1);
+      Hook.addBefore(tracker, 'set', before2);
+      Hook.addAfter(tracker, 'set', after1);
+      Hook.addAfter(tracker, 'set', after2);
 
       tracker.set();
 
-      removeHookBefore(tracker, 'set', before1);
-      removeHookBefore(tracker, 'set', before2);
-      removeHookAfter(tracker, 'set', after1);
-      removeHookAfter(tracker, 'set', after2);
+      Hook.removeBefore(tracker, 'set', before1);
+      Hook.removeBefore(tracker, 'set', before2);
+      Hook.removeAfter(tracker, 'set', after1);
+      Hook.removeAfter(tracker, 'set', after2);
 
       assert.deepEqual(order, [1, 2, 3, 4, 5]);
 
@@ -121,7 +120,7 @@ describe('hooks', () => {
     });
   });
 
-  describe('removeHookBefore/removeHookAfter', () => {
+  describe('static removeBefore/removeAfter', () => {
     it('removes a previously added callback', () => {
       let order = [];
       const before1 = () => order.push(1);
@@ -131,23 +130,23 @@ describe('hooks', () => {
       const after2 = () => order.push(5);
       sinon.stub(tracker, 'set', original);
 
-      addHookBefore(tracker, 'set', before1);
-      addHookBefore(tracker, 'set', before2);
-      addHookAfter(tracker, 'set', after1);
-      addHookAfter(tracker, 'set', after2);
+      Hook.addBefore(tracker, 'set', before1);
+      Hook.addBefore(tracker, 'set', before2);
+      Hook.addAfter(tracker, 'set', after1);
+      Hook.addAfter(tracker, 'set', after2);
 
       tracker.set();
       assert.deepEqual(order, [1, 2, 3, 4, 5]);
 
-      removeHookBefore(tracker, 'set', before1);
-      removeHookAfter(tracker, 'set', after2);
+      Hook.removeBefore(tracker, 'set', before1);
+      Hook.removeAfter(tracker, 'set', after2);
 
       order = [];
       tracker.set();
       assert.deepEqual(order, [2, 3, 4]);
 
-      removeHookBefore(tracker, 'set', before2);
-      removeHookAfter(tracker, 'set', after1);
+      Hook.removeBefore(tracker, 'set', before2);
+      Hook.removeAfter(tracker, 'set', after1);
 
       order = [];
       tracker.set();
@@ -168,23 +167,23 @@ describe('hooks', () => {
       var originalSendHitTask = tracker.get('sendHitTask');
       tracker.set('sendHitTask', null); // Prevent hits from being sent.
 
-      addHookBefore(tracker, 'buildHitTask', before1);
-      addHookBefore(tracker, 'buildHitTask', before2);
-      addHookAfter(tracker, 'buildHitTask', after1);
-      addHookAfter(tracker, 'buildHitTask', after2);
+      Hook.addBefore(tracker, 'buildHitTask', before1);
+      Hook.addBefore(tracker, 'buildHitTask', before2);
+      Hook.addAfter(tracker, 'buildHitTask', after1);
+      Hook.addAfter(tracker, 'buildHitTask', after2);
 
       tracker.send('data');
       assert.deepEqual(order, [1, 2, 3, 4, 5]);
 
-      removeHookBefore(tracker, 'buildHitTask', before1);
-      removeHookAfter(tracker, 'buildHitTask', after2);
+      Hook.removeBefore(tracker, 'buildHitTask', before1);
+      Hook.removeAfter(tracker, 'buildHitTask', after2);
 
       order = [];
       tracker.send('data');
       assert.deepEqual(order, [2, 3, 4]);
 
-      removeHookBefore(tracker, 'buildHitTask', before2);
-      removeHookAfter(tracker, 'buildHitTask', after1);
+      Hook.removeBefore(tracker, 'buildHitTask', before2);
+      Hook.removeAfter(tracker, 'buildHitTask', after1);
 
       order = [];
       tracker.send('data');
@@ -196,10 +195,10 @@ describe('hooks', () => {
 
     it('does not error if no matching callback exists', () => {
       assert.doesNotThrow(() => {
-        removeHookBefore(tracker, 'set', () => {});
-        removeHookBefore(tracker, 'buildHitTask', () => {});
-        removeHookAfter(tracker, 'set', () => {});
-        removeHookAfter(tracker, 'buildHitTask', () => {});
+        Hook.removeBefore(tracker, 'set', () => {});
+        Hook.removeBefore(tracker, 'buildHitTask', () => {});
+        Hook.removeAfter(tracker, 'set', () => {});
+        Hook.removeAfter(tracker, 'buildHitTask', () => {});
       });
     });
 
@@ -209,30 +208,30 @@ describe('hooks', () => {
       const after1 = sinon.spy();
       const after2 = sinon.spy();
 
-      addHookBefore(tracker, 'set', before1);
-      addHookBefore(tracker, 'set', before2);
-      addHookAfter(tracker, 'set', after1);
-      addHookAfter(tracker, 'set', after2);
-      addHookBefore(tracker, 'buildHitTask', before1);
-      addHookBefore(tracker, 'buildHitTask', before2);
-      addHookAfter(tracker, 'buildHitTask', after1);
-      addHookAfter(tracker, 'buildHitTask', after2);
+      Hook.addBefore(tracker, 'set', before1);
+      Hook.addBefore(tracker, 'set', before2);
+      Hook.addAfter(tracker, 'set', after1);
+      Hook.addAfter(tracker, 'set', after2);
+      Hook.addBefore(tracker, 'buildHitTask', before1);
+      Hook.addBefore(tracker, 'buildHitTask', before2);
+      Hook.addAfter(tracker, 'buildHitTask', after1);
+      Hook.addAfter(tracker, 'buildHitTask', after2);
 
       assert.notEqual(tracker.set, originalSetMethod);
       assert.notEqual(tracker.get('buildHitTask'), originalBuildHitTask);
 
-      removeHookBefore(tracker, 'set', before1);
-      removeHookBefore(tracker, 'set', before2);
-      removeHookAfter(tracker, 'set', after1);
-      removeHookBefore(tracker, 'buildHitTask', before1);
-      removeHookBefore(tracker, 'buildHitTask', before2);
-      removeHookAfter(tracker, 'buildHitTask', after1);
+      Hook.removeBefore(tracker, 'set', before1);
+      Hook.removeBefore(tracker, 'set', before2);
+      Hook.removeAfter(tracker, 'set', after1);
+      Hook.removeBefore(tracker, 'buildHitTask', before1);
+      Hook.removeBefore(tracker, 'buildHitTask', before2);
+      Hook.removeAfter(tracker, 'buildHitTask', after1);
 
       assert.notEqual(tracker.set, originalSetMethod);
       assert.notEqual(tracker.get('buildHitTask'), originalBuildHitTask);
 
-      removeHookAfter(tracker, 'set', after2);
-      removeHookAfter(tracker, 'buildHitTask', after2);
+      Hook.removeAfter(tracker, 'set', after2);
+      Hook.removeAfter(tracker, 'buildHitTask', after2);
 
       assert.equal(tracker.set, originalSetMethod);
       assert.equal(tracker.get('buildHitTask'), originalBuildHitTask);

@@ -23,6 +23,7 @@ import {now} from '../../lib/utilities';
 
 var TRACKING_ID = 'UA-12345-1';
 var MINUTES = 60 * 1000;
+var DEFAULT_TIMEOUT = 30; // minutes
 
 
 describe('Session', function() {
@@ -41,6 +42,18 @@ describe('Session', function() {
     window.ga('remove');
   });
 
+  describe('static getOrCreate', function() {
+    it('does not create more than one instance per tracking ID', function() {
+      var session1 = Session.getOrCreate(tracker);
+      var session2 = Session.getOrCreate(tracker);
+
+      assert.strictEqual(session1, session2);
+
+      session1.destroy();
+      session2.destroy(); // Not really needed.
+    });
+  });
+
   describe('constructor', function() {
     it('sets the passed args on the instance', function() {
       var session = new Session(tracker, 123, 'America/Los_Angeles');
@@ -56,32 +69,10 @@ describe('Session', function() {
       var session = new Session(tracker);
 
       assert.strictEqual(session.tracker, tracker);
-      assert.strictEqual(session.timeout, Session.DEFAULT_TIMEOUT);
+      assert.strictEqual(session.timeout, DEFAULT_TIMEOUT);
       assert.strictEqual(session.timeZone, undefined);
 
       session.destroy();
-    });
-
-    it('overrides the sendHitTask and stores the original', function() {
-      var oldSendHitTask = tracker.get('sendHitTask');
-      var session = new Session(tracker);
-
-      assert.strictEqual(session.oldSendHitTask, oldSendHitTask);
-      assert.strictEqual(
-          session.tracker.get('sendHitTask'),
-          session.sendHitTask);
-
-      session.destroy();
-    });
-
-    it('does not create more than one instance per tracking ID', function() {
-      var session1 = new Session(tracker);
-      var session2 = new Session(tracker);
-
-      assert.strictEqual(session1, session2);
-
-      session1.destroy();
-      session2.destroy(); // Not really needed.
     });
 
     it('adds a listener for storage changes', function() {
@@ -193,18 +184,7 @@ describe('Session', function() {
     });
   });
 
-  describe('sendHitTask', function() {
-    it('sends the hit normally prior to doing additional work', function() {
-      var sendHitTaskStub = sinon.stub();
-      tracker.set('sendHitTask', sendHitTaskStub);
-
-      var session = new Session(tracker);
-      tracker.send('pageview');
-      assert(sendHitTaskStub.calledOnce);
-
-      session.destroy();
-    });
-
+  describe('sendHitTaskHook', function() {
     it('logs the time of the last hit', function() {
       var session = new Session(tracker);
 
@@ -302,23 +282,9 @@ describe('Session', function() {
   });
 
   describe('destroy', function() {
-    it('restores the original sendHitTask', function() {
-      var sendHitTaskStub = sinon.stub();
-      tracker.set('sendHitTask', sendHitTaskStub);
-
-      var session = new Session(tracker);
-      assert.notStrictEqual(tracker.get('sendHitTask'), sendHitTaskStub);
-
-      session.destroy();
-      assert.strictEqual(tracker.get('sendHitTask'), sendHitTaskStub);
-
-      tracker.send('pageview');
-      assert(sendHitTaskStub.calledOnce);
-    });
-
     it('removes the instance from the global store', function() {
-      var session1 = new Session(tracker);
-      var session2 = new Session(tracker);
+      var session1 = Session.getOrCreate(tracker);
+      var session2 = Session.getOrCreate(tracker);
 
       assert.strictEqual(session1, session2);
 
