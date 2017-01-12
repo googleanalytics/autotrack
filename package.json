@@ -30,7 +30,7 @@
   },
   "homepage": "https://github.com/googleanalytics/autotrack#readme",
   "dependencies": {
-    "dom-utils": "^0.7.0"
+    "dom-utils": "^0.8.0"
   },
   "devDependencies": {
     "babel-core": "^6.21.0",
