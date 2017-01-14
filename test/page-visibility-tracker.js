@@ -181,8 +181,8 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[3].ea, 'track');
   });
 
-  it('stores a visible state if a tab/window is closed ' +
-      'when a visible window is still open', function() {
+  it('handles closing a window/tab when a visible window is still open',
+      function() {
     if (!browserSupportsTabs()) return this.skip();
 
     var tab1 = browser.getCurrentTabId();
@@ -194,17 +194,24 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
     browser.close(tab1); // Close window1 and switch to tab1.
-    browser.waitUntil(log.hitCountEquals(2));
+    browser.execute(ga.run, 'set', 'page', '/test/autotrack.html?tab=1a');
 
-    var storedSessionData = browser.execute(function() {
-      return JSON.parse(localStorage.getItem(
-          'autotrack:UA-12345-1:plugins/page-visibility-tracker'));
-    }).value;
+    browser.waitUntil(log.hitCountEquals(3));
 
     // Use the references to make the linter happy.
     assert(tab1 && window1);
 
-    assert.strictEqual(storedSessionData.state, 'visible');
+    var hits = log.getHits();
+
+    // window1 change:visible
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].ea, 'track');
+    // window1 change:hidden
+    assert(hits[1].dl.endsWith('window=1'));
+    assert.strictEqual(hits[1].ea, 'track');
+    // tab1 url change to tab=1a
+    assert(hits[2].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[2].ea, 'track');
   });
 
   it('stores a hidden state if a tab/window is closed ' +
@@ -487,6 +494,7 @@ describe('pageVisibilityTracker', function() {
     assert(hits[9].dl.endsWith('window=1'));
     assert.strictEqual(hits[9].ea, 'track');
     assert(Number(hits[9].ev) > 0);
+    // tab2 (no visiblity event)
 
     log.removeHits();
   });
@@ -565,9 +573,6 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[6].ea, 'track');
     assert(Number(hits[6].ev) > 0);
     // tab2 (no visiblity event)
-    // tab1 pageview (due to tracker not being active in current session)
-    assert(hits[7].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[7].t, 'pageview');
     // tab1 change:visible
     // Session 2 end
   });
