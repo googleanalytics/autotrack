@@ -151,34 +151,6 @@ describe('Session', function() {
     });
   });
 
-  describe('isLastTrackerHitFromPreviousSession', function() {
-    it('returns true if the tracker\'s last known hit was ' +
-        'from the previous session', function() {
-      var session = new Session(tracker);
-
-      // A hit is it sent, but no previous session data exists,
-      // so err on the side of caution.
-      tracker.send('pageview');
-      assert(!session.isLastTrackerHitFromPreviousSession());
-
-      // Manually trigger the `externalSet` event, similar to how it would
-      // happen if a hit were sent in another tab after session expiration.
-      var oldSessionData = session.store.get();
-      var newSessionData = {
-        hitTime: now(),
-        sessionCount: oldSessionData.sessionCount + 1,
-      };
-      session.store.set(newSessionData);
-      session.store.emit('externalSet', newSessionData, oldSessionData);
-
-      // Since a hit was sent prior to the sesson count increasing, the last
-      // hit is known to be from the previous session.
-      assert(session.isLastTrackerHitFromPreviousSession());
-
-      session.destroy();
-    });
-  });
-
   describe('sendHitTaskHook', function() {
     it('logs the time of the last hit', function() {
       var session = new Session(tracker);
@@ -192,35 +164,6 @@ describe('Session', function() {
       tracker.send('timing', 'foo', 'bar', 1000);
       lastHitTime = session.store.get().hitTime;
       assert(lastHitTime >= timeBeforeTimingHit);
-
-      session.destroy();
-    });
-
-    it('increments the session count when new sessions start', function() {
-      var session = new Session(tracker);
-      assert.strictEqual(session.store.get().sessionCount, 0);
-
-      tracker.send('pageview');
-      assert.strictEqual(session.store.get().sessionCount, 0);
-      assert.strictEqual(session.sessionCount_, 0);
-
-      // Manually expire the session.
-      session.store.set({isExpired: true});
-
-      tracker.send('pageview');
-      assert.strictEqual(session.store.get().sessionCount, 1);
-      assert.strictEqual(session.sessionCount_, 1);
-
-      // Expire the session via sessionControl.
-      tracker.send('event', 'cat', 'act', {sessionControl: 'end'});
-      tracker.send('pageview');
-      assert.strictEqual(session.store.get().sessionCount, 2);
-      assert.strictEqual(session.sessionCount_, 2);
-
-      // Start a new session via sessionControl.
-      tracker.send('pageview', {sessionControl: 'start'});
-      assert.strictEqual(session.store.get().sessionCount, 3);
-      assert.strictEqual(session.sessionCount_, 3);
 
       session.destroy();
     });
