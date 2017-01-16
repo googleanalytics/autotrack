@@ -214,7 +214,8 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[2].ea, 'track');
   });
 
-  it('reports visibility if the page path/title changes on a visible page', function() {
+  it('reports visibility if the page path changes on a visible page',
+      function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -222,18 +223,12 @@ describe('pageVisibilityTracker', function() {
     browser.pause(randomInteger(500, 2000));
 
     // Simulate a URL change on the tracker.
-    browser.execute(ga.run, 'set', {
-      page: '/test/autotrack.html?tab=1a',
-      title: 'Tab 1a',
-    });
+    browser.execute(ga.run, 'set', 'page': '/test/autotrack.html?tab=1a');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     // Simulate another URL change on the tracker.
-    browser.execute(ga.run, 'set', {
-      page: '/test/autotrack.html?tab=1b',
-      title: 'Tab 1b',
-    });
+    browser.execute(ga.run, 'set', 'page': '/test/autotrack.html?tab=1b');
     browser.execute(ga.run, 'send', 'pageview');
 
     browser.waitUntil(log.hitCountEquals(5));
