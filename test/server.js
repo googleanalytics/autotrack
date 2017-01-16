@@ -85,8 +85,7 @@ module.exports = {
   /**
    * Gets the log data for the passed test ID.
    * @param {string} testId The test ID of the log to get.
-   * @return {Array} An array of hit objects sorted by index corresponding
-   *     to the order in which they were sent.
+   * @return {Array} An array of hit objects sorted by hit time.
    */
   getHitLogs: function(testId) {
     var logFile = getLogFile(testId);
@@ -100,7 +99,7 @@ module.exports = {
       return contents.trim().split('\n').map(function(hit) {
         return qs.parse(hit);
       }).sort(function(a, b) {
-        return Number(a.index) - Number(b.index);
+        return Number(a.time) - Number(b.time);
       });
     } else {
       return [];

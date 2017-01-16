@@ -194,7 +194,7 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
     browser.close(tab1); // Close window1 and switch to tab1.
-    browser.execute(ga.run, 'set', 'page', '/test/autotrack.html?tab=1a');
+    openNewTab();
 
     browser.waitUntil(log.hitCountEquals(3));
 
@@ -214,35 +214,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[2].ea, 'track');
   });
 
-  it('stores a hidden state if a tab/window is closed ' +
-      'when no visible windows are still open', function() {
-    if (!browserSupportsTabs()) return this.skip();
-
-    var tab1 = browser.getCurrentTabId();
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
-
-    var tab2 = openNewTab('/test/blank.html');
-
-    var window1 = openNewWindow('/test/autotrack.html?window=1');
-    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
-    browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
-
-    browser.close(tab2); // Close window1 and switch to tab2.
-    browser.waitUntil(log.hitCountEquals(2));
-
-    var storedSessionData = browser.execute(function() {
-      return JSON.parse(localStorage.getItem(
-          'autotrack:UA-12345-1:plugins/page-visibility-tracker'));
-    }).value;
-
-    // Use the references to make the linter happy.
-    assert(tab1 && tab2 && window1);
-
-    assert.strictEqual(storedSessionData.state, 'hidden');
-  });
-
-  it('reports visibility if the page path changes', function() {
+  it('reports visibility if the page path/title changes on a visible page', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
