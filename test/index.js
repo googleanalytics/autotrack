@@ -45,6 +45,7 @@ describe('index', function() {
     browser.execute(ga.run, 'pageVisibilityTracker:remove');
     browser.execute(ga.run, 'socialWidgetTracker:remove');
     browser.execute(ga.run, 'urlChangeTracker:remove');
+    browser.execute(ga.run, 'maxScrollTracker:remove');
     browser.execute(ga.run, 'remove');
     log.removeHits();
   });
@@ -62,6 +63,7 @@ describe('index', function() {
     assert(gaplugins.includes('PageVisibilityTracker'));
     assert(gaplugins.includes('SocialWidgetTracker'));
     assert(gaplugins.includes('UrlChangeTracker'));
+    assert(gaplugins.includes('MaxScrollTracker'));
   });
 
   it('provides plugins even if sourced before the tracking snippet',
@@ -78,6 +80,7 @@ describe('index', function() {
     assert(gaplugins.includes('PageVisibilityTracker'));
     assert(gaplugins.includes('SocialWidgetTracker'));
     assert(gaplugins.includes('UrlChangeTracker'));
+    assert(gaplugins.includes('MaxScrollTracker'));
   });
 
   it('works with all plugins required', function() {
@@ -93,6 +96,7 @@ describe('index', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.execute(ga.run, 'require', 'urlChangeTracker');
+    browser.execute(ga.run, 'require', 'maxScrollTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
@@ -113,6 +117,7 @@ describe('index', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.execute(ga.run, 'require', 'urlChangeTracker');
+    browser.execute(ga.run, 'require', 'maxScrollTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
@@ -133,6 +138,7 @@ describe('index', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'require', 'socialWidgetTracker');
     browser.execute(ga.run, 'require', 'urlChangeTracker');
+    browser.execute(ga.run, 'require', 'maxScrollTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
@@ -140,7 +146,7 @@ describe('index', function() {
     assert.strictEqual(lastHit.did, constants.DEV_ID);
     assert.strictEqual(lastHit[constants.VERSION_PARAM], pkg.version);
 
-    // '1ff' = '111111111' in hex
+    // '3ff' = '1111111111' in hex
     assert.strictEqual(lastHit[constants.USAGE_PARAM], '1ff');
   });
 });

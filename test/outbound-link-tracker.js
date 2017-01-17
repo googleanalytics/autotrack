@@ -247,7 +247,7 @@ describe('outboundLinkTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '20' = '000100000' in hex
+    // '20' = '0000100000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '20');
   });
 

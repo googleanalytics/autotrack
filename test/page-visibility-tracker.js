@@ -590,7 +590,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '40' = '001000000' in hex
+    // '40' = '0001000000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '40');
   });
 

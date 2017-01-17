@@ -395,7 +395,7 @@ describe('impressionTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '4' = '000000100' in hex
+    // '4' = '0000000100' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '4');
   });
 

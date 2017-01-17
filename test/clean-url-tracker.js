@@ -234,7 +234,7 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '1' = '000000001' in hex
+    // '1' = '0000000001' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '1');
   });
 

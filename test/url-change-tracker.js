@@ -197,7 +197,7 @@ describe('urlTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '100' = '100000000' in hex
+    // '100' = '0100000000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '100');
   });
 
