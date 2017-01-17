@@ -166,7 +166,7 @@ describe('socialWidgetTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '80' = '010000000' in hex
+    // '80' = '0010000000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '80');
   });
 });

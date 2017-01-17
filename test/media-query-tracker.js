@@ -205,7 +205,7 @@ describe('mediaQueryTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '8' = '000001000' in hex
+    // '8' = '0000001000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '8');
   });
 

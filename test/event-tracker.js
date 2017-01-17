@@ -143,7 +143,7 @@ describe('eventTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '2' = '000000010' in hex
+    // '2' = '0000000010' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '2');
   });
 

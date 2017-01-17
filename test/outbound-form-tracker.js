@@ -189,7 +189,7 @@ describe('outboundFormTracker', function() {
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
-    // '10' = '000010000' in hex
+    // '10' = '0000010000' in hex
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '10');
   });
 
