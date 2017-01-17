@@ -223,12 +223,12 @@ describe('pageVisibilityTracker', function() {
     browser.pause(randomInteger(500, 2000));
 
     // Simulate a URL change on the tracker.
-    browser.execute(ga.run, 'set', 'page': '/test/autotrack.html?tab=1a');
+    browser.execute(ga.run, 'set', 'page', '/test/autotrack.html?tab=1a');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     // Simulate another URL change on the tracker.
-    browser.execute(ga.run, 'set', 'page': '/test/autotrack.html?tab=1b');
+    browser.execute(ga.run, 'set', 'page', '/test/autotrack.html?tab=1b');
     browser.execute(ga.run, 'send', 'pageview');
 
     browser.waitUntil(log.hitCountEquals(5));
