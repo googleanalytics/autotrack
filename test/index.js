@@ -147,6 +147,6 @@ describe('index', function() {
     assert.strictEqual(lastHit[constants.VERSION_PARAM], pkg.version);
 
     // '3ff' = '1111111111' in hex
-    assert.strictEqual(lastHit[constants.USAGE_PARAM], '1ff');
+    assert.strictEqual(lastHit[constants.USAGE_PARAM], '3ff');
   });
 });

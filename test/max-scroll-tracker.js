@@ -39,9 +39,8 @@ var WINDOW_HEIGHT = 500;
 var DEBOUNCE_TIMEOUT = 500;
 
 
-
 describe('maxScrollTracker', function() {
-  if (process.env.CI) this.retries(4);
+  this.retries(4);
 
   before(function() {
     browser.url('/test/max-scroll-tracker.html');
@@ -197,64 +196,6 @@ describe('maxScrollTracker', function() {
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .1);
     browser.waitUntil(log.hitCountEquals(1));
     log.removeHits();
-  });
-
-  it('ignores the query portion of the URL unless told not to', function() {
-    browser.execute(ga.run, 'require', 'maxScrollTracker');
-
-    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
-    browser.waitUntil(log.hitCountEquals(1));
-    var hits = log.getHits();
-
-    assert.strictEqual(hits[0].ev, '25');
-    assert.strictEqual(hits[0].el, '25');
-
-    browser.execute(ga.run,
-        'set', 'page', '/test/max-scroll-tracker.html?foo=bar');
-
-    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .50);
-    browser.waitUntil(log.hitCountEquals(2));
-
-    hits = log.getHits();
-    assert.strictEqual(hits[1].ev, '25');
-    assert.strictEqual(hits[1].el, '50');
-
-    browser.execute(ga.run, 'maxScrollTracker:remove');
-    browser.execute(ga.run, 'remove');
-    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
-    browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'maxScrollTracker', {
-      ignoreUrlQuery: false,
-    });
-    browser.execute(ga.run,
-        'set', 'page', '/test/max-scroll-tracker.html?foo=bar');
-
-    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .40);
-    browser.waitUntil(log.hitCountEquals(3));
-
-    hits = log.getHits();
-    // Since this is considered a new URL, the increase is measured from 0.
-    assert.strictEqual(hits[2].dp, '/test/max-scroll-tracker.html?foo=bar');
-    assert.strictEqual(hits[2].ev, '40');
-    assert.strictEqual(hits[2].el, '40');
-
-    browser.execute(ga.run, 'maxScrollTracker:remove');
-    browser.execute(ga.run, 'remove');
-    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
-    browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'maxScrollTracker');
-    browser.execute(ga.run,
-        'set', 'page', '/test/max-scroll-tracker.html?foo=bar');
-
-    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .80);
-    browser.waitUntil(log.hitCountEquals(4));
-
-    hits = log.getHits();
-    assert.strictEqual(hits[3].dp, '/test/max-scroll-tracker.html?foo=bar');
-    // The increase is measured from when the max scroll was at 50% since
-    // now the two URLs are seen as the same.
-    assert.strictEqual(hits[3].ev, '30');
-    assert.strictEqual(hits[3].el, '80');
   });
 
   it('sends the increase amount as a custom metric if set', function() {

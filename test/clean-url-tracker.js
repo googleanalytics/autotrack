@@ -48,10 +48,11 @@ describe('cleanUrlTracker', function() {
     log.removeHits();
   });
 
-  it('set the page field but does not modify the path by default', function() {
+  it('sets the page field but does not modify the path by default', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'set', 'location', url);
+    browser.execute(ga.run, 'require', 'cleanUrlTracker');
+
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -62,10 +63,10 @@ describe('cleanUrlTracker', function() {
 
   it('supports removing the query string from the URL path', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -76,11 +77,11 @@ describe('cleanUrlTracker', function() {
 
   it('optionally adds the query string as a custom dimension', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true,
-      queryDimensionIndex: 1
+      queryDimensionIndex: 1,
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -92,11 +93,11 @@ describe('cleanUrlTracker', function() {
 
   it('adds the null dimensions when no query string is found', function() {
     var url = 'https://example.com/foo/bar';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true,
       queryDimensionIndex: 1
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -106,14 +107,13 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[0].cd1, constants.NULL_DIMENSION);
   });
 
-
   it('does not set a dimension if strip query is false', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: false,
       queryDimensionIndex: 1
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -125,11 +125,11 @@ describe('cleanUrlTracker', function() {
 
   it('cleans URLs in all hits, not just the initial pageview', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true,
       queryDimensionIndex: 1
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.execute(ga.run, 'set', 'page', '/updated?query=new' );
     browser.execute(ga.run, 'send', 'pageview');
@@ -150,12 +150,33 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[3].cd1, constants.NULL_DIMENSION);
   });
 
+  it('cleans both set and sent URL fields', function() {
+    var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
+    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
+      stripQuery: true,
+      queryDimensionIndex: 1
+    });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.execute(ga.run, 'send', 'pageview', '/updated?query=new');
+
+    browser.waitUntil(log.hitCountEquals(2));
+
+    var hits = log.getHits();
+    assert.strictEqual(hits[0].dl, url);
+    assert.strictEqual(hits[0].dp, '/foo/bar');
+    assert.strictEqual(hits[0].cd1, 'q=qux&b=baz');
+    assert.strictEqual(hits[1].dl, url);
+    assert.strictEqual(hits[1].dp, '/updated');
+    assert.strictEqual(hits[1].cd1, 'query=new');
+  });
+
   it('supports removing index filenames', function() {
     var url = 'https://example.com/foo/bar/index.html?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       indexFilename: 'index.html'
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -166,10 +187,10 @@ describe('cleanUrlTracker', function() {
   it('only removes index filenames at the end of the URL after a slash',
       function() {
     var url = 'https://example.com/noindex.html';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       indexFilename: 'index.html'
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -179,10 +200,10 @@ describe('cleanUrlTracker', function() {
 
   it('supports stripping trailing slashes', function() {
     var url = 'https://example.com/foo/bar/';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       trailingSlash: 'remove'
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -192,12 +213,12 @@ describe('cleanUrlTracker', function() {
 
   it('supports adding trailing slashes to non-filename URLs', function() {
     var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true,
       queryDimensionIndex: 1,
       trailingSlash: 'add'
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.execute(ga.run, 'set', 'page', '/foo/bar.html');
     browser.execute(ga.run, 'send', 'pageview');
@@ -210,13 +231,13 @@ describe('cleanUrlTracker', function() {
 
   it('works with many options in conjunction with each other', function() {
     var url = 'https://example.com/path/to/index.html?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'require', 'cleanUrlTracker', {
       stripQuery: true,
       queryDimensionIndex: 1,
       indexFilename: 'index.html',
       trailingSlash: 'remove'
     });
-    browser.execute(ga.run, 'set', 'location', url);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -241,10 +262,10 @@ describe('cleanUrlTracker', function() {
   describe('remove', function() {
     it('destroys all bound events and functionality', function() {
       var url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
+      browser.execute(ga.run, 'set', 'location', url);
       browser.execute(ga.run, 'require', 'cleanUrlTracker', {
         stripQuery: true
       });
-      browser.execute(ga.run, 'set', 'location', url);
       browser.execute(ga.run, 'send', 'pageview');
       browser.waitUntil(log.hitCountEquals(1));
 
@@ -253,12 +274,13 @@ describe('cleanUrlTracker', function() {
       assert.strictEqual(hits[0].dp, '/foo/bar');
 
       browser.execute(ga.run, 'cleanUrlTracker:remove');
+      browser.execute(ga.run, 'set', 'page', '/updated?query=new' );
       browser.execute(ga.run, 'send', 'pageview');
       browser.waitUntil(log.hitCountEquals(2));
 
       hits = log.getHits();
       assert.strictEqual(hits[1].dl, url);
-      assert(!hits[1].dp);
+      assert.strictEqual(hits[1].dp, '/updated?query=new');
     });
   });
 });
