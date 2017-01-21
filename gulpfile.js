@@ -29,6 +29,7 @@ const gutil = require('gulp-util');
 const webdriver = require('gulp-webdriver');
 const {rollup} = require('rollup');
 const nodeResolve = require('rollup-plugin-node-resolve');
+const babel = require('rollup-plugin-babel');
 const sauceConnectLauncher = require('sauce-connect-launcher');
 const seleniumServerJar = require('selenium-server-standalone-jar');
 const {SourceMapGenerator, SourceMapConsumer} = require('source-map');
@@ -49,10 +50,19 @@ function isProd() {
 
 
 gulp.task('javascript', function(done) {
-  rollup({
-    entry: './lib/index.js',
-    plugins: [nodeResolve()]
-  }).then((bundle) => {
+  const rollupPlugins = [nodeResolve()];
+
+  // In production, closure compiler will take care of converting the code
+  // to ES5. In dev, we let babel do it.
+  if (!isProd()) {
+    rollupPlugins.push(babel({
+      babelrc: false,
+      plugins: ['external-helpers'],
+      presets: [['es2015', {modules: false}]],
+    }));
+  }
+
+  rollup({entry: './lib/index.js', plugins: rollupPlugins}).then((bundle) => {
     // In production mode, use Closure Compiler to bundle autotrack.js
     // otherwise just output the rollup result as it's much faster.
     if (isProd()) {
@@ -132,7 +142,7 @@ gulp.task('javascript:unit', ((compiler) => {
       module: {
         loaders: [{
           test: /\.js$/,
-          exclude: [/node_modules/],
+          exclude: /node_modules\/(?!(dom-utils)\/).*/,
           loader: 'babel-loader',
           query: {
             babelrc: false,

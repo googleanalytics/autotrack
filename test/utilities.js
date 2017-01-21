@@ -52,22 +52,12 @@ module.exports = {
         };
       },
       assertNoHitsReceived: function() {
-        var browserCaps = browser.session().value;
-        if (browserCaps.browserName == 'safari') {
-          // Reduces flakiness in Safari.
-          var timeToWait = 3000;
-          browser.pause(timeToWait);
-          assert.strictEqual(accessors.getHits().length, 0);
-        } else {
-          assert.strictEqual(accessors.getHits().length, 0);
+        assert.strictEqual(accessors.getHits().length, 0);
 
-          // TODO(philipwalton): the following technique fails in Safari for
-          // unknown reasons.
-          browser.execute(ga.sendEmptyHit, browser.options.baseUrl, testId);
-          browser.waitUntil(accessors.hitCountEquals(1));
-          assert.strictEqual(accessors.getHits()[0].empty, '1');
-          accessors.removeHits();
-        }
+        browser.execute(ga.sendEmptyHit, browser.options.baseUrl, testId);
+        browser.waitUntil(accessors.hitCountEquals(1));
+        assert.strictEqual(accessors.getHits()[0].empty, '1');
+        accessors.removeHits();
       }
     };
     return accessors;

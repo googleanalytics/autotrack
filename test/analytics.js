@@ -66,6 +66,7 @@ module.exports =  {
    */
   sendEmptyHit: function(baseUrl, testId) {
     var beacon = new Image();
-    beacon.src = baseUrl + '/collect/' + testId + '?empty=1&index=1';
+    beacon.src = baseUrl + '/collect/' + testId +
+        '?empty=1&index=1?nocache=' + Math.random();
   },
 };

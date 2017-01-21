@@ -122,20 +122,6 @@ describe('Store', function() {
       store1.destroy();
       store2.destroy();
     });
-
-    it('does not error if localStorage is not supported', function() {
-      var ls = window.localStorage;
-      delete window.localStorage;
-
-      assert.doesNotThrow(function() {
-        var store = Store.getOrCreate('UA-12345-1', 'ns1', {default: true, foo: 1});
-        store.get();
-        store.destroy();
-      });
-
-      window.localStorage = ls;
-    });
-
   });
 
   describe('set', function() {
@@ -151,19 +137,6 @@ describe('Store', function() {
 
       store1.destroy();
       store2.destroy();
-    });
-
-    it('does not error if localStorage is not supported', function() {
-      var ls = window.localStorage;
-      delete window.localStorage;
-
-      assert.doesNotThrow(function() {
-        var store = Store.getOrCreate('UA-12345-1', 'ns1');
-        store.set({foo: 12, bar: 34});
-        store.destroy();
-      });
-
-      window.localStorage = ls;
     });
   });
 
@@ -188,24 +161,6 @@ describe('Store', function() {
 
       store1.destroy();
       store2.destroy();
-    });
-
-    it('does not error if localStorage is not supported', function() {
-      var ls = window.localStorage;
-      delete window.localStorage;
-
-      assert.doesNotThrow(function() {
-        var store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-        var store2 = Store.getOrCreate('UA-67890-1', 'ns2');
-        store1.set({foo: 12, bar: 34});
-        store2.set({qux: 56, baz: 78});
-        store1.clear();
-        store2.clear();
-        store1.destroy();
-        store2.destroy();
-      });
-
-      window.localStorage = ls;
     });
   });
 
