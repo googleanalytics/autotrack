@@ -1,0 +1,49 @@
+{
+  "testPath": "/test/unit",
+  "service": "sauce-connect",
+  "serviceOptions": {
+    "verbose": true
+  },
+  "platforms": [
+    [
+      "Windows 10",
+      "chrome",
+      "latest"
+    ],
+    [
+      "Linux",
+      "firefox",
+      "latest"
+    ],
+    [
+      "OS X 10.12",
+      "safari",
+      "10"
+    ],
+    [
+      "OS X 10.11",
+      "safari",
+      "9"
+    ],
+    [
+      "Windows 10",
+      "MicrosoftEdge",
+      "latest"
+    ],
+    [
+      "Windows 8.1",
+      "internet explorer",
+      "11"
+    ],
+    [
+      "Windows 8",
+      "internet explorer",
+      "10"
+    ],
+    [
+      "Windows 7",
+      "internet explorer",
+      "9"
+    ]
+  ]
+}

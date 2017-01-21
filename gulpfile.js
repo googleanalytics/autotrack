@@ -194,7 +194,9 @@ gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
 
 
 gulp.task('test:unit', ['javascript', 'javascript:unit'], function(done) {
-  spawn('./node_modules/.bin/easy-sauce', {stdio: [0, 1, 2]}).on('end', done);
+  spawn('./node_modules/.bin/easy-sauce', ['-c', 'easy-sauce-config.json'], {
+    stdio: [0, 1, 2],
+  }).on('end', done);
 });
 
 
@@ -210,7 +212,9 @@ gulp.task('tunnel', ['serve'], function(done) {
     } else {
       process.env.BASE_URL = 'http://localhost:8080';
       sshTunnel = sauceConnectProcess;
-      process.on('exit', sshTunnel.close.bind(sshTunnel));
+      // TODO(philipwalton): read this logic to close the tunnel once this is
+      // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
+      // process.on('exit', sshTunnel.close.bind(sshTunnel));
       done();
     }
   });
