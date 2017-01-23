@@ -172,7 +172,7 @@ For details on how `analytics.js` plugin methods work and how to invoke them, se
 
 ### Basic usage
 
-This example requires the `mediaQueryTracker` plugin and customizes it to track breakpoint, resolution, and orientation media query data:
+This example requires the `mediaQueryTracker` plugin and customizes it to track breakpoint, device pixel density, and orientation media query data:
 
 ```js
 ga('require', 'mediaQueryTracker', {
@@ -187,7 +187,7 @@ ga('require', 'mediaQueryTracker', {
       ]
     },
     {
-      name: 'Resolution',
+      name: 'Pixel Density',
       dimensionIndex: 2,
       items: [
         {name: '1x',   media: 'all'},
