@@ -16,6 +16,7 @@ If you have a question that's not answered in one of these documents, feel free 
 - [`cleanUrlTracker`](/docs/plugins/clean-url-tracker.md)
 - [`eventTracker`](/docs/plugins/event-tracker.md)
 - [`impressionTracker`](/docs/plugins/impression-tracker.md)
+- [`maxScrollTracker`](/docs/plugins/max-scroll-tracker.md)
 - [`mediaQueryTracker`](/docs/plugins/media-query-tracker.md)
 - [`outboundFormTracker`](/docs/plugins/outbound-form-tracker.md)
 - [`outboundLinkTracker`](/docs/plugins/outbound-link-tracker.md)
