@@ -15,54 +15,56 @@
  */
 
 
-var assert = require('assert');
-var uuid = require('uuid');
-var ga = require('./analytics');
-var utilities = require('./utilities');
-var constants = require('../lib/constants');
-var pkg = require('../package.json');
+import assert from 'assert';
+import uuid from 'uuid';
+import * as ga from './ga';
+import {bindLogAccessors} from './server';
+import * as constants from '../../lib/constants';
+import pkg from '../../package.json';
 
 
-var testId;
-var log;
-var baseUrl = browser.options.baseUrl;
+const baseUrl = browser.options.baseUrl;
+
+
+let testId;
+let log;
 
 
 describe('outboundLinkTracker', function() {
   this.retries(4);
 
-  beforeEach(function() {
+  beforeEach(() => {
     testId = uuid();
-    log = utilities.bindLogAccessors(testId);
+    log = bindLogAccessors(testId);
 
-    browser.url('/test/outbound-link-tracker.html');
+    browser.url('/test/e2e/fixtures/outbound-link-tracker.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     log.removeHits();
   });
 
-  it('sends events on outbound link clicks', function() {
+  it('sends events on outbound link clicks', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#outbound-link');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
   });
 
-  it('does not send events on local link clicks', function() {
+  it('does not send events on local link clicks', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#local-link');
 
     log.assertNoHitsReceived();
   });
 
-  it('does not send events on non-http(s) protocol links', function() {
+  it('does not send events on non-http(s) protocol links', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#javascript-protocol');
     browser.click('#file-protocol');
@@ -70,61 +72,58 @@ describe('outboundLinkTracker', function() {
     log.assertNoHitsReceived();
   });
 
-  it('navigates to the proper location on outbound clicks', function() {
+  it('navigates to the proper location on outbound clicks', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#outbound-link');
-    browser.waitUntil(
-        utilities.urlMatches('https://example.com/outbound-link'));
+    browser.waitUntil(urlMatches('https://example.com/outbound-link'));
   });
 
-  it('navigates to the proper location on local clicks', function() {
+  it('navigates to the proper location on local clicks', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#local-link');
-    browser.waitUntil(utilities.urlMatches('/test/blank.html'));
+    browser.waitUntil(urlMatches('/test/e2e/fixtures/blank.html'));
   });
 
-  it('works with SVG links', function() {
+  it('works with SVG links', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#svg-link');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, 'https://example.com/svg-link');
   });
 
-  it('works with <area> links', function() {
+  it('works with <area> links', () => {
     if (!browserSupportsAreaClicks()) return this.skip();
 
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#area-link');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, 'https://example.com/area-link');
   });
 
-  it('supports events other than click', function() {
-    var events = ['mousedown'];
-    var action = 'click';
-    var expectedHits = 1;
+  it('supports events other than click', () => {
+    const events = ['mousedown'];
+    let action = 'click';
+    let expectedHits = 1;
     if (browserSupportsRightClick()) {
       events.push('contextmenu');
       action = 'rightClick';
       expectedHits = 2;
     }
 
-    browser.execute(ga.run, 'require', 'outboundLinkTracker', {
-      events: events
-    });
+    browser.execute(ga.run, 'require', 'outboundLinkTracker', {events});
 
     browser[action]('#outbound-link');
     browser.waitUntil(log.hitCountEquals(expectedHits));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'mousedown');
     assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
@@ -135,115 +134,115 @@ describe('outboundLinkTracker', function() {
     }
   });
 
-  it('supports customizing the selector used to detect clicks', function() {
+  it('supports customizing the selector used to detect clicks', () => {
     // Click a link that doesn't match the `.link` selector.
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
-      linkSelector: '.link'
+      linkSelector: '.link',
     });
     browser.click('#outbound-link');
 
     log.assertNoHitsReceived();
 
     // Go back and click a link that does match the `.link` selector.
-    browser.url('/test/outbound-link-tracker.html');
+    browser.url('/test/e2e/fixtures/outbound-link-tracker.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
-      linkSelector: '.link'
+      linkSelector: '.link',
     });
     browser.click('#outbound-link-with-class');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el,
         'https://example.com/outbound-link-with-class');
   });
 
-  it('supports customizing what is considered an outbound link', function() {
+  it('supports customizing what is considered an outbound link', () => {
     browser.execute(requireOutboundLinkTracker_shouldTrackOutboundLink);
     browser.click('#local-link');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
-    assert.strictEqual(hits[0].el, baseUrl + '/test/blank.html');
+    assert.strictEqual(hits[0].el, baseUrl + '/test/e2e/fixtures/blank.html');
   });
 
-  it('supports customizing any field via the fieldsObj', function() {
+  it('supports customizing any field via the fieldsObj', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
       fieldsObj: {
         eventCategory: 'External Link',
         eventAction: 'tap',
-        nonInteraction: true
-      }
+        nonInteraction: true,
+      },
     });
     browser.click('#outbound-link');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'External Link');
     assert.strictEqual(hits[0].ea, 'tap');
     assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
     assert.strictEqual(hits[0].ni, '1');
   });
 
-  it('supports setting attributes declaratively', function() {
+  it('supports setting attributes declaratively', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#declarative-attributes');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'External Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].cd1, '1');
   });
 
-  it('supports customizing the attribute prefix', function() {
+  it('supports customizing the attribute prefix', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
-      attributePrefix: 'data-ga-'
+      attributePrefix: 'data-ga-',
     });
     browser.click('#declarative-attributes-prefix');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, 'example.com');
     assert.strictEqual(hits[0].ni, '1');
   });
 
-  it('supports specifying a hit filter', function() {
+  it('supports specifying a hit filter', () => {
     browser.execute(requireOutboundLinkTracker_hitFilter);
     browser.click('#outbound-link');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, '/outbound-link');
   });
 
-  it('supports links in shadow DOM and event retargetting', function() {
+  it('supports links in shadow DOM and event retargetting', () => {
     if (!browserSupportsEventsInShadowDom()) return;
 
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.execute(simulateClickFromInsideShadowDom);
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, 'https://example.com/shadow-host');
   });
 
-  it('includes usage params with all hits', function() {
+  it('includes usage params with all hits', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
@@ -251,8 +250,8 @@ describe('outboundLinkTracker', function() {
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '20');
   });
 
-  describe('remove', function() {
-    it('destroys all bound events and functionality', function() {
+  describe('remove', () => {
+    it('destroys all bound events and functionality', () => {
       browser.execute(ga.run, 'require', 'outboundLinkTracker');
       browser.execute(ga.run, 'outboundLinkTracker:remove');
       browser.click('#outbound-link');
@@ -263,10 +262,25 @@ describe('outboundLinkTracker', function() {
 
 
 /**
+ * @param {string} expectedUrl The URL to match.
+ * @return {Function} A function that, when invoked, returns a promise
+ *     that is fulfilled when the URL in the browsers address bar matches
+ *     the passed URL.
+ */
+function urlMatches(expectedUrl) {
+  return () => {
+    const result = browser.url();
+    const actualUrl = result.value;
+    return actualUrl.indexOf(expectedUrl) > -1;
+  };
+}
+
+
+/**
  * @return {boolean} True if the current browser supports Shadow DOM.
  */
 function browserSupportsEventsInShadowDom() {
-  return browser.execute(function() {
+  return browser.execute(() => {
     return Event.prototype.composedPath;
   }).value;
 }
@@ -276,7 +290,7 @@ function browserSupportsEventsInShadowDom() {
  * @return {boolean} True if the browser driver supports the rightClick method.
  */
 function browserSupportsRightClick() {
-  var browserCaps = browser.session().value;
+  const browserCaps = browser.session().value;
   return !(
       // https://github.com/webdriverio/webdriverio/issues/1419
       browserCaps.browserName == 'safari' ||
@@ -293,7 +307,7 @@ function browserSupportsRightClick() {
  *     <area> elements.
  */
 function browserSupportsAreaClicks() {
-  var browserCaps = browser.session().value;
+  const browserCaps = browser.session().value;
   return !(browserCaps.browserName == 'internet explorer' ||
       browserCaps.browserName == 'safari');
 }
@@ -306,9 +320,9 @@ function browserSupportsAreaClicks() {
  */
 function requireOutboundLinkTracker_shouldTrackOutboundLink() {
   ga('require', 'outboundLinkTracker', {
-    shouldTrackOutboundLink: function(link, parseUrl) {
-      return parseUrl(link.href).pathname == '/test/blank.html';
-    }
+    shouldTrackOutboundLink: (link, parseUrl) => {
+      return parseUrl(link.href).pathname == '/test/e2e/fixtures/blank.html';
+    },
   });
 }
 
@@ -320,11 +334,11 @@ function requireOutboundLinkTracker_shouldTrackOutboundLink() {
  */
 function requireOutboundLinkTracker_hitFilter() {
   ga('require', 'outboundLinkTracker', {
-    hitFilter: function(model, link) {
+    hitFilter: (model, link) => {
       if (link.href == 'https://example.com/outbound-link') {
         model.set('eventLabel', '/outbound-link', true);
       }
-    }
+    },
   });
 }
 
@@ -334,13 +348,13 @@ function requireOutboundLinkTracker_hitFilter() {
  * tree, so we have to fake it.
  */
 function simulateClickFromInsideShadowDom() {
-  var shadowHost = document.getElementById('shadow-host');
-  var link = shadowHost.shadowRoot.querySelector('a');
+  const shadowHost = document.getElementById('shadow-host');
+  const link = shadowHost.shadowRoot.querySelector('a');
 
-  var event = new Event('click', {
+  const event = new Event('click', {
     bubbles: true,
     cancelable: true,
-    composed: true
+    composed: true,
   });
   link.dispatchEvent(event);
 }

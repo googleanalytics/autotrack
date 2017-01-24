@@ -15,44 +15,44 @@
  */
 
 
-var assert = require('assert');
-var uuid = require('uuid');
-var ga = require('./analytics');
-var utilities = require('./utilities');
-var constants = require('../lib/constants');
-var pkg = require('../package.json');
+import assert from 'assert';
+import uuid from 'uuid';
+import * as ga from './ga';
+import {bindLogAccessors} from './server';
+import * as constants from '../../lib/constants';
+import pkg from '../../package.json';
 
 
-var SESSION_TIMEOUT_IN_MILLISECONDS = 3000; // 3 seconds
-var SESSION_TIMEOUT_IN_MINUTES = (1/60) * 3; // 3 seconds
+const SESSION_TIMEOUT_IN_MILLISECONDS = 3000; // 3 seconds
+const SESSION_TIMEOUT_IN_MINUTES = (1/60) * 3; // 3 seconds
 
 
-var DEFAULT_TRACKER_FIELDS = {
+const DEFAULT_TRACKER_FIELDS = {
   trackingId: 'UA-12345-1',
   cookieDomain: 'auto',
   siteSpeedSampleRate: 0,
 };
 
 
-var testId;
-var log;
+let testId;
+let log;
 
 
 describe('pageVisibilityTracker', function() {
-  if (process.env.CI) this.retries(4);
+  this.retries(4);
 
-  beforeEach(function() {
+  beforeEach(() => {
     testId = uuid();
-    log = utilities.bindLogAccessors(testId);
-    browser.url('/test/autotrack.html?tab=1');
-    browser.execute(function() {
+    log = bindLogAccessors(testId);
+    browser.url('/test/e2e/fixtures/autotrack.html?tab=1');
+    browser.execute(() => {
       localStorage.clear();
     });
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     closeAllButFirstTab();
     log.removeHits();
   });
@@ -65,7 +65,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Page Visibility');
     assert.strictEqual(hits[0].ea, 'track');
   });
@@ -79,7 +79,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert(Number(hits[0].ev) >= 2);
   });
 
@@ -93,7 +93,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ni, '1');
     assert.strictEqual(hits[1].ni, '1');
   });
@@ -110,7 +110,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert(Number(hits[0].ev) >= 1);
     assert(Number(hits[0].cm1) >= 1);
   });
@@ -119,7 +119,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
-      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
 
     expireSession();
@@ -135,7 +135,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
-      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
 
     expireSession();
@@ -147,7 +147,7 @@ describe('pageVisibilityTracker', function() {
 
     // Expects non-pageview hits queued to be sent after the session has timed
     // out to include a pageview immediately before them.
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
   });
 
@@ -155,7 +155,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
-      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
@@ -169,7 +169,7 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     browser.waitUntil(log.hitCountEquals(4));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[1].ec, 'Uncategorized');
     assert.strictEqual(hits[1].ea, 'unimportant');
@@ -185,10 +185,10 @@ describe('pageVisibilityTracker', function() {
       function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    var tab1 = browser.getCurrentTabId();
+    const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
 
-    var window1 = openNewWindow('/test/autotrack.html?window=1');
+    const window1 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -201,7 +201,7 @@ describe('pageVisibilityTracker', function() {
     // Use the references to make the linter happy.
     assert(tab1 && window1);
 
-    var hits = log.getHits();
+    const hits = log.getHits();
 
     // window1 change:visible
     assert(hits[0].dl.endsWith('tab=1'));
@@ -223,16 +223,18 @@ describe('pageVisibilityTracker', function() {
     browser.pause(randomInteger(500, 2000));
 
     // Simulate a URL change on the tracker.
-    browser.execute(ga.run, 'set', 'page', '/test/autotrack.html?tab=1a');
+    browser.execute(ga.run,
+        'set', 'page', '/test/e2e/fixtures/autotrack.html?tab=1a');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     // Simulate another URL change on the tracker.
-    browser.execute(ga.run, 'set', 'page', '/test/autotrack.html?tab=1b');
+    browser.execute(ga.run,
+        'set', 'page', '/test/e2e/fixtures/autotrack.html?tab=1b');
     browser.execute(ga.run, 'send', 'pageview');
 
     browser.waitUntil(log.hitCountEquals(5));
-    var hits = log.getHits();
+    const hits = log.getHits();
 
     // Tab 1 pageview
     assert(hits[0].dl.endsWith('tab=1'));
@@ -257,15 +259,15 @@ describe('pageVisibilityTracker', function() {
         function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    var tab1 = browser.getCurrentTabId();
+    const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var tab2 = openNewTab('/test/blank.html');
+    const tab2 = openNewTab('/test/e2e/fixtures/blank.html');
     browser.pause(randomInteger(500, 2000));
 
-    var tab3 = openNewTab('/test/autotrack.html?tab=3');
+    const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -281,7 +283,7 @@ describe('pageVisibilityTracker', function() {
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3);
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     // Tab 1 pageview
     assert(hits[0].dl.endsWith('tab=1'));
     assert.strictEqual(hits[0].t, 'pageview');
@@ -306,22 +308,22 @@ describe('pageVisibilityTracker', function() {
   it('does not double report when 2+ tabs are used simultaneously', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    var tab1 = browser.getCurrentTabId();
+    const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var tab2 = openNewTab('/test/autotrack.html?tab=2');
+    const tab2 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var tab3 = openNewTab('/test/blank.html');
+    const tab3 = openNewTab('/test/e2e/fixtures/blank.html');
     browser.pause(randomInteger(500, 2000));
 
-    var tab4 = openNewTab('/test/autotrack.html?tab=4');
+    const tab4 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=4');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -340,7 +342,7 @@ describe('pageVisibilityTracker', function() {
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3 && tab4);
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     // Tab 1 pageview
     assert(hits[0].dl.endsWith('tab=1'));
     assert.strictEqual(hits[0].t, 'pageview');
@@ -377,29 +379,29 @@ describe('pageVisibilityTracker', function() {
   it('works with multiple tabs and windows open simultaneously', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    var tab1 = browser.getCurrentTabId();
+    const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var tab2 = openNewTab('/test/blank.html');
+    const tab2 = openNewTab('/test/e2e/fixtures/blank.html');
     browser.pause(randomInteger(500, 2000));
 
-    var tab3 = openNewTab('/test/autotrack.html?tab=3');
+    const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var window1 = openNewWindow('/test/autotrack.html?window=1');
+    const window1 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var window2 = openNewWindow('/test/autotrack.html?window=2');
+    const window2 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -422,7 +424,7 @@ describe('pageVisibilityTracker', function() {
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3 && window1 && window2);
 
-    var hits = log.getHits();
+    const hits = log.getHits();
 
     // tab1 pageview
     assert(hits[0].dl.endsWith('tab=1'));
@@ -469,22 +471,22 @@ describe('pageVisibilityTracker', function() {
   it('works with multiple tabs across multiple sessions', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    var tab1 = browser.getCurrentTabId();
+    const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var tab2 = openNewTab('/test/blank.html');
+    const tab2 = openNewTab('/test/e2e/fixtures/blank.html');
     browser.pause(randomInteger(500, 2000));
 
-    var tab3 = openNewTab('/test/autotrack.html?tab=3');
+    const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
-    var tab4 = openNewTab('/test/autotrack.html?tab=4');
+    const tab4 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=4');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
@@ -508,7 +510,7 @@ describe('pageVisibilityTracker', function() {
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3 && tab4);
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     // Session 1 start
     // tab1 pageview
     assert(hits[0].dl.endsWith('tab=1'));
@@ -550,15 +552,15 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       fieldsObj: {
         dimension1: 'pageVisibilityTracker',
-        nonInteraction: false
-      }
+        nonInteraction: false,
+      },
     });
     browser.execute(ga.run, 'send', 'pageview');
 
     openNewTab();
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[0].ni, undefined);
     assert.strictEqual(hits[1].cd1, 'pageVisibilityTracker');
@@ -574,18 +576,18 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[1].ea, 'track');
     assert.strictEqual(hits[1].cd1, String(hits[1].ev));
   });
 
-  it('includes usage params with all hits', function() {
+  it('includes usage params with all hits', () => {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
@@ -594,8 +596,8 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '40');
   });
 
-  describe('remove', function() {
-    it('destroys all bound events and functionality', function() {
+  describe('remove', () => {
+    it('destroys all bound events and functionality', () => {
       browser.execute(ga.run, 'require', 'pageVisibilityTracker');
       browser.execute(ga.run, 'send', 'pageview');
 
@@ -614,7 +616,7 @@ describe('pageVisibilityTracker', function() {
  * tab methods defined in this file.
  */
 function browserSupportsTabs() {
-  var browserCaps = browser.session().value;
+  const browserCaps = browser.session().value;
   return !(
       // TODO(philipwalton): on Sauce Labs, Internet explorer and Safari open
       // target="_blank" links in a new window, not tab.
@@ -631,25 +633,25 @@ function browserSupportsTabs() {
  * Opens a new tab by inserting a link with target="_blank" into the DOM
  * and then clicking on it.
  * @param {string} url A an optional URL to navigate to, defaulting to
- *     `/test/blank.html`.
+ *     '/test/e2e/fixtures/blank.htm'.
  * @return {string} The tab ID.
  */
 function openNewTab(url) {
-  var oldTabIds = browser.getTabIds();
-  browser.execute(function(url) {
-    var a = document.createElement('a');
-    a.href = url || '/test/blank.html';
+  const oldTabIds = browser.getTabIds();
+  browser.execute((url) => {
+    const a = document.createElement('a');
+    a.href = url || '/test/e2e/fixtures/blank.htm';
     a.target = '_blank';
     a.id = 'new-tab-link';
     a.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
-    a.onclick = function() {document.body.removeChild(a);};
+    a.onclick = () => document.body.removeChild(a);
     document.body.appendChild(a);
   }, url);
   browser.element('#new-tab-link').click();
 
   browser.pause(500);
-  browser.waitUntil(function() {
-    var newTabIds = browser.getTabIds();
+  browser.waitUntil(() => {
+    const newTabIds = browser.getTabIds();
     if (newTabIds.length > oldTabIds.length) {
       browser.switchTab(newTabIds[newTabIds.length - 1]);
       return true;
@@ -668,12 +670,12 @@ function openNewTab(url) {
  * @return {string} The window ID.
  */
 function openNewWindow(url) {
-  var oldTabIds = browser.getTabIds();
-  browser.execute(function(url) {
-    var div = document.createElement('div');
+  const oldTabIds = browser.getTabIds();
+  browser.execute((url) => {
+    const div = document.createElement('div');
     div.id = 'new-window-link';
     div.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
-    div.onclick = function() {
+    div.onclick = () => {
       window.open(url, 'newWindow' + Math.random(), 'width=600,height=400');
       document.body.removeChild(div);
     };
@@ -682,8 +684,8 @@ function openNewWindow(url) {
   browser.element('#new-window-link').click();
 
   browser.pause(500);
-  browser.waitUntil(function() {
-    var newTabIds = browser.getTabIds();
+  browser.waitUntil(() => {
+    const newTabIds = browser.getTabIds();
     if (newTabIds.length > oldTabIds.length) {
       browser.switchTab(newTabIds[newTabIds.length - 1]);
       return true;
@@ -699,8 +701,8 @@ function openNewWindow(url) {
  * Closes all tabs other than the oldest one.
  */
 function closeAllButFirstTab() {
-  var windowHandles = browser.windowHandles().value;
-  windowHandles.forEach(function(handle, index) {
+  const windowHandles = browser.windowHandles().value;
+  windowHandles.forEach((handle, index) => {
     if (index > 0) browser.switchTab(handle).close();
   });
 }
@@ -710,8 +712,8 @@ function closeAllButFirstTab() {
  * Forces the session to expire by changing the stored last hit time.
  */
 function expireSession() {
-  browser.execute(function() {
-    var storedSessionData = JSON.parse(
+  browser.execute(() => {
+    const storedSessionData = JSON.parse(
         localStorage.getItem('autotrack:UA-12345-1:session')) || {};
 
     storedSessionData.isExpired = true;
@@ -728,10 +730,10 @@ function expireSession() {
  */
 function requirePageVisibilityTracker_hitFilter() {
   ga('require', 'pageVisibilityTracker', {
-    hitFilter: function(model) {
-      var eventValue = model.get('eventValue');
+    hitFilter: (model) => {
+      const eventValue = model.get('eventValue');
       model.set('dimension1', String(eventValue), true);
-    }
+    },
   });
 }
 

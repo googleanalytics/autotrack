@@ -43,9 +43,7 @@ describe('MethodChain', () => {
     });
   });
 
-  afterEach(() => {
-    window.ga('remove');
-  });
+  afterEach(() => window.ga('remove'));
 
   describe('static add', () => {
     it('overrides the passed method', () => {

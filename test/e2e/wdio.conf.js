@@ -15,47 +15,28 @@
  */
 
 
+// Use babel to resolve ES2015 modules and transpile functions
+// to be run in the browser into ES6.
 require('babel-register');
 
 
-exports.config = {
-  specs: [
-    './test/index.js',
-    './test/*-tracker.js',
-  ],
-  maxInstances: 5,
-  capabilities: getCapabilities(),
-  sync: true,
-  logLevel: 'error', // silent | verbose | command | data | result | error
-  coloredLogs: true,
-  baseUrl: process.env.BASE_URL || 'http://localhost:8080',
-  waitforTimeout: 1e4,
-  connectionRetryTimeout: 3e4,
-  connectionRetryCount: 3,
-  services: ['sauce'],
-  user: process.env.SAUCE_USERNAME,
-  key: process.env.SAUCE_ACCESS_KEY,
-  framework: 'mocha',
-  mochaOpts: {
-    ui: 'bdd',
-    // Ensure this is longer than the `waitForTime` setting, so timeouts point
-    // to individual lines rather than just tests.
-    timeout: 6e4,
-  },
-}
-
-function getCapabilities() {
-  // When running on CI, this will be true
-  var isSauceLabs = process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY;
-
+const getCapabilities = () => {
   // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
-  var capabilities = [
-    {browserName: 'chrome'},
-    {browserName: 'firefox'},
-    // {browserName: 'safari'},
-  ];
-
-  if (isSauceLabs) {
+  let capabilities;
+  if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
+    capabilities = [
+      {browserName: 'chrome'},
+      // {
+      //   browserName: 'firefox',
+      //   'moz:firefoxOptions': {
+      //     prefs: {
+      //       'browser.link.open_external': 2,
+      //     },
+      //   },
+      // },
+      // {browserName: 'safari'},
+    ];
+  } else {
     capabilities = [
       {
         browserName: 'chrome',
@@ -100,4 +81,30 @@ function getCapabilities() {
   };
 
   return capabilities;
-}
+};
+
+
+exports.config = {
+  specs: [
+    './test/e2e/*-test.js',
+  ],
+  maxInstances: 5,
+  capabilities: getCapabilities(),
+  sync: true,
+  logLevel: 'error', // silent | verbose | command | data | result | error
+  coloredLogs: true,
+  baseUrl: process.env.BASE_URL || 'http://localhost:8080',
+  waitforTimeout: 1e4,
+  connectionRetryTimeout: 3e4,
+  connectionRetryCount: 3,
+  services: ['sauce'],
+  user: process.env.SAUCE_USERNAME,
+  key: process.env.SAUCE_ACCESS_KEY,
+  framework: 'mocha',
+  mochaOpts: {
+    ui: 'bdd',
+    // Ensure this is longer than the `waitForTime` setting, so timeouts point
+    // to individual lines rather than just tests.
+    timeout: 6e4,
+  },
+};

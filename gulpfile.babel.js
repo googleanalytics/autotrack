@@ -19,22 +19,22 @@
 /* eslint require-jsdoc: "off" */
 
 
-const {spawn} = require('child_process');
-const eslint = require('gulp-eslint');
-const fs = require('fs');
-const glob = require('glob');
-const {compile} = require('google-closure-compiler-js');
-const gulp = require('gulp');
-const gutil = require('gulp-util');
-const webdriver = require('gulp-webdriver');
-const {rollup} = require('rollup');
-const nodeResolve = require('rollup-plugin-node-resolve');
-const babel = require('rollup-plugin-babel');
-const sauceConnectLauncher = require('sauce-connect-launcher');
-const seleniumServerJar = require('selenium-server-standalone-jar');
-const {SourceMapGenerator, SourceMapConsumer} = require('source-map');
-const webpack = require('webpack');
-const server = require('./test/server');
+import {spawn} from 'child_process';
+import eslint from 'gulp-eslint';
+import fs from 'fs';
+import glob from 'glob';
+import {compile} from 'google-closure-compiler-js';
+import gulp from 'gulp';
+import gutil from 'gulp-util';
+import webdriver from 'gulp-webdriver';
+import {rollup} from 'rollup';
+import nodeResolve from 'rollup-plugin-node-resolve';
+import babel from 'rollup-plugin-babel';
+import sauceConnectLauncher from 'sauce-connect-launcher';
+import seleniumServerJar from 'selenium-server-standalone-jar';
+import {SourceMapGenerator, SourceMapConsumer} from 'source-map';
+import webpack from 'webpack';
+import * as server from './test/e2e/server';
 
 
 let seleniumServer;
@@ -49,7 +49,7 @@ function isProd() {
 }
 
 
-gulp.task('javascript', function(done) {
+gulp.task('javascript', (done) => {
   const rollupPlugins = [nodeResolve()];
 
   // In production, closure compiler will take care of converting the code
@@ -156,7 +156,7 @@ gulp.task('javascript:unit', ((compiler) => {
     });
   };
   return (done) => {
-    (compiler || (compiler = createCompiler())).run(function(err, stats) {
+    (compiler || (compiler = createCompiler())).run((err, stats) => {
       if (err) throw new gutil.PluginError('webpack', err);
       gutil.log('[webpack]', stats.toString('minimal'));
       done();
@@ -170,7 +170,8 @@ gulp.task('lint', function () {
         'gulpfile.js',
         'lib/*.js',
         'lib/plugins/*.js',
-        'test/**/*.js',
+        'test/e2e/*.js',
+        'test/unit/**/*.js',
         '!test/unit/index.js',
       ])
       .pipe(eslint({fix: true}))
@@ -179,7 +180,7 @@ gulp.task('lint', function () {
 });
 
 
-gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
+gulp.task('test:e2e', ['javascript', 'lint', 'tunnel', 'selenium'], () => {
   function stopServers() {
     sshTunnel.close();
     server.stop();
@@ -187,26 +188,27 @@ gulp.task('test', ['javascript', 'lint', 'tunnel', 'selenium'], function() {
       seleniumServer.kill();
     }
   }
-  return gulp.src('./wdio.conf.js')
+  return gulp.src('./test/e2e/wdio.conf.js')
       .pipe(webdriver())
       .on('end', stopServers);
 });
 
 
-gulp.task('test:unit', ['javascript', 'javascript:unit'], function(done) {
-  spawn('./node_modules/.bin/easy-sauce', ['-c', 'easy-sauce-config.json'], {
-    stdio: [0, 1, 2],
-  }).on('end', done);
+gulp.task('test:unit', ['javascript', 'javascript:unit'], (done) => {
+  spawn(
+      './node_modules/.bin/easy-sauce',
+      ['-c', 'test/unit/easy-sauce-config.json'],
+      {stdio: [0, 1, 2]}).on('end', done);
 });
 
 
-gulp.task('tunnel', ['serve'], function(done) {
+gulp.task('tunnel', ['serve'], (done) => {
   const opts = {
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
     verbose: true,
   };
-  sauceConnectLauncher(opts, function(err, sauceConnectProcess) {
+  sauceConnectLauncher(opts, (err, sauceConnectProcess) => {
     if (err) {
       done(err);
     } else {
@@ -221,18 +223,18 @@ gulp.task('tunnel', ['serve'], function(done) {
 });
 
 
-gulp.task('serve', ['javascript', 'javascript:unit'], function(done) {
+gulp.task('serve', ['javascript', 'javascript:unit'], (done) => {
   server.start(done);
   process.on('exit', server.stop.bind(server));
 });
 
 
-gulp.task('selenium', function(done) {
+gulp.task('selenium', (done) => {
   // Don't start the selenium server on CI.
   if (process.env.CI) return done();
 
   seleniumServer = spawn('java',  ['-jar', seleniumServerJar.path]);
-  seleniumServer.stderr.on('data', function(data) {
+  seleniumServer.stderr.on('data', (data) => {
     if (data.indexOf('Selenium Server is up and running') > -1) {
       done();
     }
@@ -241,13 +243,10 @@ gulp.task('selenium', function(done) {
 });
 
 
-gulp.task('watch', ['serve'], function() {
+gulp.task('watch', ['serve'], () => {
   gulp.watch('./lib/**/*.js', ['javascript']);
   gulp.watch([
     './lib/**/*.js',
     './test/unit/**/*-test.js'
   ], ['javascript:unit']);
 });
-
-
-gulp.task('build', ['test']);

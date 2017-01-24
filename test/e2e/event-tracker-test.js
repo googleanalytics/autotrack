@@ -15,45 +15,43 @@
  */
 
 
-var assert = require('assert');
-var uuid = require('uuid');
-var ga = require('./analytics');
-var utilities = require('./utilities');
-var constants = require('../lib/constants');
-var pkg = require('../package.json');
+import assert from 'assert';
+import uuid from 'uuid';
+import * as ga from './ga';
+import {bindLogAccessors} from './server';
+import * as constants from '../../lib/constants';
+import pkg from '../../package.json';
 
 
-var testId;
-var log;
+let testId;
+let log;
 
 
 describe('eventTracker', function() {
   this.retries(4);
 
-  before(function() {
-    browser.url('/test/event-tracker.html');
-  });
+  before(() => browser.url('/test/e2e/fixtures/event-tracker.html'));
 
-  beforeEach(function() {
+  beforeEach(() => {
     testId = uuid();
-    log = utilities.bindLogAccessors(testId);
+    log = bindLogAccessors(testId);
 
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     log.removeHits();
     browser.execute(ga.run, 'eventTracker:remove');
     browser.execute(ga.run, 'remove');
   });
 
-  it('supports declarative event binding to DOM elements', function() {
+  it('supports declarative event binding to DOM elements', () => {
     browser.execute(ga.run, 'require', 'eventTracker');
     browser.click('#click-test');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'foo');
     assert.strictEqual(hits[0].ea, 'bar');
     assert.strictEqual(hits[0].el, 'qux');
@@ -62,25 +60,25 @@ describe('eventTracker', function() {
     assert.strictEqual(hits[0].ni, '1');
   });
 
-  it('supports customizing the attribute prefix', function() {
+  it('supports customizing the attribute prefix', () => {
     browser.execute(ga.run, 'require', 'eventTracker', {
-      attributePrefix: 'data-ga-'
+      attributePrefix: 'data-ga-',
     });
     browser.click('#custom-prefix');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'foo');
     assert.strictEqual(hits[0].ea, 'bar');
   });
 
-  it('supports non-event hit types', function() {
+  it('supports non-event hit types', () => {
     browser.execute(ga.run, 'require', 'eventTracker');
     browser.click('#social-hit-type');
     browser.click('#pageview-hit-type');
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'social');
     assert.strictEqual(hits[0].sn, 'Facebook');
     assert.strictEqual(hits[0].sa, 'like');
@@ -89,57 +87,57 @@ describe('eventTracker', function() {
     assert.strictEqual(hits[1].dp, '/foobar.html');
   });
 
-  it('supports customizing what events to listen for', function() {
+  it('supports customizing what events to listen for', () => {
     browser.execute(ga.run, 'require', 'eventTracker', {
-      events: ['submit']
+      events: ['submit'],
     });
     browser.click('#click-test');
     browser.click('#submit-test');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Forms');
     assert.strictEqual(hits[0].ea, 'submit');
 
-    browser.url('/test/event-tracker.html');
+    browser.url('/test/e2e/fixtures/event-tracker.html');
   });
 
-  it('supports specifying a fields object for all hits', function() {
+  it('supports specifying a fields object for all hits', () => {
     browser.execute(ga.run, 'require', 'eventTracker', {
       fieldsObj: {
         nonInteraction: true,
         dimension1: 'foo',
-        dimension2: 'bar'
-      }
+        dimension2: 'bar',
+      },
     });
     browser.click('#social-hit-type');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ni, '1');
     assert.strictEqual(hits[0].cd1, 'foo');
     assert.strictEqual(hits[0].cd2, 'bar');
   });
 
-  it('supports specifying a hit filter', function() {
+  it('supports specifying a hit filter', () => {
     browser.execute(requireEventTrackerWithHitFilter);
     browser.click('#click-test');
     browser.click('#pageview-hit-type');
     browser.click('#social-hit-type');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ni, '1');
     assert.strictEqual(hits[0].cd1, 'foo');
     assert.strictEqual(hits[0].cd2, 'bar');
   });
 
-  it('includes usage params with all hits', function() {
+  it('includes usage params with all hits', () => {
     browser.execute(ga.run, 'require', 'eventTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
@@ -147,8 +145,8 @@ describe('eventTracker', function() {
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '2');
   });
 
-  describe('remove', function() {
-    it('destroys all bound events and functionality', function() {
+  describe('remove', () => {
+    it('destroys all bound events and functionality', () => {
       browser.execute(ga.run, 'require', 'eventTracker');
       browser.click('#click-test');
       browser.waitUntil(log.hitCountEquals(1));
@@ -170,15 +168,14 @@ describe('eventTracker', function() {
  */
 function requireEventTrackerWithHitFilter() {
   ga('require', 'eventTracker', {
-    hitFilter: function(model, element) {
+    hitFilter: (model, element) => {
       if (element.id != 'social-hit-type') {
-        throw 'Aborting non-social hits';
-      }
-      else {
+        throw new Error('Aborting non-social hits');
+      } else {
         model.set('nonInteraction', true, true);
         model.set('dimension1', 'foo', true);
         model.set('dimension2', 'bar', true);
       }
-    }
+    },
   });
 }

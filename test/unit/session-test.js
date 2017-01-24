@@ -21,31 +21,31 @@ import Session from '../../lib/session';
 import {now} from '../../lib/utilities';
 
 
-var TRACKING_ID = 'UA-12345-1';
-var MINUTES = 60 * 1000;
-var DEFAULT_TIMEOUT = 30; // minutes
+const TRACKING_ID = 'UA-12345-1';
+const MINUTES = 60 * 1000;
+const DEFAULT_TIMEOUT = 30; // minutes
 
 
-describe('Session', function() {
-  var tracker;
-  beforeEach(function(done) {
+describe('Session', () => {
+  let tracker;
+  beforeEach((done) => {
     localStorage.clear();
     window.ga('create', TRACKING_ID, 'auto');
-    window.ga(function(t) {
+    window.ga((t) => {
       tracker = t;
       done();
     });
   });
 
-  afterEach(function() {
+  afterEach(() => {
     localStorage.clear();
     window.ga('remove');
   });
 
-  describe('static getOrCreate', function() {
-    it('does not create more than one instance per tracking ID', function() {
-      var session1 = Session.getOrCreate(tracker);
-      var session2 = Session.getOrCreate(tracker);
+  describe('static getOrCreate', () => {
+    it('does not create more than one instance per tracking ID', () => {
+      const session1 = Session.getOrCreate(tracker);
+      const session2 = Session.getOrCreate(tracker);
 
       assert.strictEqual(session1, session2);
 
@@ -54,9 +54,9 @@ describe('Session', function() {
     });
   });
 
-  describe('constructor', function() {
-    it('sets the passed args on the instance', function() {
-      var session = new Session(tracker, 123, 'America/Los_Angeles');
+  describe('constructor', () => {
+    it('sets the passed args on the instance', () => {
+      const session = new Session(tracker, 123, 'America/Los_Angeles');
 
       assert.strictEqual(session.tracker, tracker);
       assert.strictEqual(session.timeout, 123);
@@ -65,8 +65,8 @@ describe('Session', function() {
       session.destroy();
     });
 
-    it('uses the default timeout if not set', function() {
-      var session = new Session(tracker);
+    it('uses the default timeout if not set', () => {
+      const session = new Session(tracker);
 
       assert.strictEqual(session.tracker, tracker);
       assert.strictEqual(session.timeout, DEFAULT_TIMEOUT);
@@ -75,8 +75,8 @@ describe('Session', function() {
       session.destroy();
     });
 
-    it('adds a listener for storage changes', function() {
-      var session = new Session(tracker);
+    it('adds a listener for storage changes', () => {
+      const session = new Session(tracker);
 
       assert.strictEqual(
           session.store.storageDidChangeInAnotherWindow,
@@ -86,9 +86,9 @@ describe('Session', function() {
     });
   });
 
-  describe('isExpired', function() {
-    it('returns true if the last hit was too long ago', function() {
-      var session = new Session(tracker);
+  describe('isExpired', () => {
+    it('returns true if the last hit was too long ago', () => {
+      const session = new Session(tracker);
 
       session.store.set({hitTime: now() - (60 * MINUTES)});
       assert(session.isExpired());
@@ -109,12 +109,12 @@ describe('Session', function() {
         return this.skip();
       }
 
-      var dateTimeFormatStub = stubDateTimeFormat();
+      const dateTimeFormatStub = stubDateTimeFormat();
       dateTimeFormatStub.onCall(0).returns('9/15/1982');
       dateTimeFormatStub.onCall(1).returns('9/14/1982');
       dateTimeFormatStub.returns('9/14/1982');
 
-      var session = new Session(tracker, 30, 'America/Los_Angeles');
+      const session = new Session(tracker, 30, 'America/Los_Angeles');
       session.store.set({hitTime: now() - (15 * MINUTES)});
 
       // The stubs above should return difference dates for now vs the last
@@ -128,8 +128,8 @@ describe('Session', function() {
       restoreDateTimeFormat();
     });
 
-    it('returns true if the previous hit ended the session', function() {
-      var session = new Session(tracker);
+    it('returns true if the previous hit ended the session', () => {
+      const session = new Session(tracker);
 
       tracker.send('pageview');
       tracker.send('event', 'cat', 'act', {sessionControl: 'end'});
@@ -139,11 +139,11 @@ describe('Session', function() {
       session.destroy();
     });
 
-    it('does not error in browsers with no time zone support', function() {
-      var session = new Session(tracker, 30, 'America/Los_Angeles');
+    it('does not error in browsers with no time zone support', () => {
+      const session = new Session(tracker, 30, 'America/Los_Angeles');
       session.store.set({hitTime: now()});
 
-      assert.doesNotThrow(function() {
+      assert.doesNotThrow(() => {
         session.isExpired();
       });
 
@@ -151,16 +151,16 @@ describe('Session', function() {
     });
   });
 
-  describe('sendHitTaskHook', function() {
-    it('logs the time of the last hit', function() {
-      var session = new Session(tracker);
+  describe('sendHitTaskHook', () => {
+    it('logs the time of the last hit', () => {
+      const session = new Session(tracker);
 
-      var timeBeforePageview = now();
+      const timeBeforePageview = now();
       tracker.send('pageview');
-      var lastHitTime = session.store.get().hitTime;
+      let lastHitTime = session.store.get().hitTime;
       assert(lastHitTime >= timeBeforePageview);
 
-      var timeBeforeTimingHit = now();
+      const timeBeforeTimingHit = now();
       tracker.send('timing', 'foo', 'bar', 1000);
       lastHitTime = session.store.get().hitTime;
       assert(lastHitTime >= timeBeforeTimingHit);
@@ -169,17 +169,17 @@ describe('Session', function() {
     });
   });
 
-  describe('destroy', function() {
-    it('removes the instance from the global store', function() {
-      var session1 = Session.getOrCreate(tracker);
-      var session2 = Session.getOrCreate(tracker);
+  describe('destroy', () => {
+    it('removes the instance from the global store', () => {
+      const session1 = Session.getOrCreate(tracker);
+      const session2 = Session.getOrCreate(tracker);
 
       assert.strictEqual(session1, session2);
 
       session1.destroy();
       session2.destroy();
 
-      var session3 = new Session(tracker);
+      const session3 = new Session(tracker);
       assert.notStrictEqual(session3, session1);
       assert.notStrictEqual(session3, session2);
 
@@ -189,7 +189,7 @@ describe('Session', function() {
 });
 
 
-var originalDateTimeFormatDescriptor = Object.getOwnPropertyDescriptor(
+const originalDateTimeFormatDescriptor = Object.getOwnPropertyDescriptor(
     Intl.DateTimeFormat.prototype, 'format');
 
 
@@ -199,7 +199,7 @@ var originalDateTimeFormatDescriptor = Object.getOwnPropertyDescriptor(
  * @return {Function} A sinon stub function.
  */
 function stubDateTimeFormat() {
-  var stub = sinon.stub();
+  const stub = sinon.stub();
   Object.defineProperty(
       Intl.DateTimeFormat.prototype, 'format', {value: stub});
 
