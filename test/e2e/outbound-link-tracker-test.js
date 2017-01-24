@@ -95,7 +95,7 @@ describe('outboundLinkTracker', function() {
     assert.strictEqual(hits[0].el, 'https://example.com/svg-link');
   });
 
-  it('works with <area> links', () => {
+  it('works with <area> links', function() {
     if (!browserSupportsAreaClicks()) return this.skip();
 
     browser.execute(ga.run, 'require', 'outboundLinkTracker');

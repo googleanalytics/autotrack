@@ -168,7 +168,7 @@ describe('outboundFormTracker', function() {
     assert.strictEqual(hits[0].el, '/outbound-submit');
   });
 
-  it('supports forms in shadow DOM and event retargetting', () => {
+  it('supports forms in shadow DOM and event retargetting', function() {
     if (!browserSupportsEventsInShadowDom()) return this.skip();
 
     browser.execute(ga.run, 'require', 'outboundFormTracker');

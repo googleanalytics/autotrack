@@ -30,6 +30,7 @@ import webdriver from 'gulp-webdriver';
 import {rollup} from 'rollup';
 import nodeResolve from 'rollup-plugin-node-resolve';
 import babel from 'rollup-plugin-babel';
+import runSequence from 'run-sequence';
 import sauceConnectLauncher from 'sauce-connect-launcher';
 import seleniumServerJar from 'selenium-server-standalone-jar';
 import {SourceMapGenerator, SourceMapConsumer} from 'source-map';
@@ -182,6 +183,9 @@ gulp.task('lint', function () {
 
 gulp.task('test:e2e', ['javascript', 'lint', 'tunnel', 'selenium'], () => {
   function stopServers() {
+    // TODO(philipwalton): re-add this logic to close the tunnel once this is
+    // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
+    // process.on('exit', sshTunnel.close.bind(sshTunnel));
     sshTunnel.close();
     server.stop();
     if (!process.env.CI) {
@@ -202,6 +206,11 @@ gulp.task('test:unit', ['javascript', 'javascript:unit'], (done) => {
 });
 
 
+gulp.task('test', (done) => {
+  runSequence('test:e2e', 'test:unit', done);
+});
+
+
 gulp.task('tunnel', ['serve'], (done) => {
   const opts = {
     username: process.env.SAUCE_USERNAME,
@@ -214,7 +223,7 @@ gulp.task('tunnel', ['serve'], (done) => {
     } else {
       process.env.BASE_URL = 'http://localhost:8080';
       sshTunnel = sauceConnectProcess;
-      // TODO(philipwalton): read this logic to close the tunnel once this is
+      // TODO(philipwalton): re-add this logic to close the tunnel once this is
       // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
       // process.on('exit', sshTunnel.close.bind(sshTunnel));
       done();
