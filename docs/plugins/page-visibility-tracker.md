@@ -8,7 +8,11 @@ It's becoming increasingly common for users to visit your site, and then leave i
 
 Because of this shift, the traditional model of pageviews and sessions simply does not apply in a growing number of cases.
 
-The `pageVisibilityTracker` plugin changes this paradigm by shifting from pageload being the primary indicator to [Page Visibility](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API). To put that another way, if a user visits your application and interacts with it, switches to a different tab, and then comes back to your application hours or days later. Whether they reloaded the page or not, with the `pageVisibilityTracker` enabled, this will be considered a new pageview and a new session.
+The `pageVisibilityTracker` plugin changes this paradigm by shifting from pageload being the primary indicator to [Page Visibility](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API). To understand why this is important, consider this scenario: you've just updated your website to be able to fetch new content in the background and display it to the user when they return to your page (without forcing them to reload). If you were only using the default analytics.js tracking snippet, this change would result is dramatically fewer pageviews, even though the user is consuming the same amount of content.
+
+By taking Page Visibility into consideration, the `pageVisibilityTracker` plugin is able to report consistent numbers regardless of whether the user needs to reload the page.
+
+The `pageVisibilityTracker` plugin also calculates how long a given page was in the visible state for a given session, which is a much better indicator of user engagement than [*Session Duration*](https://support.google.com/analytics/answer/1006253).
 
 ### How it works
 
@@ -16,7 +20,7 @@ The `pageVisibilityTracker` plugin listens for [`visibilitychange`](https://deve
 
 ### Impact on session and pageview counts
 
-When using the `pageVisibilityTracker` plugin, you'll probably notice an increase in your session and pageview counts. This is not an error, the reality is your current implementation (based just on pageloads) is likely underreporting.
+When using the `pageVisibilityTracker` plugin, you'll probably notice an increase in your session and pageview counts. This is not an error, the reality is your current implementation (based just on pageloads) is likely underreporting these metrics.
 
 ## Usage
 
@@ -42,23 +46,14 @@ The following table outlines all possible configuration options for the `pageVis
     <td>
       The <a href="https://support.google.com/analytics/answer/2795871">session timeout</a> amount (in minutes) of the Google Analytics property. By default this value is 30 minutes, which is the same default used for new Google Analytics properties. The value set for this plugin should always be the same as the property setting in Google Analytics.<br>
       <strong>Default:</strong> <code>30</code>
-  </td>
-  </tr>
-  <tr valign="top">
-    <td><code>changeTemplate</code></td>
-    <td><code>Function</code></td>
-    <td>
-      A function that accepts the old and new values and returns a string to be used as the <a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a> field for change events.<br>
-      <strong>Default:</strong>
-<pre><code>function(oldValue, newValue) {
-  return oldValue + ' => ' + newValue;
-};</code></pre></td>
     </td>
   </tr>
   <tr valign="top">
-    <td><code>hiddenMetricIndex</code></td>
-    <td><code>number</code></td>
-    <td>If set, a <a href="https://support.google.com/analytics/answer/2709828">custom metric</a> at the index provided is sent when the page's visibility state changes from hidden to visible. The metric value is the amount of time (in seconds) the page was in the hidden state.</td>
+    <td><code>timeZone</code></td>
+    <td><code>string</code></td>
+    <td>
+      A time zone to pass to the <a href="https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/DateTimeFormat"><code>Int.DateTimeFormat</code></a> instance. Since sessions in Google Analytics are limited to a single date in the time zone of the view, this setting can be used to more accurately predict session boundaries. (Note: if your property contains views in several different time zones, do not use this setting).
+    </td>
   </tr>
   <tr valign="top">
     <td><code>visibleMetricIndex</code></td>
@@ -79,7 +74,7 @@ The following table outlines all possible configuration options for the `pageVis
 
 ## Default field values
 
-### Visibility state change events
+### Page Visibility events
 
 The `pageVisibilityTracker` plugin sets the following default field values on event hits it sends. To customize these values, use one of the [options](#options) described above.
 
@@ -98,27 +93,21 @@ The `pageVisibilityTracker` plugin sets the following default field values on ev
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
-    <td><code>'change'</code></td>
-  </tr>
-  <tr valign="top">
-    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
-    <td><code>options.changeTemplate()</code></td>
+    <td><code>'visible'</code></td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventValue"><code>eventValue</code></a></td>
-    <td>The elapsed time since the session start or the previous change event.</td>
+    <td>The elapsed time (in seconds) spent in the visible state.</td>
   </tr>
   <tr valign="top">
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction"><code>nonInteraction</code></a></td>
-    <td><code>true</code> if the visibility state is <code>hidden</code>, <code<>false</code<> otherwise.</td>
+    <td><code>true</code></td>
   </tr>
 </table>
 
-**Note:** the reference to `options` refers to passed configuration [options](#options).
+### New pageviews
 
-### New pageview events
-
-If the page's visibility state changes from `hidden` to `visible` and the session has timed out. A pageview is sent instead of a change event.
+If the page's visibility state changes from `hidden` to `visible` and the session has timed out, a new pageview is sent.
 
 <table>
   <tr valign="top">
@@ -130,19 +119,6 @@ If the page's visibility state changes from `hidden` to `visible` and the sessio
     <td><code>'pageview'</code></td>
   </tr>
 </table>
-
-
-## Improving session duration calculations
-
-While not a feature enabled by default, the `pageVisibilityTracker` plugin is also capable of dramatically improving the accuracy of session duration calculations.
-
-Session duration in Google Analytics is defined as the amount of time between the first interaction hit and the last interaction hit within a single session. That means that if a session only has one interaction hit, the duration is zero, even if the user was on the page for hours!
-
-The `pageVisibilityTracker` plugin defaults to sending visibility state change events as [non-interaction](https://developers.google.com/analytics/devguides/collection/analyticsjs/events#non-interaction_events) hits (for the `hidden` event), but you can customize this to make all hits interactive and since most sessions will contain visibility state change events, your sessions durations will become much more accurate.
-
-The downside of this approach is it will alter your bounce rate. However, for many users, this trade-off is worth it since bounce rate can be calculated in other ways (e.g. with a custom segment).
-
-The examples section below includes a code sample showing [how to make all events interaction events](#ensuring-all-events-are-interaction-events).
 
 ## Methods
 
@@ -163,28 +139,25 @@ For details on how `analytics.js` plugin methods work and how to invoke them, se
 
 ## Examples
 
-### Ensuring all events are interaction events
+### Setting a session timeout and time zone
 
-This example uses the `fieldsObj` option to set the `nonInteraction` value for all hits to `null`, which overrides the plugin's default `nonInteraction` value of `true` for hidden events. Making this change will dramatically [improve session duration calculations](#improving-session-duration-calculations) as described above.
+If you've set the default session timeout in your Google Analytics property to 4 hours and the timezone of all your views to Pacific Time, you can ensure the `maxScrollTracker` plugin knows about these settings with the following configuration options:
 
 ```js
-ga('require', 'pageVisibilityTracker', {
-  fieldsObj: {
-    nonInteraction: null
-  }
+ga('require', 'maxScrollTracker', {
+  sessionTimeout: 4 * 60,
+  timeZone: 'America/Los_Angeles',
 });
 ```
 
-### Setting custom metrics to track time spent in the hidden and visible states
+### Setting a custom metrics to track visible time
 
-If you want to track the total (or average) time a user spends in each visibility state via a [custom metric](https://support.google.com/analytics/answer/2709828) (by default it's tracked as the `eventValue`), you can use the hidden and visible metric indexes.
+If you want to track the total (or average) time a user spends in the visible state via a [custom metric](https://support.google.com/analytics/answer/2709828) (by default it's tracked as the `eventValue`), you can use the visible metric indexes.
 
 ```js
 ga('require', 'pageVisibilityTracker', {
-  hiddenMetricIndex: 1,
-  visibleMetricIndex: 2,
+  visibleMetricIndex: 1,
 });
 ```
 
 **Note:** this requires [creating custom metrics](https://support.google.com/analytics/answer/2709829) in your Google Analytics property settings.
-
