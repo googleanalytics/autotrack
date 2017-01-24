@@ -35,11 +35,9 @@ The `cleanUrlTracker` plugin helps you do this. It lets you specify a preference
 
 ### How it works
 
-The `cleanUrlPlugin` works by intercepting each hit as it's being sent and modifying the [`page`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#page) field based on the rules specified by the configuration [options](#options).
+The `cleanUrlPlugin` works by intercepting each hit as it's being sent and modifying the [`page`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#page) field based on the rules specified by the configuration [options](#options). The plugin also intercepts calls to [`tracker.get()`] that reference the `page` field, so other plugins that use `page` data get the cleaned versions instead of the original versions.
 
-If no `page` field exists, one is created based on the URL path from the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field.
-
-**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the `location` field. This allows campaign and site search data encoded in the full URL to be preserved.
+**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field. This allows campaign and site search data encoded in the full URL to be preserved.
 
 ## Usage
 
@@ -88,6 +86,15 @@ The following table outlines all possible configuration options for the `cleanUr
       When set to <code>'add'</code>, a trailing slash is appended to the end of all URLs (if not already present). When set to <code>'remove'</code>, a trailing slash is removed from the end of all URLs. No action is taken if any other value is used. Note: when using the <code>indexFilename</code> option, index filenames are stripped prior to the trailing slash being added or removed.
     </td>
   </tr>
+  <tr valign="top">
+    <td><code>urlFieldsFilter</code></td>
+    <td><code>Function</code></td>
+    <td>
+      <p>A function that is passed a <a href="/docs/common-options.md#fieldsobj"><code>fieldsObj</code></a> (containing the <code>location</code> and <code>page</code> fields and optionally the custom dimension field set via <code>queryDimensionIndex</code>) as its first argument and a <code>parseUrl</code> utility function (which returns a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>-like object) as its second argument.</p>
+      <p>The <code>urlFieldsFilter</code> function must return a <code>fieldsObj</code> (either the passed one or a new one), and the returned fields will be sent with all hits. Non-URL fields set on the <code>fieldsObj</code> are ignored.</p>
+      <p><strong>Warning:</strong> be careful when modifying the <code>location</code> field as it's used to determine many session-level dimensions in Google Analytics (e.g. utm campaign data, site search, hostname, etc.). Unless you need to update the hostname, it's usually better to only modify the <code>page</code> field.</p>
+    </td>
+  </tr>
 </table>
 
 ## Methods
@@ -108,6 +115,8 @@ The following table lists all methods for the `cleanUrlTracker` plugin:
 For details on how `analytics.js` plugin methods work and how to invoke them, see [calling plugin methods](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins#calling_plugin_methods) in the `analytics.js` documentation.
 
 ## Example
+
+### Basic usage
 
 Given the four URL paths shown in the table at the beginning of this guide, the following `cleanUrlTracker` configuration would ensure that only the URL path `/contact` ever appears in your reports (assumes you've created a custom dimension for the query at index 1):
 
@@ -143,4 +152,26 @@ And given those four URLs, the following fields would be sent to Google Analytic
       "location": "/contact/index.html",
       "page": "/contact"
     }
+```
+
+### Using the `urlFieldsFilter` option
+
+If the available configuration options are not sufficient for your needs, you can use the `urlFieldsFilter` option to arbirarily modify the URL fields sent to Google Analytics.
+
+The following example passes the same option as the basic example above, but in addition it ensures all hostname values are set to `https://example.com`.
+
+```js
+ga('require', 'cleanUrlTracker', {
+  stripQuery: true,
+  queryDimensionIndex: 1,
+  indexFilename: 'index.html',
+  trailingSlash: 'remove',
+  urlFieldsFilter: function(fieldsObj, parseUrl) {
+    var url = parseUrl(fieldsObj.location);
+    if (url.origin != 'https://example.com') {
+      fieldsObj.location = 'https://example.com' + url.pathname + url.search;
+    }
+    return fieldsObj;
+  },
+});
 ```
