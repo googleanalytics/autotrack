@@ -158,7 +158,7 @@ And given those four URLs, the following fields would be sent to Google Analytic
 
 If the available configuration options are not sufficient for your needs, you can use the `urlFieldsFilter` option to arbirarily modify the URL fields sent to Google Analytics.
 
-The following example passes the same option as the basic example above, but in addition it ensures all hostname values are set to `https://example.com`.
+The following example passes the same options as the basic example above, but in addition it removes user-specific IDs from the page path, e.g. `/users/18542823` becomes `/users/<user-id>`
 
 ```js
 ga('require', 'cleanUrlTracker', {
@@ -167,10 +167,9 @@ ga('require', 'cleanUrlTracker', {
   indexFilename: 'index.html',
   trailingSlash: 'remove',
   urlFieldsFilter: function(fieldsObj, parseUrl) {
-    var url = parseUrl(fieldsObj.location);
-    if (url.origin != 'https://example.com') {
-      fieldsObj.location = 'https://example.com' + url.pathname + url.search;
-    }
+    fieldsObj.page = parseUrl(fieldsObj.page).pathname
+        .replace(/^\/users\/(\d+)/, '/users/<user-id>')
+
     return fieldsObj;
   },
 });
