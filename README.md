@@ -41,6 +41,10 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
     <td>Allows you to track when elements are visible within the viewport.</td>
   </tr>
   <tr>
+    <td><a href="/docs/plugins/max-scroll-tracker.md"><code>maxScrollTracker</code></a></td>
+    <td>Automatically tracks how far down the page users scroll.</td>
+  </tr>
+  <tr>
     <td><a href="/docs/plugins/media-query-tracker.md"><code>mediaQueryTracker</code></a></td>
     <td>Enables tracking media query matching and media query changes.</td>
   </tr>
