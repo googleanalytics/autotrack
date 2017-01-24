@@ -15,44 +15,44 @@
  */
 
 
-var assert = require('assert');
-var uuid = require('uuid');
-var ga = require('./analytics');
-var utilities = require('./utilities');
-var constants = require('../lib/constants');
-var pkg = require('../package.json');
+import assert from 'assert';
+import uuid from 'uuid';
+import * as ga from './ga';
+import {bindLogAccessors} from './server';
+import * as constants from '../../lib/constants';
+import pkg from '../../package.json';
 
 
-var DEFAULT_TRACKER_FIELDS = {
+const DEFAULT_TRACKER_FIELDS = {
   trackingId: 'UA-12345-1',
   cookieDomain: 'auto',
   siteSpeedSampleRate: 0,
 };
 
 
-var testId;
-var log;
+const PAGE_HEIGHT = 5000;
+const WINDOW_HEIGHT = 500;
+const DEBOUNCE_TIMEOUT = 500;
 
 
-var PAGE_HEIGHT = 5000;
-var WINDOW_HEIGHT = 500;
-var DEBOUNCE_TIMEOUT = 500;
+let testId;
+let log;
 
 
 describe('maxScrollTracker', function() {
   this.retries(4);
 
-  before(function() {
-    browser.url('/test/max-scroll-tracker.html');
+  before(() => {
+    browser.url('/test/e2e/fixtures/max-scroll-tracker.html');
     browser.setViewportSize({width: 500, height: WINDOW_HEIGHT});
   });
 
-  beforeEach(function() {
+  beforeEach(() => {
     testId = uuid();
-    log = utilities.bindLogAccessors(testId);
+    log = bindLogAccessors(testId);
 
     browser.scroll(0, 0);
-    browser.execute(function() {
+    browser.execute(() => {
       localStorage.clear();
     });
 
@@ -60,13 +60,13 @@ describe('maxScrollTracker', function() {
     browser.execute(ga.logHitData, testId);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     log.removeHits();
     browser.execute(ga.run, 'maxScrollTracker:remove');
     browser.execute(ga.run, 'remove');
   });
 
-  it('sends events as the scroll percentage increases', function() {
+  it('sends events as the scroll percentage increases', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .30);
@@ -78,7 +78,7 @@ describe('maxScrollTracker', function() {
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .90);
     browser.waitUntil(log.hitCountEquals(3));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Max Scroll');
     assert.strictEqual(hits[0].ea, 'increase');
     assert.strictEqual(hits[0].ev, '30');
@@ -93,7 +93,7 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[2].el, '90');
   });
 
-  it('records max scroll percentage on a per-page basis', function() {
+  it('records max scroll percentage on a per-page basis', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
@@ -106,11 +106,12 @@ describe('maxScrollTracker', function() {
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .75);
     browser.waitUntil(log.hitCountEquals(3));
 
-    browser.execute(ga.run, 'set', 'page', '/test/max-scroll-tracker.html');
+    browser.execute(ga.run, 'set', 'page',
+          '/test/e2e/fixtures/max-scroll-tracker.html');
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .95);
     browser.waitUntil(log.hitCountEquals(4));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Max Scroll');
     assert.strictEqual(hits[0].ea, 'increase');
     assert.strictEqual(hits[0].ev, '25');
@@ -124,14 +125,16 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[2].ea, 'increase');
     assert.strictEqual(hits[2].ev, '75');
     assert.strictEqual(hits[2].el, '75');
-    assert.strictEqual(hits[3].dp, '/test/max-scroll-tracker.html');
+    assert.strictEqual(hits[3].dp,
+        '/test/e2e/fixtures/max-scroll-tracker.html');
     assert.strictEqual(hits[3].ec, 'Max Scroll');
     assert.strictEqual(hits[3].ea, 'increase');
     assert.strictEqual(hits[3].ev, '45');
     assert.strictEqual(hits[3].el, '95');
   });
 
-  it('does not send events if the session has timed out', function() {
+
+  it('does not send events if the session has timed out', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
@@ -146,8 +149,7 @@ describe('maxScrollTracker', function() {
     log.assertNoHitsReceived();
   });
 
-  it('only sends new events after max scroll passes the thereshold',
-      function() {
+  it('only sends new events after max scroll passes the thereshold', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .10);
@@ -163,8 +165,7 @@ describe('maxScrollTracker', function() {
     log.assertNoHitsReceived();
   });
 
-  it('sends an event if max scroll reaches 100 regardless of threshold',
-      function() {
+  it('sends an event if max scroll reaches 100 regardless of threshold', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .95);
@@ -173,7 +174,7 @@ describe('maxScrollTracker', function() {
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT));
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Max Scroll');
     assert.strictEqual(hits[0].ea, 'increase');
     assert.strictEqual(hits[0].ev, '95');
@@ -184,9 +185,9 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[1].el, '100');
   });
 
-  it('supports customizing the increase threshold', function() {
+  it('supports customizing the increase threshold', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker', {
-      increaseThreshold: 10
+      increaseThreshold: 10,
     });
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .05);
@@ -198,24 +199,24 @@ describe('maxScrollTracker', function() {
     log.removeHits();
   });
 
-  it('sends the increase amount as a custom metric if set', function() {
+  it('sends the increase amount as a custom metric if set', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker', {
-      maxScrollMetricIndex: 1
+      maxScrollMetricIndex: 1,
     });
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .5);
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ev, '50');
     assert.strictEqual(hits[0].cm1, '50');
   });
 
-  it('supports customizing any field via the fieldsObj', function() {
+  it('supports customizing any field via the fieldsObj', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker', {
       fieldsObj: {
         nonInteraction: true,
-      }
+      },
     });
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
     browser.waitUntil(log.hitCountEquals(1));
@@ -223,7 +224,7 @@ describe('maxScrollTracker', function() {
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .75);
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ev, '25');
     assert.strictEqual(hits[0].el, '25');
     assert.strictEqual(hits[0].ni, '1');
@@ -232,7 +233,7 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[1].ni, '1');
   });
 
-  it('supports specifying a hit filter', function() {
+  it('supports specifying a hit filter', () => {
     browser.execute(requireMaxScrollTracker_hitFilter);
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
     browser.waitUntil(log.hitCountEquals(1));
@@ -240,7 +241,7 @@ describe('maxScrollTracker', function() {
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .75);
     browser.waitUntil(log.hitCountEquals(2));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].ev, '25');
     assert.strictEqual(hits[0].el, '25');
     assert.strictEqual(hits[0].cd1, '25');
@@ -249,12 +250,12 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[1].cd1, '50');
   });
 
-  it('includes usage params with all hits', function() {
+  it('includes usage params with all hits', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
-    var hits = log.getHits();
+    const hits = log.getHits();
     assert.strictEqual(hits[0].did, constants.DEV_ID);
     assert.strictEqual(hits[0][constants.VERSION_PARAM], pkg.version);
 
@@ -262,8 +263,8 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[0][constants.USAGE_PARAM], '200');
   });
 
-  describe('remove', function() {
-    it('destroys all bound events and functionality', function() {
+  describe('remove', () => {
+    it('destroys all bound events and functionality', () => {
       browser.execute(ga.run, 'require', 'maxScrollTracker');
       browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
       browser.waitUntil(log.hitCountEquals(1));
@@ -293,10 +294,10 @@ describe('maxScrollTracker', function() {
  */
 function requireMaxScrollTracker_hitFilter() {
   ga('require', 'maxScrollTracker', {
-    hitFilter: function(model) {
-      var increaseAmount = model.get('eventValue');
+    hitFilter: (model) => {
+      const increaseAmount = model.get('eventValue');
       model.set('dimension1', String(increaseAmount), true);
-    }
+    },
   });
 }
 
@@ -305,8 +306,8 @@ function requireMaxScrollTracker_hitFilter() {
  * Forces the session to expire by changing the stored last hit time.
  */
 function expireSession() {
-  browser.execute(function() {
-    var storedSessionData = JSON.parse(
+  browser.execute(() => {
+    const storedSessionData = JSON.parse(
         localStorage.getItem('autotrack:UA-12345-1:session')) || {};
 
     storedSessionData.isExpired = true;

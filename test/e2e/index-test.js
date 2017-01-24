@@ -15,27 +15,27 @@
  */
 
 
-var assert = require('assert');
-var uuid = require('uuid');
-var ga = require('./analytics');
-var utilities = require('./utilities');
-var constants = require('../lib/constants');
-var pkg = require('../package.json');
+import assert from 'assert';
+import uuid from 'uuid';
+import * as ga from './ga';
+import {bindLogAccessors} from './server';
+import * as constants from '../../lib/constants';
+import pkg from '../../package.json';
 
 
-var testId;
-var log;
+let testId;
+let log;
 
 
 describe('index', function() {
   this.retries(4);
 
-  beforeEach(function() {
+  beforeEach(() => {
     testId = uuid();
-    log = utilities.bindLogAccessors(testId);
+    log = bindLogAccessors(testId);
   });
 
-  afterEach(function() {
+  afterEach(() => {
     browser.execute(ga.run, 'cleanUrlTracker:remove');
     browser.execute(ga.run, 'eventTracker:remove');
     browser.execute(ga.run, 'impressionTracker:remove');
@@ -50,9 +50,9 @@ describe('index', function() {
     log.removeHits();
   });
 
-  it('provides all plugins', function() {
-    browser.url('/test/autotrack.html');
-    var gaplugins = browser.execute(ga.getProvidedPlugins).value;
+  it('provides all plugins', () => {
+    browser.url('/test/e2e/fixtures/autotrack.html');
+    const gaplugins = browser.execute(ga.getProvidedPlugins).value;
 
     assert(gaplugins.includes('CleanUrlTracker'));
     assert(gaplugins.includes('EventTracker'));
@@ -67,10 +67,10 @@ describe('index', function() {
   });
 
   it('provides plugins even if sourced before the tracking snippet',
-      function() {
-    browser.url('/test/autotrack-reorder.html');
+      () => {
+    browser.url('/test/e2e/fixtures/autotrack-reorder.html');
 
-    var gaplugins = browser.execute(ga.getProvidedPlugins).value;
+    const gaplugins = browser.execute(ga.getProvidedPlugins).value;
     assert(gaplugins.includes('CleanUrlTracker'));
     assert(gaplugins.includes('ImpressionTracker'));
     assert(gaplugins.includes('EventTracker'));
@@ -83,8 +83,8 @@ describe('index', function() {
     assert(gaplugins.includes('MaxScrollTracker'));
   });
 
-  it('works with all plugins required', function() {
-    browser.url('/test/autotrack.html');
+  it('works with all plugins required', () => {
+    browser.url('/test/e2e/fixtures/autotrack.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
@@ -100,12 +100,12 @@ describe('index', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
-    var lastHit = log.getHits().slice(-1)[0];
+    const lastHit = log.getHits().slice(-1)[0];
     assert.strictEqual(lastHit.t, 'pageview');
   });
 
-  it('works when renaming the global object', function() {
-    browser.url('/test/autotrack-rename.html');
+  it('works when renaming the global object', () => {
+    browser.url('/test/e2e/fixtures/autotrack-rename.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
@@ -121,12 +121,12 @@ describe('index', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
-    var lastHit = log.getHits().slice(-1)[0];
+    const lastHit = log.getHits().slice(-1)[0];
     assert.strictEqual(lastHit.t, 'pageview');
   });
 
-  it('tracks usage for all required plugins', function() {
-    browser.url('/test/autotrack.html');
+  it('tracks usage for all required plugins', () => {
+    browser.url('/test/e2e/fixtures/autotrack.html');
     browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
@@ -142,7 +142,7 @@ describe('index', function() {
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountIsAtLeast(1));
 
-    var lastHit = log.getHits().slice(-1)[0];
+    const lastHit = log.getHits().slice(-1)[0];
     assert.strictEqual(lastHit.did, constants.DEV_ID);
     assert.strictEqual(lastHit[constants.VERSION_PARAM], pkg.version);
 

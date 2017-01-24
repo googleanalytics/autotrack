@@ -8,8 +8,8 @@ test/unit/index.js.map
 test/logs
 
 # Local SauceLabs test runner
-/sauce.sh
+/test/sauce.sh
 
 # Local analytics.js
-/analytics.js
-/analytics_debug.js
+/test/analytics.js
+/test/analytics_debug.js
