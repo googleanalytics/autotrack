@@ -9,7 +9,3 @@ test/logs
 
 # Local SauceLabs test runner
 /test/sauce.sh
-
-# Local analytics.js
-/test/analytics.js
-/test/analytics_debug.js
