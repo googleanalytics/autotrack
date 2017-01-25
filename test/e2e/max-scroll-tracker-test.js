@@ -133,6 +133,15 @@ describe('maxScrollTracker', function() {
     assert.strictEqual(hits[3].el, '95');
   });
 
+  it('sends events as nonInteraction by default', () => {
+    browser.execute(ga.run, 'require', 'maxScrollTracker');
+
+    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .50);
+    browser.waitUntil(log.hitCountEquals(1));
+
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].ni, '1');
+  });
 
   it('does not send events if the session has timed out', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
@@ -215,7 +224,7 @@ describe('maxScrollTracker', function() {
   it('supports customizing any field via the fieldsObj', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker', {
       fieldsObj: {
-        nonInteraction: true,
+        nonInteraction: null,
       },
     });
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
@@ -227,10 +236,10 @@ describe('maxScrollTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ev, '25');
     assert.strictEqual(hits[0].el, '25');
-    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].ni, undefined);
     assert.strictEqual(hits[1].ev, '50');
     assert.strictEqual(hits[1].el, '75');
-    assert.strictEqual(hits[1].ni, '1');
+    assert.strictEqual(hits[1].ni, undefined);
   });
 
   it('supports specifying a hit filter', () => {

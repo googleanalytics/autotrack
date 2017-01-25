@@ -200,6 +200,18 @@ describe('impressionTracker', function() {
     assert.strictEqual(hits[0].el, 'foo');
   });
 
+  it('sends events as nonInteraction by default', () => {
+    browser.execute(ga.run, 'require', 'impressionTracker', {
+      elements: ['foo'],
+    });
+    // Scrolls so #foo is only 0% visible but on the viewport border.
+    browser.scroll('#foo', 0, -500);
+    browser.waitUntil(log.hitCountEquals(1));
+
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].ni, '1');
+  });
+
   it('supports tracking an element either once or every time', () => {
     browser.execute(ga.run, 'require', 'impressionTracker', {
       elements: [
@@ -349,7 +361,7 @@ describe('impressionTracker', function() {
       fieldsObj: {
         eventCategory: 'Element',
         eventAction: 'visible',
-        nonInteraction: true,
+        nonInteraction: null,
       },
     });
     browser.scroll('#foo');
@@ -359,7 +371,7 @@ describe('impressionTracker', function() {
     assert.strictEqual(hits[0].ec, 'Element');
     assert.strictEqual(hits[0].ea, 'visible');
     assert.strictEqual(hits[0].el, 'foo');
-    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].ni, undefined);
 
     browser.scroll('#bar');
     browser.waitUntil(log.hitCountEquals(2));
@@ -368,7 +380,7 @@ describe('impressionTracker', function() {
     assert.strictEqual(hits[1].ec, 'Element');
     assert.strictEqual(hits[1].ea, 'visible');
     assert.strictEqual(hits[1].el, 'bar');
-    assert.strictEqual(hits[1].ni, '1');
+    assert.strictEqual(hits[1].ni, undefined);
   });
 
   it('supports specifying a hit filter', () => {
@@ -380,7 +392,7 @@ describe('impressionTracker', function() {
     assert.strictEqual(hits[0].ec, 'Viewport');
     assert.strictEqual(hits[0].ea, 'impression');
     assert.strictEqual(hits[0].el, 'foo-2');
-    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].ni, undefined);
     assert.strictEqual(hits[0].cd1, 'one');
     assert.strictEqual(hits[0].cd2, 'two');
   });
@@ -563,7 +575,7 @@ function requireImpressionTracker_hitFilter() {
       if (element.id == 'foo-1') {
         throw new Error('Aborting hits with ID "foo-1"');
       } else {
-        model.set('nonInteraction', true, true);
+        model.set('nonInteraction', null, true);
         model.set('dimension1', 'one', true);
         model.set('dimension2', 'two', true);
       }

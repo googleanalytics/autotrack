@@ -8,6 +8,10 @@
 
 - When the `cleanUrlTracker` plugin is used, calls to `tracker.get('page')` will return the "cleaned" version of the page.
 
+#### [`impressionTracker`](/docs/plugins/impression-tracker.md)
+
+- Events sent by `impressionTracker` are now [`nonInteraction`](https://support.google.com/analytics/answer/1033068#NonInteractionEvents) be default.
+
 #### [`pageVisibilityTracker`](/docs/plugins/page-visibility-tracker.md)
 
 - `change` events are no longer tracked; instead, `visible` events are now tracked which record the amount of time a page has been in the visible state.

@@ -16,7 +16,7 @@ The `fieldsObj` option is an `Object` whose properties can be any [analytics.js 
 
 #### `mediaQueryTracker`
 
-This configuration ensures all events sent by the `mediaQueryTracker` plugin are non-interaction events:
+This configuration ensures all events sent by the `mediaQueryTracker` plugin are [non-interaction events](https://support.google.com/analytics/answer/1033068#NonInteractionEvents) events:
 
 ```js
 ga('require', 'mediaQueryTracker', {

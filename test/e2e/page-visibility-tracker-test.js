@@ -83,7 +83,7 @@ describe('pageVisibilityTracker', function() {
     assert(Number(hits[0].ev) >= 2);
   });
 
-  it('sends all events as non-interaction', function() {
+  it('sends events as nonInteraction by default', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker');
