@@ -97,7 +97,7 @@ describe('mediaQueryTracker', function() {
     assert.strictEqual(hits[1].el, 'md => sm');
   });
 
-  it('sends non-interactive events', () => {
+  it('sends events as nonInteraction by default', () => {
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
