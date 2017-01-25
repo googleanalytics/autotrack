@@ -147,6 +147,10 @@ The `mediaQueryTracker` plugin sets the following default field values on all hi
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
     <td><code>options.changeTemplate()</code></td>
   </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction"><code>nonInteraction</code></a></td>
+    <td><code>true</code></td>
+  </tr>
 </table>
 
 **Note:** the reference to `definition` in the table above refers to the definition the changing media value is defined in. The reference to `options` refers to passed configuration [options](#options).

@@ -119,6 +119,10 @@ The `maxScrollTracker` plugin sets the following default field values on event h
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventValue"><code>eventValue</code></a></td>
     <td><code>increaseAmount</code></td>
   </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction"><code>nonInteraction</code></a></td>
+    <td><code>true</code></td>
+  </tr>
 </table>
 
 **Note:** the reference to `increaseAmount` refers to the amount the max scroll percentage has increased since the previous event. The reference to `scrollPercentage` refers to the current scroll percentage for the page.
@@ -153,15 +157,21 @@ ga('require', 'maxScrollTracker', {
 });
 ```
 
-### Ensuring all scroll events are non-interactive
+### Making scroll events interactive beyond 50%
 
-By default all events in Google Analytics are interactive, which means they will affect bounce rate calculations. If you do not want max scroll events to affect bounce rate, you can use the `fieldsObj` option to set the `nonInteraction` value for all hits to `true`.
+By default, all events sent by this plugin are [non-interaction events](https://support.google.com/analytics/answer/1033068#NonInteractionEvents), which means they won't affect your bounce rate. However, in some cases you may want to consider scrolling beyond a specific point an engagement and not a bounce.
+
+This example shows how to use the [`hitFilter`](#options) option to send max scrol events as interactive once the user has scrolled more than 50%.
 
 ```js
 ga('require', 'maxScrollTracker', {
-  fieldsObj: {
-    nonInteraction: true
-  }
+  hitFilter: function(model) {
+    var scrollPercentage = model.get('eventLabel');
+    if (scrollPercentage > 50) {
+      // Sets the nonInteractive field to `true` for the current hit.
+      model.set('nonInteraction', true, true);
+    }
+  },
 });
 ```
 
