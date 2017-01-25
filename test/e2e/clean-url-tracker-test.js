@@ -226,19 +226,29 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[1].dp, '/foo/bar.html');
   });
 
-  it('works with many options in conjunction with each other', () => {
-    const url = 'https://example.com/path/to/index.html?q=qux&b=baz#hash';
+  it('supports generically filtering all URL fields', () => {
+    const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
     browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      stripQuery: true,
-      queryDimensionIndex: 1,
-      indexFilename: 'index.html',
-      trailingSlash: 'remove',
-    });
+    browser.execute(requireCleanUrlTracker_urlFieldsFilter);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
     const hits = log.getHits();
+    assert.strictEqual(hits[0].dl,
+        'https://example.io/foo/bar?q=qux&b=baz#hash');
+    assert.strictEqual(hits[0].dp, '/foo/bar');
+  });
+
+  it('works with many options in conjunction with each other', () => {
+    const url = 'https://example.com/path/to/index.html?q=qux&b=baz#hash';
+    browser.execute(ga.run, 'set', 'location', url);
+    browser.execute(requireCleanUrlTracker_multipleOpts);
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
+
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].dl,
+        'https://example.io/path/to/index.html?q=qux&b=baz#hash');
     assert.strictEqual(hits[0].dp, '/path/to');
     assert.strictEqual(hits[0].cd1, 'q=qux&b=baz');
   });
@@ -281,3 +291,49 @@ describe('cleanUrlTracker', function() {
     });
   });
 });
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `urlFieldsFilter`.
+ */
+function requireCleanUrlTracker_urlFieldsFilter() {
+  ga('require', 'cleanUrlTracker', {
+    urlFieldsFilter: (fieldsObj, parseUrl) => {
+      fieldsObj.page = parseUrl(fieldsObj.location).pathname;
+
+      const url = parseUrl(fieldsObj.location);
+      if (url.hostname == 'example.com') {
+        fieldsObj.location =
+            `${url.protocol}//example.io` +
+            `${url.pathname}${url.search}${url.hash}`;
+      }
+      return fieldsObj;
+    },
+  });
+}
+
+
+/**
+ * Since function objects can't be passed via parameters from server to
+ * client, this one-off function must be used to set the value for
+ * `urlFieldsFilter`.
+ */
+function requireCleanUrlTracker_multipleOpts() {
+  ga('require', 'cleanUrlTracker', {
+    stripQuery: true,
+    queryDimensionIndex: 1,
+    indexFilename: 'index.html',
+    trailingSlash: 'remove',
+    urlFieldsFilter: (fieldsObj, parseUrl) => {
+      const url = parseUrl(fieldsObj.location);
+      if (url.hostname == 'example.com') {
+        fieldsObj.location =
+            `${url.protocol}//example.io` +
+            `${url.pathname}${url.search}${url.hash}`;
+      }
+      return fieldsObj;
+    },
+  });
+}
