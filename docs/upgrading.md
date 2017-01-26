@@ -4,6 +4,8 @@
 
 ### Breaking changes
 
+- Autotrack source code now uses [ES2015 module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) syntax to enable tree shaking, which generates smaller build. This may cause problems with some bundlers like [Browserify](http://browserify.org/) that don't natively support this syntax.
+
 #### [`cleanUrlTracker`](/docs/plugins/clean-url-tracker.md)
 
 - When the `cleanUrlTracker` plugin is used, calls to `tracker.get('page')` will return the "cleaned" version of the page.
