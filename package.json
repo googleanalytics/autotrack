@@ -3,6 +3,7 @@
   "version": "2.0.0-rc.1",
   "description": "Automatic and enhanced Google Analytics tracking for common user interactions on the web",
   "main": "lib",
+  "bin": "./bin/autotrack",
   "scripts": {
     "build": "gulp build",
     "start": "gulp watch",
