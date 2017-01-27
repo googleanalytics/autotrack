@@ -110,7 +110,7 @@ gulp.task('javascript:unit', ((compiler) => {
   };
   return (done) => {
     (compiler || (compiler = createCompiler())).run((err, stats) => {
-      if (err) throw new gutil.PluginError('webpack', err);
+      if (err) return done(err);
       gutil.log('[webpack]', stats.toString('minimal'));
       done();
     });
