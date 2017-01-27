@@ -16,7 +16,7 @@
 
 #### [`pageVisibilityTracker`](/docs/plugins/page-visibility-tracker.md)
 
-- `change` events are no longer tracked; instead, `visible` events are now tracked which record the amount of time a page has been in the visible state.
+- The `change` event action is no longer used; instead, events with a `track` action are sent after a page is transitioning out of the visible state to record the amount of time the page was visible for.
 - The `changeTemplate` option has been removed since `change` events are no longer tracked.
 - The `hiddenMetricIndex` option has been removed since time in the hidden state is not a particularly useful metric.
 
