@@ -2,7 +2,7 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
-### 2.0.0 (unreleased)
+### 2.0.0 (2017-02-02)
 
 - See the [Upgrade Reference](/docs/upgrading.md) for a full list of changes.
 
