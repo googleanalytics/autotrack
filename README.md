@@ -17,11 +17,11 @@ The default [JavaScript tracking snippet](https://developers.google.com/analytic
 
 Since most website owners care about a lot of the same types of user interactions, web developers end up writing the same code over and over again for every new site they build.
 
-Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are interacting with site.
+Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are interacting with your site.
 
 ## Plugins
 
-The `autotrack.js` file in this repository is small (7K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom builds](#custom-builds) that only include the plugins you want to make it even smaller.
+The `autotrack.js` file in this repository is small (7K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom build](#custom-builds) that only includes the plugins you want to make it even smaller.
 
 The following table briefly explains what each plugin does; you can click on the plugin name to see the full documentation and usage instructions:
 

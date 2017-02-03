@@ -14,6 +14,12 @@ By taking Page Visibility into consideration, the `pageVisibilityTracker` plugin
 
 The `pageVisibilityTracker` plugin also calculates how long a given page was in the visible state for a given session, which is a much better indicator of user engagement than [*Session Duration*](https://support.google.com/analytics/answer/1006253).
 
+The following sample reports show how you can use the `pageVisibilityTracker` plugin to more accurately measure user engagement with your content.
+
+![page-visibility-page](https://cloud.githubusercontent.com/assets/326742/22574482/e635b26a-e963-11e6-95d4-25b7face7621.png)
+
+![page-visibility-source-medium](https://cloud.githubusercontent.com/assets/326742/22574483/e636607a-e963-11e6-928a-4c49948bf8d8.png)
+
 ### How it works
 
 The `pageVisibilityTracker` plugin listens for [`visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/Events/visibilitychange) events on the current page and sends hits to Google Analytics capturing how long the page was in each state. It also programmatically starts new sessions and sends new pageviews when the visibility state changes from hidden to visible (if the previous session has timed out).
@@ -29,6 +35,24 @@ To enable the `pageVisibilityTracker` plugin, run the [`require`](https://develo
 ```js
 ga('require', 'pageVisibilityTracker', options);
 ```
+
+### Using a custom metric
+
+The easiest way to track the time a page was visible is to create a [custom metric](https://support.google.com/analytics/answer/2709828) called *Page Visible Time* that you set in your plugin configuration options, and then to create [calculated metrics](https://support.google.com/analytics/answer/6121409) called *Avg. Page Visible Time (per Page)* and *Avg. Page Visible Time (per Session)* that you use in your reports.
+
+Which calculated metric you need will depend on which dimensions you're using in your report. For session-level dimensions (e.g. *Referrer* or *Device Category*) you'll want to use the session version, and for page-specific dimensions (e.g. *Page* or *Title*) you'll want to use the page version.
+
+Here are the formulas for both:
+
+```
+{{Page Visible Time}} / {{Sessions}}
+```
+
+```
+{{Page Visible Time}} / {{Unique Pageviews}}
+```
+
+The screenshot in the [overview](#overview) shows some examples of what reports with these custom and calculated metrics look like.
 
 ## Options
 
@@ -141,10 +165,10 @@ For details on how `analytics.js` plugin methods work and how to invoke them, se
 
 ### Setting a session timeout and time zone
 
-If you've set the default session timeout in your Google Analytics property to 4 hours and the timezone of all your views to Pacific Time, you can ensure the `maxScrollTracker` plugin knows about these settings with the following configuration options:
+If you've set the default session timeout in your Google Analytics property to 4 hours and the timezone of all your views to Pacific Time, you can ensure the `pageVisibilityTracker` plugin knows about these settings with the following configuration options:
 
 ```js
-ga('require', 'maxScrollTracker', {
+ga('require', 'pageVisibilityTracker', {
   sessionTimeout: 4 * 60,
   timeZone: 'America/Los_Angeles',
 });

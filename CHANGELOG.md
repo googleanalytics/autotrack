@@ -4,7 +4,7 @@ This document lists the changes between each minor and patch versions. For chang
 
 ### 2.0.0 (unreleased)
 
-- See the [Upgrade Reference](/docs/upgrading.md) for a full list of change.
+- See the [Upgrade Reference](/docs/upgrading.md) for a full list of changes.
 
 ## 1.1.0 (2016-10-18)
 

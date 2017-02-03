@@ -4,7 +4,7 @@
 
 ### Breaking changes
 
-- Autotrack source code now uses [ES2015 module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) syntax to enable tree shaking, which generates smaller build. This may cause problems with some bundlers like [Browserify](http://browserify.org/) that don't natively support this syntax.
+- Autotrack source code now uses [ES2015 module](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) syntax to enable tree shaking, which generates a smaller build. This may cause problems with some bundlers like [Browserify](http://browserify.org/) that don't natively support this syntax.
 
 #### [`cleanUrlTracker`](/docs/plugins/clean-url-tracker.md)
 
@@ -16,7 +16,7 @@
 
 #### [`pageVisibilityTracker`](/docs/plugins/page-visibility-tracker.md)
 
-- The `change` event action is no longer used; instead, events with a `track` action are sent after a page is transitioning out of the visible state to record the amount of time the page was visible for.
+- The `change` event action is no longer used; instead, events with a `track` action are sent after a page is transitioning out of the visible state to record the amount of time the page was visible.
 - The `changeTemplate` option has been removed since `change` events are no longer tracked.
 - The `hiddenMetricIndex` option has been removed since time in the hidden state is not a particularly useful metric.
 

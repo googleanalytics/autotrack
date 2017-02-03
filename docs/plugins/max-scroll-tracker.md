@@ -8,17 +8,17 @@ For each page on your site, the `maxScrollTracker` plugin tracks how far down th
 
 The max scroll percentage amounts are calculated on a per-session basis, which means that once a user has scrolled to 100% for a particular page, tracking for that page stops and will only resume when a new session starts.
 
-The following sample reports show how you can use the maxScrollTracker plugin to more accurately measure user engagement with your content.
+The following sample reports show how you can use the `maxScrollTracker` plugin to more accurately measure user engagement with your content.
 
-![max-scroll-tracker-report-page](https://cloud.githubusercontent.com/assets/326742/22217293/45fe6a26-e157-11e6-9371-7bf33bb1c812.png)
+![max-scroll-page](https://cloud.githubusercontent.com/assets/326742/22574480/e630a590-e963-11e6-9c3d-a201d44aa177.png)
 
-![max-scroll-tracker-report-source-medium](https://cloud.githubusercontent.com/assets/326742/22217338/770ef180-e157-11e6-99fa-8c32f37c738c.png)
+![max-scroll-source-medium](https://cloud.githubusercontent.com/assets/326742/22574481/e634ef24-e963-11e6-8017-5f6df1d6c55c.png)
 
 ### How it works
 
-The `maxScrollTracker` plugin listens for [`scroll`](https://developer.mozilla.org/en-US/docs/Web/Events/scroll) events on the current page. Once the user starts to scroll, the plugin waits until the user stops scrolling for at least one second (to ensure it doesn't affect scroll performance) and then calculates the percentage the user has scrolled. This value is then compared to the previously calculated value (if one exists), and if there's an increase, an event is sent to Google Analytics with the event value set to the increase amount (and optionally a custom metric) and the event label set to the current scroll percentage.
+The `maxScrollTracker` plugin listens for [`scroll`](https://developer.mozilla.org/en-US/docs/Web/Events/scroll) events on the current page. Once the user starts to scroll, the plugin waits until the user stops scrolling for at least one second (to ensure it doesn't affect scroll performance) and then calculates the percentage the user has scrolled. This value is then compared to the previously calculated value (if one exists), and if there's an increase, an event is sent to Google Analytics with the event value set to the increased amount (and optionally a custom metric) and the event label set to the current scroll percentage.
 
-Tracking the scroll depth as a metric allows you can do calculations and report on things like *Avg. Max Scroll Percentage* along with any dimension (e.g. *Campaign Source*, *Referrer*, *Device Category*, etc.), not just page-level dimension.
+Tracking the scroll depth as a metric allows you can do calculations and report on things like *Avg. Max Scroll Percentage* along with any dimension (e.g. *Campaign Source*, *Referrer*, *Device Category*, etc.), not just page-level dimensions.
 
 ## Usage
 
@@ -161,7 +161,7 @@ ga('require', 'maxScrollTracker', {
 
 By default, all events sent by this plugin are [non-interaction events](https://support.google.com/analytics/answer/1033068#NonInteractionEvents), which means they won't affect your bounce rate. However, in some cases you may want to consider scrolling beyond a specific point an engagement and not a bounce.
 
-This example shows how to use the [`hitFilter`](#options) option to send max scrol events as interactive once the user has scrolled more than 50%.
+This example shows how to use the [`hitFilter`](#options) option to send max scroll events as interactive once the user has scrolled more than 50%.
 
 ```js
 ga('require', 'maxScrollTracker', {
@@ -186,4 +186,3 @@ ga('require', 'maxScrollTracker', {
 ```
 
 **Note:** this requires [creating a custom metric](https://support.google.com/analytics/answer/2709829) in your Google Analytics property settings and [creating a calculated metric](https://support.google.com/analytics/answer/6121409?ref_topic=2709827#creating-calculated-metrics) in your Google Analytics view settings.
-
