@@ -1,0 +1,20 @@
+
+Usage: autotrack [options]
+
+  Generates a minified, autotrack file and source map with only the specified
+  autotrack plugins.
+
+Example:
+
+  autotrack -p outboundLinkTracker,maxScrollTracker,urlChangeTracker
+
+Options:
+
+  -o, --output       The output path for the generated file and source map.
+                     Defaults to "autotrack.js" and "autotrack.js.map"
+                     (Note: the source map filename will append ".map").
+
+  -p, --plugins      A comma-separated list of plugin names.
+
+  -h, --help         Displays this help message.
+

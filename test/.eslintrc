@@ -1,0 +1,23 @@
+{
+  "env": {
+    "browser": true,
+    "es6": true,
+    "mocha": true,
+    "node": true,
+  },
+  "globals": {
+    // Used by webdriver.io
+    "browser": false,
+  },
+  "parserOptions": {
+    "sourceType": "module",
+  },
+  "extends": [
+    "eslint:recommended",
+    "google",
+  ],
+  "rules": {
+    "camelcase": 0,
+    "no-invalid-this": 0
+  }
+}

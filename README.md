@@ -13,15 +13,17 @@
 
 ## Overview
 
-The default [JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/) for Google Analytics runs when a web page is first loaded and sends a pageview hit to Google Analytics. If you want to know about more than just pageviews (e.g. events, social interactions), you have to write code to capture that information yourself.
+The default [JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/) for Google Analytics runs when a web page is first loaded and sends a pageview hit to Google Analytics. If you want to know about more than just pageviews (e.g. where the user clicked, how far they scroll, did they see certain elements, etc.), you have to write code to capture that information yourself.
 
 Since most website owners care about a lot of the same types of user interactions, web developers end up writing the same code over and over again for every new site they build.
 
-Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are using your site.
+Autotrack was created to solve this problem. It provides default tracking for the interactions most people care about, and it provides several convenience features (e.g. declarative event tracking) to make it easier than ever to understand how people are interacting with your site.
 
 ## Plugins
 
-The `autotrack.js` library is small (6K gzipped), and includes the following plugins. By default all plugins are bundled together, but they can be included and configured separately as well. This table includes a brief description of each plugin; you can click on the plugin name to see the full documentation and usage instructions:
+The `autotrack.js` file in this repository is small (7K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom build](#custom-builds) that only includes the plugins you want to make it even smaller.
+
+The following table briefly explains what each plugin does; you can click on the plugin name to see the full documentation and usage instructions:
 
 <table>
   <tr>
@@ -41,6 +43,10 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
     <td>Allows you to track when elements are visible within the viewport.</td>
   </tr>
   <tr>
+    <td><a href="/docs/plugins/max-scroll-tracker.md"><code>maxScrollTracker</code></a></td>
+    <td>Automatically tracks how far down the page a user scrolls.</td>
+  </tr>
+  <tr>
     <td><a href="/docs/plugins/media-query-tracker.md"><code>mediaQueryTracker</code></a></td>
     <td>Enables tracking media query matching and media query changes.</td>
   </tr>
@@ -54,7 +60,7 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
   </tr>
   <tr>
     <td><a href="/docs/plugins/page-visibility-tracker.md"><code>pageVisibilityTracker</code></a></td>
-    <td>Tracks page visibility state changes, which enables much more accurate session, session duration, and pageview metrics.</td>
+    <td>Automatically tracks how long pages are in the visible state (as opposed to in a background tab)</td>
   </tr>
   <tr>
     <td><a href="/docs/plugins/social-widget-tracker.md"><code>socialWidgetTracker</code></a></td>
@@ -72,10 +78,10 @@ The `autotrack.js` library is small (6K gzipped), and includes the following plu
 
 To add autotrack to your site, you have to do two things:
 
-1. Load the `autotrack.js` script file on your page.
-2. Update your [tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference) to [require](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) the various autotrack plugins you want to use.
+1. Load the `autotrack.js` script file included in this repo (or a [custom build](#custom-builds)) on your page.
+2. Update your [tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference) to [require](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) the various autotrack plugins you want to use on the [tracker](https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers).
 
-If your site already includes the default JavaScript tracking snippet, you can modify it to look something like this:
+If your site is currently using the [default JavaScript tracking snippet](https://developers.google.com/analytics/devguides/collection/analyticsjs/tracking-snippet-reference), you can modify it to something like this:
 
 ```html
 <script>
@@ -94,7 +100,7 @@ ga('send', 'pageview');
 <script async src='path/to/autotrack.js'></script>
 ```
 
-Of course, you'll have to make the following modifications to customize autotrack to your needs:
+Of course, you'll have to make the following modifications to the above code to customize autotrack to your needs:
 
 - Replace `UA-XXXXX-Y` with your [tracking ID](https://support.google.com/analytics/answer/1032385)
 - Replace the sample list of plugin `require` statements with the plugins you want to use.
@@ -104,7 +110,7 @@ Of course, you'll have to make the following modifications to customize autotrac
 
 ### Loading autotrack via npm
 
-If you use npm and a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs), you can include autotrack in your build by requiring it as you would any other npm module:
+If you use npm and a module loader that understands [ES2015 imports](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) (e.g. [Webpack](https://webpack.js.org/), [Rollup](http://rollupjs.org/), or [SystemJS](https://github.com/systemjs/systemjs)), you can include autotrack in your build by importing it as you would any other npm module:
 
 ```sh
 npm install autotrack
@@ -112,38 +118,65 @@ npm install autotrack
 
 ```js
 // In your JavaScript code
-require('autotrack');
+import 'autotrack';
 ```
 
-The above code will include all autotrack plugins in your generated source file. If you only want to include a specific set of plugins, you can require them individually:
+The above `import` statement will include all autotrack plugins in your generated source file. If you only want to include a specific set of plugins, you can import them individually:
 
 ```js
 // In your JavaScript code
-require('autotrack/lib/plugins/clean-url-tracker');
-require('autotrack/lib/plugins/outbound-link-tracker');
-require('autotrack/lib/plugins/url-change-tracker');
-// ...
+import 'autotrack/lib/plugins/event-tracker';
+import 'autotrack/lib/plugins/outbound-link-tracker';
+import 'autotrack/lib/plugins/url-change-tracker';
 ```
 
-The above examples show how to include the plugin source code in your final, generated JavaScript file, which accomplishes the first step of the two-step installation process.
-
-You still have to update your tracking snippet and require the plugins you want to use:
-
+The above examples show how to include the autotrack plugin source in your site's main JavaScript bundle, which accomplishes the first step of the [two-step installation process](#installation-and-usage). However, you still have to update your tracking snippet and require the plugins you want to use on the tracker.
 
 ```js
-// In the analytics.js tracking snippet
+// Import just the plugins you want to use.
+import 'autotrack/lib/plugins/event-tracker';
+import 'autotrack/lib/plugins/outbound-link-tracker';
+import 'autotrack/lib/plugins/url-change-tracker';
+
 ga('create', 'UA-XXXXX-Y', 'auto');
 
-// Replace the following lines with the plugins you want to use.
-ga('require', 'cleanUrlTracker');
+// Only require the plugins you've imported above.
+ga('require', 'eventTracker');
 ga('require', 'outboundLinkTracker');
 ga('require', 'urlChangeTracker');
-// ...
 
 ga('send', 'pageview');
 ```
 
-**Note:** be careful not to confuse the node module [`require`](https://nodejs.org/api/modules.html) statement with the `analytics.js` [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/command-queue-reference#require) command. When loading autotrack with an npm module loader, both requires must be used.
+#### Code splitting
+
+Note that it's generally not a good idea to include any analytics as part of your site's main JavaScript bundle since analytics are not usually critical application functionality.
+
+If you're using a bundler that supports code splitting (via something like `System.import()`), it's best to load autotrack plugins lazily and delay their initialization until after your site's critical functionality has loaded:
+
+```js
+window.addEventListener('load', () => {
+  const autotrackPlugins = [
+    'autotrack/lib/plugins/event-tracker',
+    'autotrack/lib/plugins/outbound-link-tracker',
+    'autotrack/lib/plugins/url-change-tracker',
+    // List additional plugins as needed.
+  ];
+
+  Promise.all(autotrackPlugins.map((x) => System.import(x)).then(() => {
+    ga('create', 'UA-XXXXX-Y', 'auto');
+
+    ga('require', 'eventTracker', {...});
+    ga('require', 'outboundLinkTracker', {...});
+    ga('require', 'urlChangeTracker', {...});
+    // Require additional plugins imported above.
+
+    ga('send', 'pageview');
+  });
+})
+```
+
+If you're not sure how do use code splitting with your build setup, see the [custom builds](#custom-builds) section to learn how to manually generate a custom version of autotrack with just the plugins you need.
 
 ### Passing configuration options
 
@@ -157,21 +190,24 @@ See the individual plugin documentation to reference what options each plugin ac
 
 ### Custom builds
 
-The autotrack library is built modularly and each plugin includes its own dependencies, so you can create a custom build of the library using a script bundler such as [Browserify](http://browserify.org/).
+Autotrack comes with its own build system, so you can create autotrack bundles containing just the plugins you need. Once you've [installed autotrack via npm](#loading-autotrack-via-npm), you can create custom builds by running the `autotrack` command.
 
-The following example shows how to create a build that only includes the `eventTracker` and `outboundLinkTracker` plugins:
+For example, the following command generates an `autotrack.js` bundle and source map for just the `eventTracker`, `outboundLinkTracker`, and `urlChangeTracker` plugins:
 
 ```sh
-browserify lib/plugins/event-tracker lib/plugins/outbound-link-tracker
+autotrack -o path/to/autotrack.custom.js -p eventTracker,outboundLinkTracker,urlChangeTracker
 ```
 
-When making a custom build, be sure to update the tracking snippet to only require plugins included in your build. Requiring a plugin that's not included in the build will create an unmet dependency, which will prevent subsequent commands from running.
+Once this file is generated, you can include it in your HTML templates where you load `analytics.js`. Note the use of the `async` attribute on both script tags. This prevents `analytics.js` and `autotrack.custom.js` from interfering with the loading of the rest of your site.
 
-If you're already using a module loader like [Browserify](http://browserify.org/), [Webpack](https://webpack.github.io/), or [SystemJS](https://github.com/systemjs/systemjs) to build your JavaScript, you can skip the above step and just require the plugins as described in the [loading autotrack via npm](#loading-autotrack-via-npm) section.
+```html
+<script async src='https://www.google-analytics.com/analytics.js'></script>
+<script async src='path/to/autotrack.custom.js'></script>
+```
 
 ### Using autotrack with multiple trackers
 
-All autotrack plugins support multiple trackers and work by specifying the tracker name in the `require` command. The following example creates two trackers and requires various autotrack plugins on each.
+All autotrack plugins support [multiple trackers](https://developers.google.com/analytics/devguides/collection/analyticsjs/creating-trackers#working_with_multiple_trackers) and work by specifying the tracker name in the `require` command. The following example creates two trackers and requires various autotrack plugins on each.
 
 ```js
 // Creates two trackers, one named `tracker1` and one named `tracker2`.

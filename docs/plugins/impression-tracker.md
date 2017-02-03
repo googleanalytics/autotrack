@@ -145,6 +145,10 @@ The `impressionTracker` plugin sets the following default field values on all hi
     <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventLabel"><code>eventLabel</code></a></td>
     <td><code>element.id</code></td>
   </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction"><code>nonInteraction</code></a></td>
+    <td><code>true</code></td>
+  </tr>
 </table>
 
 **Note:** the reference to `element` in the table above refers to the element being observed.
