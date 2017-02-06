@@ -10,6 +10,16 @@ The `outboundLinkTracker` plugin automatically detects when links are clicked to
 
 Historically, outbound link tracking has been tricky to implement because most browsers stop executing JavaScript on the current page once a link that requests a new page is clicked. The `outboundLinkTracker` plugin handles these complications for you.
 
+The following example reports show how you can use the `outboundLinkTracker` plugin to see what links users are clicking on your site:
+
+**Top outbound link clicks by URL:**
+
+![outbound-link-event-label](https://cloud.githubusercontent.com/assets/326742/22665972/bee5c654-ec6b-11e6-9d03-1cea4c936ce6.png)
+
+**Breakdown of click type for a single link:**
+
+![outbound-link-event-action](https://cloud.githubusercontent.com/assets/326742/22665973/bee64fd4-ec6b-11e6-97d3-166598d3d698.png)
+
 ## Usage
 
 To enable the `outboundLinkTracker` plugin, run the [`require`](https://developers.google.com/analytics/devguides/collection/analyticsjs/using-plugins) command, specify the plugin name `'outboundLinkTracker'`, and pass in any configuration options (if any) you wish to set:

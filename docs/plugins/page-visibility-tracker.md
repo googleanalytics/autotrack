@@ -16,7 +16,11 @@ The `pageVisibilityTracker` plugin also calculates how long a given page was in 
 
 The following sample reports show how you can use the `pageVisibilityTracker` plugin to more accurately measure user engagement with your content.
 
+**Top pages by visible time:**
+
 ![page-visibility-page](https://cloud.githubusercontent.com/assets/326742/22574482/e635b26a-e963-11e6-95d4-25b7face7621.png)
+
+**Traffic origins (source/medium) resulting in the longest visible sessions:**
 
 ![page-visibility-source-medium](https://cloud.githubusercontent.com/assets/326742/22574483/e636607a-e963-11e6-928a-4c49948bf8d8.png)
 

@@ -8,9 +8,13 @@ For each page on your site, the `maxScrollTracker` plugin tracks how far down th
 
 The max scroll percentage amounts are calculated on a per-session basis, which means that once a user has scrolled to 100% for a particular page, tracking for that page stops and will only resume when a new session starts.
 
-The following sample reports show how you can use the `maxScrollTracker` plugin to more accurately measure user engagement with your content.
+The following example reports show how you can use the `maxScrollTracker` plugin to more accurately measure user engagement with your content:
+
+**Top pages by scroll depth:**
 
 ![max-scroll-page](https://cloud.githubusercontent.com/assets/326742/22574480/e630a590-e963-11e6-9c3d-a201d44aa177.png)
+
+**Traffic origins (source/medium) resulting in the highest scroll engagement:**
 
 ![max-scroll-source-medium](https://cloud.githubusercontent.com/assets/326742/22574481/e634ef24-e963-11e6-8017-5f6df1d6c55c.png)
 
@@ -19,6 +23,8 @@ The following sample reports show how you can use the `maxScrollTracker` plugin 
 The `maxScrollTracker` plugin listens for [`scroll`](https://developer.mozilla.org/en-US/docs/Web/Events/scroll) events on the current page. Once the user starts to scroll, the plugin waits until the user stops scrolling for at least one second (to ensure it doesn't affect scroll performance) and then calculates the percentage the user has scrolled. This value is then compared to the previously calculated value (if one exists), and if there's an increase, an event is sent to Google Analytics with the event value set to the increased amount (and optionally a custom metric) and the event label set to the current scroll percentage.
 
 Tracking the scroll depth as a metric allows you can do calculations and report on things like *Avg. Max Scroll Percentage* along with any dimension (e.g. *Campaign Source*, *Referrer*, *Device Category*, etc.), not just page-level dimensions.
+
+**Important:** the `maxScrollTracker` plugin works best on pages whose height doesn't change once the page has loaded. It is not recommended to use `maxScrollTracker` on pages that use techniques like infinite scroll.
 
 ## Usage
 
