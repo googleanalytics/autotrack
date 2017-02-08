@@ -158,7 +158,7 @@ And given those four URLs, the following fields would be sent to Google Analytic
 
 If the available configuration options are not sufficient for your needs, you can use the `urlFieldsFilter` option to arbirarily modify the URL fields sent to Google Analytics.
 
-The following example passes the same options as the basic example above, but in addition it removes user-specific IDs from the page path, e.g. `/users/18542823` becomes `/users/<user-id>`
+The following example passes the same options as the basic example above, but in addition it removes user-specific IDs from the page path, e.g. `/users/18542823` becomes `/users/<user-id>`:
 
 ```js
 ga('require', 'cleanUrlTracker', {
