@@ -163,7 +163,7 @@ window.addEventListener('load', () => {
     // List additional plugins as needed.
   ];
 
-  Promise.all(autotrackPlugins.map((x) => System.import(x)).then(() => {
+  Promise.all(autotrackPlugins.map((x) => System.import(x))).then(() => {
     ga('create', 'UA-XXXXX-Y', 'auto');
 
     ga('require', 'eventTracker', {...});
