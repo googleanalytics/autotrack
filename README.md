@@ -120,6 +120,7 @@ npm install autotrack
 // In your JavaScript code
 import 'autotrack';
 ```
+**Note:** autotrack's source is published as ES2015, and you will need to make sure you're not excluding it from compilation. See [#137](https://github.com/googleanalytics/autotrack/issues/137) for more details.
 
 The above `import` statement will include all autotrack plugins in your generated source file. If you only want to include a specific set of plugins, you can import them individually:
 
