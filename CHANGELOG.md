@@ -2,9 +2,13 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.0.3 (2017-02-24)
+
+- Fix incorrect package version.
+
 ### 2.0.2 (2017-02-23)
 
-- Fix errors accessing localStorage in some browsers.
+- Fix errors accessing localStorage in some browsers (#145).
 
 ### 2.0.1 (2017-02-06)
 

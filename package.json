@@ -1,6 +1,6 @@
 {
   "name": "autotrack",
-  "version": "2.0.1",
+  "version": "2.0.3",
   "description": "Automatic and enhanced Google Analytics tracking for common user interactions on the web",
   "main": "lib",
   "bin": "./bin/autotrack",
