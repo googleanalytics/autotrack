@@ -2,6 +2,10 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.0.4 (2017-02-24)
+
+- Fix CI build failure.
+
 ### 2.0.3 (2017-02-24)
 
 - Fix incorrect package version.
