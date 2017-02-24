@@ -40,10 +40,11 @@ let sshTunnel;
 
 
 /**
- * @return {boolean} True if NODE_ENV is production.
+ * @return {boolean} True if NODE_ENV is set to production or the build is
+ *     running on CI.
  */
 const isProd = () => {
-  return process.env.NODE_ENV == 'production';
+  return process.env.NODE_ENV == 'production' || process.env.CI;
 };
 
 
