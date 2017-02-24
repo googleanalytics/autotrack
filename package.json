@@ -7,8 +7,7 @@
   "scripts": {
     "build": "gulp build",
     "start": "gulp watch",
-    "test": "gulp test:e2e",
-    "watch": "gulp watch"
+    "test": "gulp test:e2e"
   },
   "repository": {
     "type": "git",
