@@ -2,9 +2,13 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.0.2 (2017-02-23)
+
+- Fix errors accessing localStorage in some browsers.
+
 ### 2.0.1 (2017-02-06)
 
-- Fixed incorrect Closure Compiler externs.
+- Fix incorrect Closure Compiler externs.
 
 ### 2.0.0 (2017-02-02)
 
