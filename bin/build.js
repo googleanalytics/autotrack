@@ -87,7 +87,7 @@ module.exports = (output, autotrackPlugins = []) => {
               line: item.lineNo,
               column: item.charNo,
             });
-            source = path.relative('.', path.resolve(__dirname, source));
+            source = path.relative('.', path.resolve(__dirname, '..', source));
             return {type, line, column, source, desc: item.description};
           };
 
