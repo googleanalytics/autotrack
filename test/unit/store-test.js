@@ -228,6 +228,28 @@ describe('Store', () => {
       store1.destroy();
       store2.destroy();
     });
+
+    it('clears the cache even if the localStorage clear fails', () => {
+      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+      sinon.stub(Store, 'clear_').throws();
+
+      store1.set({foo: 12, bar: 34});
+      store2.set({qux: 56, baz: 78});
+
+      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
+      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+
+      store1.clear();
+      store2.clear();
+
+      assert.deepEqual(store1.get(), {});
+      assert.deepEqual(store2.get(), {});
+
+      Store.clear_.restore();
+      store1.destroy();
+      store2.destroy();
+    });
   });
 
   describe('destroy', () => {
