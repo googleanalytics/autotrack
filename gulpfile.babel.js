@@ -85,7 +85,7 @@ gulp.task('javascript', () => {
 gulp.task('javascript:unit', ((compiler) => {
   const createCompiler = () => {
     return webpack({
-      entry: glob.sync('./test/unit/*-test.js'),
+      entry: glob.sync('./test/unit/**/*-test.js'),
       output: {
         path: 'test/unit',
         filename: 'index.js',
