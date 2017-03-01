@@ -25,12 +25,17 @@ import pkg from '../../package.json';
 
 const SESSION_TIMEOUT_IN_MILLISECONDS = 3000; // 3 seconds
 const SESSION_TIMEOUT_IN_MINUTES = (1/60) * 3; // 3 seconds
+const VISIBLE_THRESHOLD = 2000; // 2 seconds
 
 
 const DEFAULT_TRACKER_FIELDS = {
   trackingId: 'UA-12345-1',
   cookieDomain: 'auto',
   siteSpeedSampleRate: 0,
+};
+
+const TEST_OPTS = {
+  visibleThreshold: 0,
 };
 
 
@@ -58,7 +63,7 @@ describe('pageVisibilityTracker', function() {
   it('sends events to track the time a page was visible', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     openNewTab();
 
     browser.waitUntil(log.hitCountEquals(1));
@@ -71,7 +76,7 @@ describe('pageVisibilityTracker', function() {
   it('tracks the elapsed time a page was visible', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.pause(2000);
     openNewTab();
 
@@ -84,7 +89,7 @@ describe('pageVisibilityTracker', function() {
   it('sends events as nonInteraction by default', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     openNewTab();
     closeAllButFirstTab();
     openNewTab();
@@ -100,6 +105,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: 0,
       visibleMetricIndex: 1,
     });
 
@@ -117,6 +123,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: 0,
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
 
@@ -133,6 +140,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: 0,
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
 
@@ -153,6 +161,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: 0,
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
     browser.execute(ga.run, 'send', 'pageview');
@@ -179,17 +188,67 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[3].ea, 'track');
   });
 
+  it('only sends events when the visibleThreshold is met', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: VISIBLE_THRESHOLD,
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
+    });
+    openNewTab();
+    closeAllButFirstTab();
+    openNewTab();
+    closeAllButFirstTab();
+    openNewTab();
+    closeAllButFirstTab();
+    log.assertNoHitsReceived();
+
+    browser.pause(VISIBLE_THRESHOLD);
+    openNewTab();
+    browser.waitUntil(log.hitCountEquals(1));
+
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Page Visibility');
+    assert.strictEqual(hits[0].ea, 'track');
+  });
+
+  it('waits to send pageviews until the visibleThreshold is met', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: VISIBLE_THRESHOLD,
+      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
+    });
+
+    expireSession();
+    log.removeHits();
+
+    openNewTab();
+    closeAllButFirstTab();
+    const start = Date.now();
+
+    browser.waitUntil(log.hitCountEquals(1));
+    const end = Date.now();
+
+    // Expects non-pageview hits queued to be sent after the session has timed
+    // out to include a pageview immediately before them.
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert(hits[0].qt >= VISIBLE_THRESHOLD);
+    assert(end - start >= VISIBLE_THRESHOLD);
+  });
+
   it('handles closing a window/tab when a visible window is still open',
       function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const tab1 = browser.getCurrentTabId();
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
 
     const window1 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
 
     browser.close(tab1); // Close window1 and switch to tab1.
     openNewTab();
@@ -216,7 +275,7 @@ describe('pageVisibilityTracker', function() {
       function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -258,7 +317,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const tab1 = browser.getCurrentTabId();
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -268,7 +327,7 @@ describe('pageVisibilityTracker', function() {
     const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -307,14 +366,14 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const tab1 = browser.getCurrentTabId();
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     const tab2 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -324,7 +383,7 @@ describe('pageVisibilityTracker', function() {
     const tab4 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=4');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -378,7 +437,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const tab1 = browser.getCurrentTabId();
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -388,21 +447,21 @@ describe('pageVisibilityTracker', function() {
     const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     const window1 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     const window2 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -470,7 +529,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const tab1 = browser.getCurrentTabId();
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -480,14 +539,14 @@ describe('pageVisibilityTracker', function() {
     const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
     const tab4 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=4');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.pause(randomInteger(500, 2000));
 
@@ -548,6 +607,7 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
+      visibleThreshold: 0,
       fieldsObj: {
         dimension1: 'pageVisibilityTracker',
         nonInteraction: false,
@@ -581,7 +641,7 @@ describe('pageVisibilityTracker', function() {
   });
 
   it('includes usage params with all hits', () => {
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
@@ -596,7 +656,7 @@ describe('pageVisibilityTracker', function() {
 
   describe('remove', () => {
     it('destroys all bound events and functionality', () => {
-      browser.execute(ga.run, 'require', 'pageVisibilityTracker');
+      browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
       browser.execute(ga.run, 'send', 'pageview');
 
       log.removeHits();
@@ -751,6 +811,7 @@ function setStoreData(key, value) {
  */
 function requirePageVisibilityTracker_hitFilter() {
   ga('require', 'pageVisibilityTracker', {
+    visibleThreshold: 0,
     hitFilter: (model) => {
       const eventValue = model.get('eventValue');
       model.set('dimension1', String(eventValue), true);
