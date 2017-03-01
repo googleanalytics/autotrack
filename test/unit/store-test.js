@@ -24,13 +24,13 @@ describe('Store', () => {
   beforeEach(() => localStorage.clear());
   afterEach(() => localStorage.clear());
 
-  describe('constuctor', () => {
+  describe('static getOrCreate', () => {
     it('creates a localStorage key from the tracking ID and namespace', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-      assert.strictEqual(store1.key, 'autotrack:UA-12345-1:ns1');
+      assert.strictEqual(store1.key_, 'autotrack:UA-12345-1:ns1');
 
-      const store2 = Store.getOrCreate('UA-67890-1', 'ns2', {default: true});
-      assert.strictEqual(store2.key, 'autotrack:UA-67890-1:ns2');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+      assert.strictEqual(store2.key_, 'autotrack:UA-67890-1:ns2');
 
       store1.destroy();
       store2.destroy();
@@ -43,17 +43,6 @@ describe('Store', () => {
 
       assert.strictEqual(store1, store3);
       assert.notStrictEqual(store1, store2);
-
-      store1.destroy();
-      store2.destroy();
-    });
-
-    it('stores the optional defaults object on the instance', () => {
-      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-      assert.deepEqual(store1.defaults, {});
-
-      const store2 = Store.getOrCreate('UA-67890-1', 'ns2', {default: true});
-      assert.deepEqual(store2.defaults, {default: true});
 
       store1.destroy();
       store2.destroy();
@@ -79,27 +68,11 @@ describe('Store', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 
-      localStorage.setItem(store1.key, JSON.stringify({foo: 12, bar: 34}));
-      localStorage.setItem(store2.key, JSON.stringify({qux: 56, baz: 78}));
+      localStorage.setItem(store1.key_, JSON.stringify({foo: 12, bar: 34}));
+      localStorage.setItem(store2.key_, JSON.stringify({qux: 56, baz: 78}));
 
       assert.deepEqual(store1.get(), {foo: 12, bar: 34});
       assert.deepEqual(store2.get(), {qux: 56, baz: 78});
-
-      store1.destroy();
-      store2.destroy();
-    });
-
-    it('returns the default data if the store is missing or corrupted',
-        () => {
-      const store1 = Store.getOrCreate(
-          'UA-12345-1', 'ns1', {default: true, foo: 1});
-      const store2 = Store.getOrCreate(
-          'UA-67890-1', 'ns2', {default: true, qux: 2});
-
-      localStorage.setItem(store1.key, 'bad data');
-
-      assert.deepEqual(store1.get(), {default: true, foo: 1});
-      assert.deepEqual(store2.get(), {default: true, qux: 2});
 
       store1.destroy();
       store2.destroy();
@@ -111,8 +84,8 @@ describe('Store', () => {
       const store2 = Store.getOrCreate(
           'UA-67890-1', 'ns2', {default: true, qux: 2});
 
-      localStorage.setItem(store1.key, JSON.stringify({foo: 12, bar: 34}));
-      localStorage.setItem(store2.key, JSON.stringify({qux: 56, baz: 78}));
+      localStorage.setItem(store1.key_, JSON.stringify({foo: 12, bar: 34}));
+      localStorage.setItem(store2.key_, JSON.stringify({qux: 56, baz: 78}));
 
       assert.deepEqual(store1.get(), {default: true, foo: 12, bar: 34});
       assert.deepEqual(store2.get(), {default: true, qux: 56, baz: 78});
@@ -120,18 +93,113 @@ describe('Store', () => {
       store1.destroy();
       store2.destroy();
     });
+
+    it('returns the cached data if the store read errors', () => {
+      const store1 = Store.getOrCreate(
+          'UA-12345-1', 'ns1', {default: true, foo: 1});
+      const store2 = Store.getOrCreate(
+          'UA-67890-1', 'ns2', {default: true, qux: 2});
+
+      localStorage.setItem(store1.key_, 'bad data');
+
+      assert.deepEqual(store1.get(), {default: true, foo: 1});
+      assert.deepEqual(store2.get(), {default: true, qux: 2});
+
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('returns the cached data if localStorage is not supported', () => {
+      sinon.stub(Store, 'isSupported_', () => false);
+
+      const store1 = Store.getOrCreate(
+          'UA-12345-1', 'ns1', {default: true, foo: 1});
+      const store2 = Store.getOrCreate(
+          'UA-67890-1', 'ns2', {default: true, qux: 2});
+
+      store1.set({bar: 3});
+      store2.set({baz: 4});
+
+      assert.deepEqual(store1.get(), {default: true, foo: 1, bar: 3});
+      assert.deepEqual(store2.get(), {default: true, qux: 2, baz: 4});
+
+      Store.isSupported_.restore();
+      store1.destroy();
+      store2.destroy();
+    });
   });
 
   describe('set', () => {
-    it('writes data to localStorage for store key', () => {
+    it('writes data to localStorage for the store key', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 
       store1.set({foo: 12, bar: 34});
       store2.set({qux: 56, baz: 78});
 
-      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
-      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+      assert.deepEqual(
+          JSON.parse(localStorage.getItem(store1.key_)),
+          {foo: 12, bar: 34});
+      assert.deepEqual(
+          JSON.parse(localStorage.getItem(store2.key_)),
+          {qux: 56, baz: 78});
+
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('stores the updated data in the local cache', () => {
+      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+
+      store1.set({foo: 12, bar: 34});
+      store2.set({qux: 56, baz: 78});
+
+      assert.deepEqual(store1.cache_, {foo: 12, bar: 34});
+      assert.deepEqual(store2.cache_, {qux: 56, baz: 78});
+
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('updates the cache even if the localStorage write fails', () => {
+      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+
+      sinon.stub(Store, 'set_').throws();
+      store1.set({foo: 12, bar: 34});
+      store2.set({qux: 56, baz: 78});
+
+      assert.deepEqual(store1.cache_, {foo: 12, bar: 34});
+      assert.deepEqual(store2.cache_, {qux: 56, baz: 78});
+
+      Store.set_.restore();
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('updates the cache of other stores in other tabs', () => {
+      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+
+      // Simulate a storage event, meaning a `set()` call was made in
+      // another tab.
+      const storageEvent1 = new StorageEvent('storage', {
+        key: store1.key_,
+        oldValue: '',
+        newValue: JSON.stringify({foo: 12, bar: 34}),
+      });
+      const storageEvent2 = new StorageEvent('storage', {
+        key: store2.key_,
+        oldValue: '',
+        newValue: JSON.stringify({qux: 56, baz: 78}),
+      });
+
+      window.dispatchEvent(storageEvent1);
+      window.dispatchEvent(storageEvent2);
+
+      assert.deepEqual(store1.cache_, {foo: 12, bar: 34});
+      assert.deepEqual(store2.cache_, {qux: 56, baz: 78});
 
       store1.destroy();
       store2.destroy();
@@ -154,9 +222,31 @@ describe('Store', () => {
 
       assert.deepEqual(store1.get(), {});
       assert.deepEqual(store2.get(), {});
-      assert.strictEqual(localStorage.getItem(store1.key), null);
-      assert.strictEqual(localStorage.getItem(store2.key), null);
+      assert.strictEqual(localStorage.getItem(store1.key_), null);
+      assert.strictEqual(localStorage.getItem(store2.key_), null);
 
+      store1.destroy();
+      store2.destroy();
+    });
+
+    it('clears the cache even if the localStorage clear fails', () => {
+      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+      sinon.stub(Store, 'clear_').throws();
+
+      store1.set({foo: 12, bar: 34});
+      store2.set({qux: 56, baz: 78});
+
+      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
+      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+
+      store1.clear();
+      store2.clear();
+
+      assert.deepEqual(store1.get(), {});
+      assert.deepEqual(store2.get(), {});
+
+      Store.clear_.restore();
       store1.destroy();
       store2.destroy();
     });
