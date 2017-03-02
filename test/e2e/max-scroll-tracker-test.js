@@ -336,11 +336,16 @@ function setStoreData(key, value) {
     const oldValue = localStorage.getItem(key);
     const newValue = JSON.stringify(value);
 
-    // Set the value on localStorage so it triggers the storage event in
-    // other open tabs. Also, manually dispatch the event in the current tab
-    // since just writing to localStorage won't update the local cached values.
-    window.localStorage.setItem(key, newValue);
-    window.dispatchEvent(
-        new StorageEvent('storage', {key, oldValue, newValue}));
+    // IE11 doesn't support event constructors.
+    try {
+      // Set the value on localStorage so it triggers the storage event in
+      // other tabs. Also, manually dispatch the event in this tab since just
+      // writing to localStorage won't update the locally cached values.
+      window.localStorage.setItem(key, newValue);
+      window.dispatchEvent(
+          new StorageEvent('storage', {key, oldValue, newValue}));
+    } catch(err) {
+      // Do nothing
+    }
   }, key, value);
 }

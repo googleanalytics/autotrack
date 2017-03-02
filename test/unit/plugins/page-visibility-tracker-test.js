@@ -18,7 +18,6 @@
 import assert from 'assert';
 import sinon from 'sinon';
 import '../../../lib/plugins/page-visibility-tracker';
-import store from '../../../lib/store';
 
 
 const TRACKING_ID = 'UA-12345-1';
