@@ -84,6 +84,14 @@ The following table outlines all possible configuration options for the `pageVis
     </td>
   </tr>
   <tr valign="top">
+    <td><code>visibleThreshold</code></td>
+    <td><code>number</code></td>
+    <td>
+      The time in milliseconds to wait before sending a Page Visibility event (or a new pageview in the case of a session timeout). This helps prevent unwanted events from being sent in cases where a user is quickly switching tabs or closing tabs they no longer want open.<br>
+      <strong>Default:</strong> <code>5000</code>
+    </td>
+  </tr>
+  <tr valign="top">
     <td><code>visibleMetricIndex</code></td>
     <td><code>number</code></td>
     <td>If set, a <a href="https://support.google.com/analytics/answer/2709828">custom metric</a> at the index provided is sent when the page's visibility state changes from visible to hidden. The metric value is the amount of time (in seconds) the page was in the visible state.</td>
