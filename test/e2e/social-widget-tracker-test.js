@@ -23,6 +23,13 @@ import * as constants from '../../lib/constants';
 import pkg from '../../package.json';
 
 
+const DEFAULT_TRACKER_FIELDS = {
+  trackingId: 'UA-12345-1',
+  cookieDomain: 'auto',
+  siteSpeedSampleRate: 0,
+};
+
+
 let testId;
 let log;
 
@@ -36,7 +43,7 @@ describe('socialWidgetTracker', function() {
     testId = uuid();
     log = bindLogAccessors(testId);
 
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
   });
 

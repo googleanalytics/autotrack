@@ -23,6 +23,13 @@ import * as constants from '../../lib/constants';
 import pkg from '../../package.json';
 
 
+const DEFAULT_TRACKER_FIELDS = {
+  trackingId: 'UA-12345-1',
+  cookieDomain: 'auto',
+  siteSpeedSampleRate: 0,
+};
+
+
 let testId;
 let log;
 
@@ -85,7 +92,7 @@ describe('index', function() {
 
   it('works with all plugins required', () => {
     browser.url('/test/e2e/fixtures/autotrack.html');
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'require', 'eventTracker');
@@ -106,7 +113,7 @@ describe('index', function() {
 
   it('works when renaming the global object', () => {
     browser.url('/test/e2e/fixtures/autotrack-rename.html');
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'require', 'eventTracker');
@@ -127,7 +134,7 @@ describe('index', function() {
 
   it('tracks usage for all required plugins', () => {
     browser.url('/test/e2e/fixtures/autotrack.html');
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'cleanUrlTracker');
     browser.execute(ga.run, 'require', 'eventTracker');

@@ -23,7 +23,15 @@ import * as constants from '../../lib/constants';
 import pkg from '../../package.json';
 
 
+const DEFAULT_TRACKER_FIELDS = {
+  trackingId: 'UA-12345-1',
+  cookieDomain: 'auto',
+  siteSpeedSampleRate: 0,
+};
+
+
 const TIMEOUT = 1000;
+
 
 const opts = {
   definitions: [
@@ -63,7 +71,7 @@ describe('mediaQueryTracker', function() {
     log = bindLogAccessors(testId);
 
     browser.setViewportSize({width: 800, height: 600}, false);
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
   });
 
@@ -135,7 +143,7 @@ describe('mediaQueryTracker', function() {
 
     browser.execute(ga.run, 'mediaQueryTracker:remove');
     browser.execute(ga.run, 'remove');
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.setViewportSize({width: 800, height: 600}, false);
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
