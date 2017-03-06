@@ -4,6 +4,7 @@ This document lists the changes between each minor and patch versions. For chang
 
 ### 2.1.0 (unreleased)
 
+- Fix a double-pageview bug on pageload after session timeout (#150).
 - Add a visibleThreshold option to pageVisibilityTracker (#148).
 
 ### 2.0.4 (2017-02-24)
