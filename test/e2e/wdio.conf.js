@@ -43,26 +43,29 @@ const getCapabilities = () => {
         platform: 'Windows 10',
         version: 'latest',
       },
-      {
-        browserName: 'firefox',
-        platform: 'OS X 10.11',
-        version: 'latest',
-      },
-      {
-        browserName: 'safari',
-        platform: 'OS X 10.12',
-        version: '10.0',
-      },
-      {
-        browserName: 'safari',
-        platform: 'OS X 10.11',
-        version: '9',
-      },
-      {
-        browserName: 'internet explorer',
-        platform: 'Windows 8.1',
-        version: '11',
-      },
+      // TODO(philipwalton): other browsers have been too flaky to run on
+      // every push. Uncomment and test manually before making releases, but
+      // for now there's too much failure noise to run on these browsers.
+      // {
+      //   browserName: 'firefox',
+      //   platform: 'OS X 10.11',
+      //   version: 'latest',
+      // },
+      // {
+      //   browserName: 'safari',
+      //   platform: 'OS X 10.12',
+      //   version: '10.0',
+      // },
+      // {
+      //   browserName: 'safari',
+      //   platform: 'OS X 10.11',
+      //   version: '9',
+      // },
+      // {
+      //   browserName: 'internet explorer',
+      //   platform: 'Windows 8.1',
+      //   version: '11',
+      // },
       // TODO(philipwalton) Edge webdriver does not fully support enough of the
       // webdriver features to rely on. Wait for full support and then re-add:
       // https://dev.windows.com/en-us/microsoft-edge/platform/status/webdriver/details/
