@@ -135,14 +135,10 @@ describe('pageVisibilityTracker', function() {
     closeAllButFirstTab();
   });
 
-  it('sends a pageview when changing to visible if the session has expired',
-      function() {
+  it('sends a pageview on session-expiry when changing to visible', function() {
     if (!browserSupportsTabs()) return this.skip();
 
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
-      visibleThreshold: 0,
-      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
-    });
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
 
     expireSession();
     log.removeHits();
@@ -155,6 +151,22 @@ describe('pageVisibilityTracker', function() {
     // out to include a pageview immediately before them.
     const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
+  });
+
+  it('does not send a session-expiry pageview on initial pageload', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+
+    expireSession();
+    log.removeHits();
+
+    openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+
+    log.assertNoHitsReceived();
   });
 
   it('resets the session timeout when other hits are sent', function() {
