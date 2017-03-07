@@ -85,7 +85,7 @@ gulp.task('javascript', () => {
 gulp.task('javascript:unit', ((compiler) => {
   const createCompiler = () => {
     return webpack({
-      entry: glob.sync('./test/unit/*-test.js'),
+      entry: glob.sync('./test/unit/**/*-test.js'),
       output: {
         path: 'test/unit',
         filename: 'index.js',
@@ -171,6 +171,7 @@ gulp.task('tunnel', ['serve'], (done) => {
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
     verbose: true,
+    verboseDebugging: true,
   };
   sauceConnectLauncher(opts, (err, sauceConnectProcess) => {
     if (err) {

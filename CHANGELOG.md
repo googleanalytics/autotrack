@@ -2,6 +2,11 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.1.0 (unreleased)
+
+- Fix a double-pageview bug on pageload after session timeout (#150).
+- Add a visibleThreshold option to pageVisibilityTracker (#148).
+
 ### 2.0.4 (2017-02-24)
 
 - Fix CI build failure.

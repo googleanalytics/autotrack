@@ -23,6 +23,13 @@ import * as constants from '../../lib/constants';
 import pkg from '../../package.json';
 
 
+const DEFAULT_TRACKER_FIELDS = {
+  trackingId: 'UA-12345-1',
+  cookieDomain: 'auto',
+  siteSpeedSampleRate: 0,
+};
+
+
 const baseUrl = browser.options.baseUrl;
 
 
@@ -38,7 +45,7 @@ describe('outboundLinkTracker', function() {
     log = bindLogAccessors(testId);
 
     browser.url('/test/e2e/fixtures/outbound-link-tracker.html');
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
   });
 
@@ -145,7 +152,7 @@ describe('outboundLinkTracker', function() {
 
     // Go back and click a link that does match the `.link` selector.
     browser.url('/test/e2e/fixtures/outbound-link-tracker.html');
-    browser.execute(ga.run, 'create', 'UA-XXXXX-Y', 'auto');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'outboundLinkTracker', {
       linkSelector: '.link',

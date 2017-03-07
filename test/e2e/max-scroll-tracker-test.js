@@ -52,9 +52,7 @@ describe('maxScrollTracker', function() {
     log = bindLogAccessors(testId);
 
     browser.scroll(0, 0);
-    browser.execute(() => {
-      localStorage.clear();
-    });
+    clearStorage();
 
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
@@ -312,15 +310,42 @@ function requireMaxScrollTracker_hitFilter() {
 
 
 /**
- * Forces the session to expire by changing the stored last hit time.
+ * Manually clear all stores.
+ */
+function clearStorage() {
+  setStoreData('autotrack:UA-12345-1:session', {});
+  setStoreData('autotrack:UA-12345-1:plugins/max-scroll-tracker', {});
+}
+
+
+/**
+ * Manually expires the session.
  */
 function expireSession() {
-  browser.execute(() => {
-    const storedSessionData = JSON.parse(
-        localStorage.getItem('autotrack:UA-12345-1:session')) || {};
+  setStoreData('autotrack:UA-12345-1:session', {isExpired: true});
+}
 
-    storedSessionData.isExpired = true;
-    localStorage.setItem('autotrack:UA-12345-1:session',
-        JSON.stringify(storedSessionData));
-  });
+
+/**
+ * Manually set a value for store in all open windows/tabs.
+ * @param {string} key
+ * @param {!Object} value
+ */
+function setStoreData(key, value) {
+  browser.execute((key, value) => {
+    const oldValue = localStorage.getItem(key);
+    const newValue = JSON.stringify(value);
+
+    // IE11 doesn't support event constructors.
+    try {
+      // Set the value on localStorage so it triggers the storage event in
+      // other tabs. Also, manually dispatch the event in this tab since just
+      // writing to localStorage won't update the locally cached values.
+      window.localStorage.setItem(key, newValue);
+      window.dispatchEvent(
+          new StorageEvent('storage', {key, oldValue, newValue}));
+    } catch(err) {
+      // Do nothing
+    }
+  }, key, value);
 }
