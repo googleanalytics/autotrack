@@ -178,7 +178,14 @@ describe('Store', () => {
       store2.destroy();
     });
 
-    it('updates the cache of other stores in other tabs', () => {
+    it('updates the cache of other stores in other tabs', function() {
+      // Feature detect event constructor support, skip otherwise.
+      try {
+        new StorageEvent('storage', {});
+      } catch(err) {
+        this.skip();
+      }
+
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 

@@ -46,6 +46,8 @@ describe('PageVisibilityTracker', function() {
 
   describe('constructor', function() {
     it('stores the tracker on the instance', function() {
+      if (!document.visibilityState) this.skip();
+
       const pvt = new PageVisibilityTracker(tracker);
       assert.strictEqual(tracker, pvt.tracker);
 
@@ -53,6 +55,8 @@ describe('PageVisibilityTracker', function() {
     });
 
     it('merges the passed options with the defaults', function() {
+      if (!document.visibilityState) this.skip();
+
       let pvt = new PageVisibilityTracker(tracker);
 
       assert.deepEqual(pvt.opts, {
@@ -76,6 +80,8 @@ describe('PageVisibilityTracker', function() {
     });
 
     it('stores the initial visibility state', function() {
+      if (!document.visibilityState) this.skip();
+
       const pvt = new PageVisibilityTracker(tracker);
 
       const storeData = pvt.store.get();

@@ -189,8 +189,9 @@ describe('Session', () => {
 });
 
 
-const originalDateTimeFormatDescriptor = Object.getOwnPropertyDescriptor(
-    Intl.DateTimeFormat.prototype, 'format');
+const originalDateTimeFormatDescriptor = window.Intl &&
+    window.Intl.DateTimeFormat && Object.getOwnPropertyDescriptor(
+        Intl.DateTimeFormat.prototype, 'format');
 
 
 /**
