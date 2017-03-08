@@ -271,8 +271,8 @@ The following translations have been graciously provided by the community. Pleas
 * [Chinese](https://github.com/stevezhuang/autotrack/blob/master/README.zh.md)
 * [French](https://github.com/DirtyF/autotrack/tree/french-translation)
 * [Japanese](https://github.com/nebosuker/autotrack)
-* [Polish](https://github.com/krisu7/autotrack)
 * [Korean](https://github.com/youngilcho/autotrack/tree/korean-translation)
+* [Polish](https://github.com/krisu7/autotrack)
 
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
