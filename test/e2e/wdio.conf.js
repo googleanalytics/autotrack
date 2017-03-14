@@ -18,7 +18,7 @@
 // Use babel to resolve ES2015 modules and transpile functions
 // to be run in the browser into ES6.
 require('babel-register')({
-    presets: [ 'es2015' ]
+    presets: ['es2015'],
 });
 
 
