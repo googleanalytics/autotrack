@@ -2,6 +2,10 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.1.1 (2017-03-15)
+
+- Remove `.babelrc` to prevent conflicts when using `babel-loader`.
+
 ### 2.1.0 (2017-03-06)
 
 - Fix a double-pageview bug on pageload after session timeout (#150).
