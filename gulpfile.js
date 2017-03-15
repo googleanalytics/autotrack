@@ -15,24 +15,27 @@
  */
 
 
-import {spawn} from 'child_process';
-import fs from 'fs-extra';
-import eslint from 'gulp-eslint';
-import glob from 'glob';
-import gulp from 'gulp';
-import gutil from 'gulp-util';
-import webdriver from 'gulp-webdriver';
-import gzipSize from 'gzip-size';
-import {rollup} from 'rollup';
-import nodeResolve from 'rollup-plugin-node-resolve';
-import babel from 'rollup-plugin-babel';
-import runSequence from 'run-sequence';
-import sauceConnectLauncher from 'sauce-connect-launcher';
-import seleniumServerJar from 'selenium-server-standalone-jar';
-import webpack from 'webpack';
-import build from './bin/build';
-import logBuildErrors from './bin/errors';
-import * as server from './test/e2e/server';
+require('babel-register')({presets: ['es2015']});
+
+
+const {spawn} = require('child_process');
+const fs = require('fs-extra');
+const eslint = require('gulp-eslint');
+const glob = require('glob');
+const gulp = require('gulp');
+const gutil = require('gulp-util');
+const webdriver = require('gulp-webdriver');
+const gzipSize = require('gzip-size');
+const {rollup} = require('rollup');
+const nodeResolve = require('rollup-plugin-node-resolve');
+const babel = require('rollup-plugin-babel');
+const runSequence = require('run-sequence');
+const sauceConnectLauncher = require('sauce-connect-launcher');
+const seleniumServerJar = require('selenium-server-standalone-jar');
+const webpack = require('webpack');
+const build = require('./bin/build');
+const logBuildErrors = require('./bin/errors');
+const server = require('./test/e2e/server');
 
 
 let seleniumServer;
