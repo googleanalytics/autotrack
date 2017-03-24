@@ -159,6 +159,8 @@ describe('socialWidgetTracker', function() {
     assert.strictEqual(hits[0].sa, 'follow');
     assert.strictEqual(hits[0].st, 'twitter');
     assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].cd1, 'twitter');
+    assert.strictEqual(hits[0].cd2, 'follow');
   });
 
 
@@ -205,13 +207,15 @@ function browserDriverSupportsTwitterWidgets() {
  */
 function requireSocialWidgetTracker_hitFilter() {
   ga('require', 'socialWidgetTracker', {
-    hitFilter: (model) => {
+    hitFilter: (model, element, event) => {
       const action = model.get('socialAction');
       if (action == 'tweet') {
         throw new Error('Exclude tweet actions');
       } else {
         model.set('nonInteraction', true);
       }
+      model.set('dimension1', element.getAttribute('data-screen-name'));
+      model.set('dimension2', event.type);
     },
   });
 }

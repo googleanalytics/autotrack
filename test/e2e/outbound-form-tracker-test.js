@@ -173,6 +173,7 @@ describe('outboundFormTracker', function() {
     assert.strictEqual(hits[0].ec, 'Outbound Form');
     assert.strictEqual(hits[0].ea, 'submit');
     assert.strictEqual(hits[0].el, '/outbound-submit');
+    assert.strictEqual(hits[0].cd1, 'submit');
   });
 
   it('supports forms in shadow DOM and event retargetting', function() {
@@ -259,10 +260,11 @@ function requireOutboundFormTracker_shouldTrackOutboundForm() {
  */
 function requireOutboundFormTracker_hitFilter() {
   ga('require', 'outboundFormTracker', {
-    hitFilter: (model, form) => {
+    hitFilter: (model, form, event) => {
       if (form.action == 'https://example.com/outbound-submit') {
         model.set('eventLabel', '/outbound-submit', true);
       }
+      model.set('dimension1', event.type);
     },
   });
 }
