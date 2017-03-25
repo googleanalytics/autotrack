@@ -136,7 +136,7 @@ The follow HTML will track clicks given the above configuration:
 
 ### Tracking multiple events on the same element
 
-You can track multiple events on the same DOM element by passing a list of comma-separate event names to the `ga-on` attribute (assuming the default `attributePrefix` option).
+You can track multiple events on the same DOM element by passing a list of comma-separated event names to the `ga-on` attribute (assuming the default `attributePrefix` option).
 
 A common use case for this is to track multiple click types on link elements. For example, users don't always click on links with their primary mouse button: sometimes they middle-click to open the link in a background tab or right-click to copy the link address and share it.
 
@@ -158,7 +158,7 @@ ga('require', 'eventTracker', {
 });
 ```
 
-Since the `eventTracker` plugin (by default) only sends the fields specified declaratively as attributes on the element, if you want to report on what DOM event triggered the event you send to Google Analytics, you'll have to use the [`hitFilter`](#options) option to inspect the event object itself.
+And since the `eventTracker` plugin (by default) only sends the fields specified declaratively as attributes on the element, if you want to report on what DOM event triggered the event you send to Google Analytics, you'll have to use the [`hitFilter`](#options) option to inspect the event object itself.
 
 This example sets the [`eventAction`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction) field to the value of `event.type` for the current hit.
 

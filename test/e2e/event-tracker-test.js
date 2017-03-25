@@ -226,6 +226,3 @@ function requireEventTrackerWithHitFilter() {
     },
   });
 }
-
-
-
