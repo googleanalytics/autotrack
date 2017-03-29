@@ -101,7 +101,11 @@ ga('require', 'outboundLinkTracker', {
 
 ## `hitFilter`
 
-The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the tracker's [model object](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference) as its first argument, and (if the hit was initiated by a user interaction with a DOM element) the DOM element as the second argument.
+The `hitFilter` option is useful when you need to make more advanced modifications to a hit, or when you need to abort the hit altogether. `hitFilter` is a function that gets invoked with the following three arguments:
+
+1. `model`: the tracker's [model object](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference).
+2. `element`: if the hit was initiated as a result of a user interaction with a DOM element, that element is passed (otherwise `undefined`).
+3. `event`: if `element` is present *and* the user interaction with that element generated a DOM event, that event is passed (otherwise `undefined`).
 
 Within the `hitFilter` function you can get the value of any of the model object's fields using the [`get`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#get) method on the `model` argument. And you can set a new value using the [`set`](https://developers.google.com/analytics/devguides/collection/analyticsjs/model-object-reference#set) method on the `model` argument. To abort the hit, throw an error.
 
@@ -135,6 +139,28 @@ ga('require', 'impressionTracker', {
     if (element.className.indexOf('is-invisible') > -1) {
       throw new Error('Aborting hit');
     }
+  }
+});
+```
+
+#### `eventTracker`
+
+The `eventTracker` plugin supports listening for multiple event types on the same element, but if you want to report on those event types, you need access
+to the event object itself. This configuration listens for the `click`, [`auxclick`](https://wicg.github.io/auxclick/), and [`contextmenu`](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu) events and sets the [`eventAction`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction) field to the value of `event.type` for the current hit.
+
+```html
+<a href="/help"
+  ga-on="click,auxclick,contextmenu"
+  ga-event-category="Help Link">
+  Get Help
+</a>
+```
+
+```js
+ga('require', 'eventTracker', {
+  events: ['click', 'auxclick', 'contextmenu'],
+  hitFilter: function(model, element, event) {
+    model.set('eventAction', event.type, true);
   }
 });
 ```

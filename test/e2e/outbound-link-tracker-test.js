@@ -229,6 +229,7 @@ describe('outboundLinkTracker', function() {
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el, '/outbound-link');
+    assert.strictEqual(hits[0].cd1, 'click');
   });
 
   it('supports links in shadow DOM and event retargetting', () => {
@@ -341,10 +342,11 @@ function requireOutboundLinkTracker_shouldTrackOutboundLink() {
  */
 function requireOutboundLinkTracker_hitFilter() {
   ga('require', 'outboundLinkTracker', {
-    hitFilter: (model, link) => {
+    hitFilter: (model, link, event) => {
       if (link.href == 'https://example.com/outbound-link') {
         model.set('eventLabel', '/outbound-link', true);
       }
+      model.set('dimension1', event.type, true);
     },
   });
 }

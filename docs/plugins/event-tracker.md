@@ -18,9 +18,9 @@ ga('require', 'eventTracker', options);
 
 ### Modifying the HTML
 
-To add declarative interaction tracking to a DOM element, you start by adding a `ga-on` attribute (assuming the default `'ga-'` attribute prefix) and setting its value to whatever DOM event you want to listen for (note: it must be one of the events specified in the `events` configuration option). When the specified event is detected, a hit is sent to Google Analytics with whatever field attribute values are present on the element.
+To add declarative interaction tracking to a DOM element, you start by adding a `ga-on` attribute (assuming the default `'ga-'` attribute prefix) and setting its value to a comma-separated list of DOM events you want to track (note: all events specified in the attribute most also be present in the [`events`](#options) configuration option). When any of the specified events is detected, a hit is sent to Google Analytics with the corresponding attribute values present on the element.
 
-Any valid [analytics.js field](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) can be set declaratively via an attribute. The attribute name can be determined by combining the [`attributePrefix`](#options) option with the [kebab-cased](https://en.wikipedia.org/wiki/Letter_case#Special_case_styles) version of the field name. For example, if you want to set the [`eventCategory`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory) field and you're using the default `attributePrefix` of `'ga-'`, you would use the attribute name `ga-event-category`.
+Any valid [analytics.js field](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) can be set declaratively as an attribute. The attribute name can be determined by combining the [`attributePrefix`](#options) option with the [kebab-cased](https://en.wikipedia.org/wiki/Letter_case#Special_case_styles) version of the field name. For example, if you want to set the [`eventCategory`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory) field and you're using the default `attributePrefix` of `'ga-'`, you would use the attribute name `ga-event-category`.
 
 Refer to the [examples](#examples) section to see what the code looks like. For a complete list of possible fields to send, refer to the [field reference](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) in the `analytics.js` documentation.
 
@@ -113,26 +113,62 @@ ga('require', 'eventTracker');
 </button>
 ```
 
-### Customizing the `events` and `attributePrefix` options
+### Customizing the `attributePrefix` options
 
-This example customizes the `eventTracker` plugin to listen for right clicks (via the `contextmenu`  event). It also uses `'data-'` as the attribute prefix rather than the default `ga-`:
+This example customizes the `eventTracker` plugin to use `'data-'` as the attribute prefix rather than the default `ga-`:
 
 ```js
 ga('require', 'eventTracker', {
-  events: ['contextmenu'],
   attributePrefix: 'data-'
 });
 ```
 
-The follow HTML will track right clicks given the above configuration:
+The follow HTML will track clicks given the above configuration:
 
 ```html
 <button
-  data-on="contextmenu"
+  data-on="click"
   data-event-category="Info Button"
-  data-event-action="right click">
+  data-event-action="click">
   Info
 </button>
+```
+
+### Tracking multiple events on the same element
+
+You can track multiple events on the same DOM element by passing a list of comma-separated event names to the `ga-on` attribute (assuming the default `attributePrefix` option).
+
+A common use case for this is to track multiple click types on link elements. For example, users don't always click on links with their primary mouse button: sometimes they middle-click to open the link in a background tab or right-click to copy the link address and share it.
+
+To track all three of these click types on a single element, specify the `click`, [`auxclick`](https://wicg.github.io/auxclick/), and [`contextmenu`](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu) events.
+
+```html
+<a href="/help"
+  ga-on="click,auxclick,contextmenu"
+  ga-event-category="Help Link">
+  Get Help
+</a>
+```
+
+The plugin must also know what events to listen for when it's required (by default it only listens to `click` events), so to track these three events you'll have to specify them via the [`events`](#options) option:
+
+```js
+ga('require', 'eventTracker', {
+  events: ['click', 'auxclick', 'contextmenu']
+});
+```
+
+And since the `eventTracker` plugin (by default) only sends the fields specified declaratively as attributes on the element, if you want to report on what DOM event triggered the event you send to Google Analytics, you'll have to use the [`hitFilter`](#options) option to inspect the event object itself.
+
+This example sets the [`eventAction`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction) field to the value of `event.type` for the current hit.
+
+```js
+ga('require', 'eventTracker', {
+  events: ['click', 'auxclick', 'contextmenu'],
+  hitFilter: function(model, element, event) {
+    model.set('eventAction', event.type, true);
+  }
+});
 ```
 
 ### Tracking non-event hit types

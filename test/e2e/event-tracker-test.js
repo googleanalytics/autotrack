@@ -103,8 +103,26 @@ describe('eventTracker', function() {
     browser.waitUntil(log.hitCountEquals(1));
 
     const hits = log.getHits();
-    assert.strictEqual(hits[0].ec, 'Forms');
+    assert.strictEqual(hits[0].ec, 'Form');
     assert.strictEqual(hits[0].ea, 'submit');
+
+    browser.url('/test/e2e/fixtures/event-tracker.html');
+  });
+
+  it('supports listening for multiple events', () => {
+    browser.execute(ga.run, 'require', 'eventTracker', {
+      events: ['mousedown', 'click', 'submit'],
+    });
+    browser.click('#submit-test');
+    browser.waitUntil(log.hitCountEquals(3));
+
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Form');
+    assert.strictEqual(hits[0].ea, 'submit'); // Not mousedown.
+    assert.strictEqual(hits[0].ec, 'Form');
+    assert.strictEqual(hits[0].ea, 'submit'); // Not click.
+    assert.strictEqual(hits[1].ec, 'Form');
+    assert.strictEqual(hits[1].ea, 'submit');
 
     browser.url('/test/e2e/fixtures/event-tracker.html');
   });
@@ -131,12 +149,31 @@ describe('eventTracker', function() {
     browser.click('#click-test');
     browser.click('#pageview-hit-type');
     browser.click('#social-hit-type');
-    browser.waitUntil(log.hitCountEquals(1));
+    browser.click('#submit-test');
+
+    browser.waitUntil(log.hitCountEquals(3));
 
     const hits = log.getHits();
+    assert.strictEqual(hits[0].sn, 'Facebook');
+    assert.strictEqual(hits[0].sa, 'like');
     assert.strictEqual(hits[0].ni, '1');
-    assert.strictEqual(hits[0].cd1, 'foo');
-    assert.strictEqual(hits[0].cd2, 'bar');
+    assert.strictEqual(hits[0].cd1, 'click');
+    assert.strictEqual(hits[0].cd2, 'foo');
+    assert.strictEqual(hits[0].cd3, 'bar');
+
+    assert.strictEqual(hits[1].ec, 'Form');
+    assert.strictEqual(hits[1].ea, 'submit');
+    assert.strictEqual(hits[1].ni, '1');
+    assert.strictEqual(hits[1].cd1, 'click');
+    assert.strictEqual(hits[1].cd2, 'foo');
+    assert.strictEqual(hits[1].cd3, 'bar');
+
+    assert.strictEqual(hits[2].ec, 'Form');
+    assert.strictEqual(hits[2].ea, 'submit');
+    assert.strictEqual(hits[2].ni, '1');
+    assert.strictEqual(hits[2].cd1, 'submit');
+    assert.strictEqual(hits[2].cd2, 'foo');
+    assert.strictEqual(hits[2].cd3, 'bar');
   });
 
   it('includes usage params with all hits', () => {
@@ -175,14 +212,17 @@ describe('eventTracker', function() {
  */
 function requireEventTrackerWithHitFilter() {
   ga('require', 'eventTracker', {
-    hitFilter: (model, element) => {
-      if (element.id != 'social-hit-type') {
-        throw new Error('Aborting non-social hits');
-      } else {
-        model.set('nonInteraction', true, true);
-        model.set('dimension1', 'foo', true);
-        model.set('dimension2', 'bar', true);
+    events: ['click', 'submit'],
+    hitFilter: (model, element, event) => {
+      if (!(element.id == 'social-hit-type' ||
+          element.nodeName.toLowerCase() == 'form')) {
+        throw new Error('Aborting non-social, non-form hits');
       }
+
+      model.set('nonInteraction', true, true);
+      model.set('dimension1', event.type, true);
+      model.set('dimension2', 'foo', true);
+      model.set('dimension3', 'bar', true);
     },
   });
 }
