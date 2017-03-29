@@ -2,6 +2,11 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.2.0 (2017-03-28)
+
+- Update the `eventTracker` `ga-on` attribute to accept multiple (comma-separate) event types.
+- Update the `hitFilter` option to be invoked with the DOM event associated with the interaction (when applicable).
+
 ### 2.1.1 (2017-03-15)
 
 - Remove `.babelrc` to prevent conflicts when using `babel-loader`.
