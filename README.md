@@ -96,8 +96,8 @@ ga('require', 'urlChangeTracker');
 
 ga('send', 'pageview');
 </script>
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-<script async src='path/to/autotrack.js'></script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<script async src="path/to/autotrack.js"></script>
 ```
 
 Of course, you'll have to make the following modifications to the above code to customize autotrack to your needs:
@@ -202,8 +202,8 @@ autotrack -o path/to/autotrack.custom.js -p eventTracker,outboundLinkTracker,url
 Once this file is generated, you can include it in your HTML templates where you load `analytics.js`. Note the use of the `async` attribute on both script tags. This prevents `analytics.js` and `autotrack.custom.js` from interfering with the loading of the rest of your site.
 
 ```html
-<script async src='https://www.google-analytics.com/analytics.js'></script>
-<script async src='path/to/autotrack.custom.js'></script>
+<script async src="https://www.google-analytics.com/analytics.js"></script>
+<script async src="path/to/autotrack.custom.js"></script>
 ```
 
 ### Using autotrack with multiple trackers
