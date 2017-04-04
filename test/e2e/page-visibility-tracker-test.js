@@ -250,6 +250,162 @@ describe('pageVisibilityTracker', function() {
     assert(end - start >= VISIBLE_THRESHOLD);
   });
 
+  it('sends the initial pageview when sendInitialPageview is set', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    const opts = {
+      sendInitialPageview: true,
+      visibleThreshold: 0,
+    };
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.pause(500);
+
+    openNewTab('/test/e2e/fixtures/autotrack.html?tab=2');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+
+    browser.waitUntil(log.hitCountEquals(3));
+
+    const hits = log.getHits();
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert(hits[1].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'track');
+    assert(hits[1].ev > 0);
+    assert(hits[2].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[2].t, 'pageview');
+  });
+
+  it('sends a pageload metric when pageloadMetricIndex is set', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    const opts = {
+      sendInitialPageview: true,
+      visibleThreshold: 0,
+      pageloadMetricIndex: 1,
+    };
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+
+    const backgroundTab = openNewTabInBackground(
+        '/test/e2e/fixtures/autotrack.html?tab=2');
+
+    browser.switchTab(backgroundTab);
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+
+    browser.waitUntil(log.hitCountEquals(2));
+
+    const hits = log.getHits();
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[0].cm1, '1');
+    assert(hits[1].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].cm1, '1');
+  });
+
+  it('delays sending the pageview until the state is visible', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    const opts = {
+      sendInitialPageview: true,
+      visibleThreshold: 0,
+      pageloadMetricIndex: 1,
+    };
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+
+    const backgroundTab = openNewTabInBackground(
+        '/test/e2e/fixtures/autotrack.html?tab=2');
+
+    browser.switchTab(backgroundTab);
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.waitUntil(log.hitCountEquals(2));
+
+    // The `switchTab()` command alone don't switch focus to the newly opened
+    // background tab, so we have to display an alert to force it.
+    browser.execute(() => {
+      alert('focus');
+    });
+    browser.pause(500);
+    browser.alertAccept();
+
+    browser.waitUntil(log.hitCountEquals(4));
+
+    const hits = log.getHits();
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[0].cm1, '1');
+    assert(hits[1].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].cm1, '1');
+    assert(hits[2].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[2].ec, 'Page Visibility');
+    assert.strictEqual(hits[2].ea, 'track');
+    assert(hits[2].ev > 0);
+    assert(hits[3].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[3].t, 'pageview');
+    assert(!hits[3].cm1);
+  });
+
+  it('does not double-send pageviews on session timeout', function() {
+    if (!browserSupportsTabs()) return this.skip();
+
+    const opts = {
+      sendInitialPageview: true,
+      visibleThreshold: 0,
+      pageloadMetricIndex: 1,
+    };
+
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+
+    const backgroundTab = openNewTabInBackground(
+        '/test/e2e/fixtures/autotrack.html?tab=2');
+
+    browser.switchTab(backgroundTab);
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
+    browser.execute(ga.logHitData, testId);
+    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.waitUntil(log.hitCountEquals(2));
+
+    expireSession();
+
+    // The `switchTab()` command alone don't switch focus to the newly opened
+    // background tab, so we have to display an alert to force it.
+    browser.execute(() => {
+      alert('focus');
+    });
+    browser.pause(500);
+    browser.alertAccept();
+
+    browser.waitUntil(log.hitCountEquals(3));
+
+    const hits = log.getHits();
+
+    log.removeHits();
+    log.assertNoHitsReceived();
+
+    assert(hits[0].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[0].cm1, '1');
+    assert(hits[1].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].cm1, '1');
+    assert(hits[2].dl.endsWith('tab=2'));
+    assert.strictEqual(hits[2].t, 'pageview');
+    assert(!hits[2].cm1);
+  });
+
   it('handles closing a window/tab when a visible window is still open',
       function() {
     if (!browserSupportsTabs()) return this.skip();
@@ -711,7 +867,7 @@ function openNewTab(url) {
   const oldTabIds = browser.getTabIds();
   browser.execute((url) => {
     const a = document.createElement('a');
-    a.href = url || '/test/e2e/fixtures/blank.htm';
+    a.href = url || '/test/e2e/fixtures/blank.html';
     a.target = '_blank';
     a.id = 'new-tab-link';
     a.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
@@ -731,6 +887,43 @@ function openNewTab(url) {
   }, 2000, 'New tab was never opened.', 500);
 
   return browser.getCurrentTabId();
+}
+
+
+/**
+ * Opens a new tab in the backround by inserting a link with target="_blank"
+ * into the DOM, pressing the meta key, and then clicking on it.
+ * @param {string} url A an optional URL to navigate to, defaulting to
+ *     '/test/e2e/fixtures/blank.htm'.
+ * @return {string} The tab ID.
+ */
+function openNewTabInBackground(url) {
+  const oldTabIds = browser.getTabIds();
+  browser.execute((url) => {
+    const a = document.createElement('a');
+    a.href = url || '/test/e2e/fixtures/blank.html';
+    a.id = 'new-tab-link';
+    a.setAttribute('style', 'position:fixed;top:0;left:0;right:0;bottom:0');
+    a.onclick = (event) => document.body.removeChild(a);
+    document.body.appendChild(a);
+  }, url);
+
+  browser.keys(['\uE03D']);
+  browser.element('#new-tab-link').click();
+  browser.keys(['\uE03D']);
+
+  browser.pause(500);
+  let backgroundTab;
+  browser.waitUntil(() => {
+    const newTabIds = browser.getTabIds();
+    if (newTabIds.length > oldTabIds.length) {
+      backgroundTab = newTabIds[newTabIds.length - 1];
+      return true;
+    }
+    return false;
+  }, 2000, 'New tab was never opened.', 500);
+
+  return backgroundTab;
 }
 
 
