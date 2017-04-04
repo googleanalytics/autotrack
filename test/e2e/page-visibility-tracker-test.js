@@ -898,6 +898,9 @@ function openNewTab(url) {
  * @return {string} The tab ID.
  */
 function openNewTabInBackground(url) {
+  const browserCaps = browser.session().value;
+  const cmdKey = browserCaps.platform == 'MAC' ? '\uE03D' : '\uE009';
+
   const oldTabIds = browser.getTabIds();
   browser.execute((url) => {
     const a = document.createElement('a');
@@ -908,9 +911,9 @@ function openNewTabInBackground(url) {
     document.body.appendChild(a);
   }, url);
 
-  browser.keys(['\uE03D']);
+  browser.keys([cmdKey]);
   browser.element('#new-tab-link').click();
-  browser.keys(['\uE03D']);
+  browser.keys([cmdKey]);
 
   browser.pause(500);
   let backgroundTab;
