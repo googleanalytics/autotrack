@@ -153,7 +153,8 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].t, 'pageview');
   });
 
-  it('does not send a session-expiry pageview on initial page load', function() {
+  it('does not send a session-expiry pageview on initial page load',
+      function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
