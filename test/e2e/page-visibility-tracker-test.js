@@ -279,13 +279,13 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[2].t, 'pageview');
   });
 
-  it('sends a pageload metric when pageloadMetricIndex is set', function() {
+  it('sends a pageload metric when pageLoadMetricIndex is set', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const opts = {
       sendInitialPageview: true,
       visibleThreshold: 0,
-      pageloadMetricIndex: 1,
+      pageLoadMetricIndex: 1,
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
@@ -316,7 +316,7 @@ describe('pageVisibilityTracker', function() {
     const opts = {
       sendInitialPageview: true,
       visibleThreshold: 0,
-      pageloadMetricIndex: 1,
+      pageLoadMetricIndex: 1,
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
@@ -363,7 +363,7 @@ describe('pageVisibilityTracker', function() {
     const opts = {
       sendInitialPageview: true,
       visibleThreshold: 0,
-      pageloadMetricIndex: 1,
+      pageLoadMetricIndex: 1,
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
