@@ -153,7 +153,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].t, 'pageview');
   });
 
-  it('does not send a session-expiry pageview on initial pageload', function() {
+  it('does not send a session-expiry pageview on initial page load', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
@@ -279,7 +279,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[2].t, 'pageview');
   });
 
-  it('sends a pageload metric when pageLoadMetricIndex is set', function() {
+  it('sends a page load metric when pageLoadMetricIndex is set', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     const opts = {
@@ -306,7 +306,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].cm1, '1');
     assert(hits[1].dl.endsWith('tab=2'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
-    assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].ea, 'page load');
     assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
   });
@@ -347,7 +347,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].cm1, '1');
     assert(hits[1].dl.endsWith('tab=2'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
-    assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].ea, 'page load');
     assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
     assert(hits[2].dl.endsWith('tab=1'));
@@ -401,7 +401,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].cm1, '1');
     assert(hits[1].dl.endsWith('tab=2'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
-    assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].ea, 'page load');
     assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
     assert(hits[2].dl.endsWith('tab=2'));
