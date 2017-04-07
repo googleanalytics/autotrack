@@ -307,6 +307,7 @@ describe('pageVisibilityTracker', function() {
     assert(hits[1].dl.endsWith('tab=2'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
     assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
   });
 
@@ -347,6 +348,7 @@ describe('pageVisibilityTracker', function() {
     assert(hits[1].dl.endsWith('tab=2'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
     assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
     assert(hits[2].dl.endsWith('tab=1'));
     assert.strictEqual(hits[2].ec, 'Page Visibility');
@@ -400,6 +402,7 @@ describe('pageVisibilityTracker', function() {
     assert(hits[1].dl.endsWith('tab=2'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
     assert.strictEqual(hits[1].ea, 'pageload');
+    assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
     assert(hits[2].dl.endsWith('tab=2'));
     assert.strictEqual(hits[2].t, 'pageview');
