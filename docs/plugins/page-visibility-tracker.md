@@ -4,11 +4,11 @@ This guide explains what the `pageVisibilityTracker` plugin is and how to integr
 
 ## Overview
 
-It's becoming increasingly common for users to visit your site, and then leave it open in a browser tab for hours or days. And with rise in popularity of single page applications, some tabs almost never get closed.
+It's becoming increasingly common for users to visit your site, and then leave it open in a browser tab for hours or days. And with rise in popularity of [single page applications](https://en.wikipedia.org/wiki/Single-page_application) (SPAs) and [progressive web apps](https://developers.google.com/web/progressive-web-apps/) (PWAs) some tabs almost never get closed.
 
 Because of this shift, the traditional model of pageviews and sessions simply does not apply in a growing number of cases.
 
-The `pageVisibilityTracker` plugin changes this paradigm by shifting from pageload being the primary indicator to [Page Visibility](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API). To understand why this is important, consider this scenario: you've just updated your website to be able to fetch new content in the background and display it to the user when they return to your page (without forcing them to reload). If you were only using the default analytics.js tracking snippet, this change would result is dramatically fewer pageviews, even though the user is consuming the same amount of content.
+The `pageVisibilityTracker` plugin changes this paradigm by shifting from page load being the primary indicator to [Page Visibility](https://developer.mozilla.org/en-US/docs/Web/API/Page_Visibility_API). To understand why this is important, consider this scenario: you've just updated your website to be able to fetch new content in the background and display it to the user when they return to your page (without forcing them to reload). If you were only using the default analytics.js tracking snippet, this change would result is dramatically fewer pageviews, even though the user is consuming the same amount of content.
 
 By taking Page Visibility into consideration, the `pageVisibilityTracker` plugin is able to report consistent numbers regardless of whether the user needs to reload the page.
 
@@ -26,11 +26,20 @@ The following sample reports show how you can use the `pageVisibilityTracker` pl
 
 ### How it works
 
-The `pageVisibilityTracker` plugin listens for [`visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/Events/visibilitychange) events on the current page and sends hits to Google Analytics capturing how long the page was in each state. It also programmatically starts new sessions and sends new pageviews when the visibility state changes from hidden to visible (if the previous session has timed out).
+The `pageVisibilityTracker` plugin listens for [`visibilitychange`](https://developer.mozilla.org/en-US/docs/Web/Events/visibilitychange) events on the current page and sends hits to Google Analytics capturing how long the page was in the visible state. It also programmatically starts new sessions and sends new pageviews when the visibility state changes from hidden to visible (if the previous session has timed out).
+
+Optionally you can set [configuration options](#options) to let the `pageVisibilityTracker` plugin handle sending the initial pageview. When set, the plugin will send the initial pageview if the page is loaded in the visible state. If it's loaded in a background tab, the plugin will wait until the page is visible before sending the inital pageview.
+
+**Note:** if you configure the `pageVisibilityTracker` plugin to send the initial pageview, make sure you remove the `ga('send', 'pageview')` command from your tracking snippet.
+
 
 ### Impact on session and pageview counts
 
-When using the `pageVisibilityTracker` plugin, you'll probably notice an increase in your session and pageview counts. This is not an error, the reality is your current implementation (based just on pageloads) is likely underreporting these metrics.
+When using the `pageVisibilityTracker` plugin, you may notice an increase or decrease in session and pageview counts. This is not an error, the reality is your current implementation (based just on page loads) is likely inaccurate.
+
+If your users tend to leave your site open in a background tab and switch to it frequently, you'll likely notice an increase in session and pageview counts. By contrast, if a significant portion of your users load your site in a background tab and later close the tab without ever viewing the content, you'll likely see your session and pageview counts go down.
+
+**Note:** you can set the [`pageLoadMetricIndex`](#options) option to track page loads (via a [custom metric](https://support.google.com/analytics/answer/2709828)) separately from pageviews in the event you also want to know how often your pages are loaded.
 
 ## Usage
 
@@ -40,7 +49,7 @@ To enable the `pageVisibilityTracker` plugin, run the [`require`](https://develo
 ga('require', 'pageVisibilityTracker', options);
 ```
 
-### Using a custom metric
+### Using custom and calculated metrics
 
 The easiest way to track the time a page was visible is to create a [custom metric](https://support.google.com/analytics/answer/2709828) called *Page Visible Time* that you set in your plugin configuration options, and then to create [calculated metrics](https://support.google.com/analytics/answer/6121409) called *Avg. Page Visible Time (per Page)* and *Avg. Page Visible Time (per Session)* that you use in your reports.
 
@@ -56,7 +65,7 @@ Here are the formulas for both:
 {{Page Visible Time}} / {{Unique Pageviews}}
 ```
 
-The screenshot in the [overview](#overview) shows some examples of what reports with these custom and calculated metrics look like.
+The screenshots in the [overview](#overview) shows some examples of what reports with these custom and calculated metrics look like.
 
 ## Options
 
@@ -89,6 +98,22 @@ The following table outlines all possible configuration options for the `pageVis
     <td>
       The time in milliseconds to wait before sending a Page Visibility event (or a new pageview in the case of a session timeout). This helps prevent unwanted events from being sent in cases where a user is quickly switching tabs or closing tabs they no longer want open.<br>
       <strong>Default:</strong> <code>5000</code>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td><code>sendInitialPageview</code></td>
+    <td><code>boolean</code></td>
+    <td>
+      <p>When true, the plugin will handle sending the initial pageview. If the page is loaded in the visible state, a pageview is sent right away. If the page is loaded in a background tab, the plugin will wait until the page becomes visible before sending the pageview.<br>
+      <strong>Default:</strong> <code>false</code></p>
+      <p><strong>Important:</strong> If you use this option, make sure you remove the <code>ga('send', 'pageview')</code> command from your tracking snippet.</p>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td><code>pageLoadMetricIndex</code></td>
+    <td><code>number</code></td>
+    <td>
+      If this option and the <code>sendInitialPageview</code> option are both set, a <a href="https://support.google.com/analytics/answer/2709828">custom metric</a> at the index provided is set on the first hit to track page loads. If the page is loaded in the visible state, the custom metric is set on the pageview hit. If the page is loaded in a background tab, an event is sent with the custom metric set on it. See the <a href="#page-load-events">page load hits</a> section for field details.
     </td>
   </tr>
   <tr valign="top">
@@ -156,6 +181,67 @@ If the page's visibility state changes from `hidden` to `visible` and the sessio
   </tr>
 </table>
 
+### Page load hits
+
+If the `sendInitialPageview` option is set and the page's visibility state is visible, a pageview is sent with the following default field values:
+
+<table>
+  <tr valign="top">
+    <th align="left">Field</th>
+    <th align="left">Value</th>
+  </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#hitType"><code>hitType</code></a></td>
+    <td><code>'pageview'</code></td>
+  </tr>
+</table>
+
+If the `pageLoadMetricIndex` option is set in addition to the `sendInitialPageview` option (and the page was loaded in the visible state), a pageview is sent with the following default field values:
+
+<table>
+  <tr valign="top">
+    <th align="left">Field</th>
+    <th align="left">Value</th>
+  </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#hitType"><code>hitType</code></a></td>
+    <td><code>'pageview'</code></td>
+  </tr>
+  <tr valign="top">
+    <td><code>metric&lt;pageLoadMetricIndex&gt;</code></td>
+    <td><code>1</code></td>
+  </tr>
+</table>
+
+If the `sendInitialPageview` and `pageLoadMetricIndex` options are set, and the page was loaded in a background tab, an event is sent with the following default field values:
+
+<table>
+  <tr valign="top">
+    <th align="left">Field</th>
+    <th align="left">Value</th>
+  </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#hitType"><code>hitType</code></a></td>
+    <td><code>'event'</code></td>
+  </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory"><code>eventCategory</code></a></td>
+    <td><code>'Page Visibility'</code></td>
+  </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventAction"><code>eventAction</code></a></td>
+    <td><code>'page load'</code></td>
+  </tr>
+  <tr valign="top">
+    <td><code>metric&lt;pageLoadMetricIndex&gt;</code></td>
+    <td><code>1</code></td>
+  </tr>
+  <tr valign="top">
+    <td><a href="https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#nonInteraction"><code>nonInteraction</code></a></td>
+    <td><code>true</code></td>
+  </tr>
+</table>
+
 ## Methods
 
 The following table lists all methods for the `pageVisibilityTracker` plugin:
@@ -175,6 +261,30 @@ For details on how `analytics.js` plugin methods work and how to invoke them, se
 
 ## Examples
 
+### Configuring the plugin to send the initial pageview
+
+To let the `pageVisibilityTracker` plugin handle sending the initial pageview for you when the page is visible, set the `sendInitialPageview` option to true:
+
+```js
+ga('require', 'pageVisibilityTracker', {
+  sendInitialPageview: true,
+});
+```
+
+Note that when using the `sendInitialPageview` option, you no longer need the `ga('send', 'pageview')` command in your tracking snippet:
+
+```js
+ga('create', 'UA-XXXXX-Y', 'auto');
+
+// Require other autotrack plugins as needed.
+ga('require', 'pageVisibilityTracker', {
+  sendInitialPageview: true,
+});
+
+// The command below is no longer needed.
+// ga('send', 'pageview');
+```
+
 ### Setting a session timeout and time zone
 
 If you've set the default session timeout in your Google Analytics property to 4 hours and the timezone of all your views to Pacific Time, you can ensure the `pageVisibilityTracker` plugin knows about these settings with the following configuration options:
@@ -186,13 +296,16 @@ ga('require', 'pageVisibilityTracker', {
 });
 ```
 
-### Setting a custom metrics to track visible time
+### Setting custom metrics to track page loads and visible time
 
-If you want to track the total (or average) time a user spends in the visible state via a [custom metric](https://support.google.com/analytics/answer/2709828) (by default it's tracked as the `eventValue`), you can use the visible metric indexes.
+If you want to track page load (in addition to pageviews) as well as the total (or average) time a user spends in the visible state on your site, you can do so via [custom metrics](https://support.google.com/analytics/answer/2709828) and the `pageLoadMetricIndex` and `visibleMetricIndex` options.
 
 ```js
 ga('require', 'pageVisibilityTracker', {
-  visibleMetricIndex: 1,
+  sendInitialPageview: true,
+  pageLoadMetricIndex: 1,
+  visibleMetricIndex: 2,
+  timeZone: 'America/Los_Angeles',
 });
 ```
 
