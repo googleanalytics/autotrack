@@ -39,8 +39,7 @@ const plugins = (argv.p || argv.plugins || '').split(/\s*,\s*/);
 if (argv.h || argv.help || noArgsPassed) {
   fs.createReadStream(path.join(__dirname, '../bin/usage.txt'))
       .pipe(process.stderr);
-}
-else {
+} else {
   const {cyan, gray, green, red} = chalk;
 
   if (!(plugins.length)) {

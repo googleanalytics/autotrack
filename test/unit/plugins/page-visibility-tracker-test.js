@@ -61,6 +61,7 @@ describe('PageVisibilityTracker', function() {
 
       assert.deepEqual(pvt.opts, {
         sessionTimeout: DEFAULT_SESSION_TIMEOUT,
+        sendInitialPageview: false,
         visibleThreshold: DEFAULT_VISIBLE_THRESHOLD,
         fieldsObj: {},
       });
@@ -70,9 +71,11 @@ describe('PageVisibilityTracker', function() {
         sessionTimeout: 5,
         visibleThreshold: 0,
         timeZone: 'America/Los_Angeles',
+        sendInitialPageview: false,
+        pageLoadMetricIndex: 1,
         visibleMetricIndex: 2,
         fieldsObj: {nonInteraction: true},
-        hitFilter: sinon.stub()
+        hitFilter: sinon.stub(),
       };
       pvt = new PageVisibilityTracker(tracker, opts);
       assert.deepEqual(pvt.opts, opts);

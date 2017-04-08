@@ -133,7 +133,7 @@ gulp.task('lint', () => {
     'test/unit/**/*.js',
     '!test/unit/index.js',
   ])
-  .pipe(eslint({fix: true}))
+  .pipe(eslint())
   .pipe(eslint.format())
   .pipe(eslint.failAfterError());
 });

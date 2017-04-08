@@ -81,7 +81,7 @@ const getCapabilities = () => {
 
       cap['build'] = process.env.TRAVIS_BUILD_NUMBER;
     });
-  };
+  }
 
   return capabilities;
 };

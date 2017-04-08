@@ -132,10 +132,10 @@ describe('MethodChain', () => {
       const overrideMethod2 = sinon.spy();
 
       MethodChain.add(tracker, 'set', overrideMethod1);
-      var originalMethodReference1 = tracker.set;
+      const originalMethodReference1 = tracker.set;
 
       MethodChain.add(tracker, 'set', overrideMethod2);
-      var originalMethodReference2 = tracker.set;
+      const originalMethodReference2 = tracker.set;
 
       assert.equal(originalMethodReference1, originalMethodReference2);
 

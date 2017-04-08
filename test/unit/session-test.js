@@ -102,7 +102,7 @@ describe('Session', () => {
     it('returns true if a new day has started', function() {
       try {
         new Intl.DateTimeFormat('en-US', {
-          timeZone: 'America/Los_Angeles'
+          timeZone: 'America/Los_Angeles',
         }).format(new Date());
       } catch(err) {
         // Skip this test in browsers that don't support time zones.

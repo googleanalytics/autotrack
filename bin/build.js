@@ -30,7 +30,7 @@ const {SourceMapGenerator, SourceMapConsumer} = require('source-map');
 
 
 const kebabCase = (str) => {
-  return str.replace(/([A-Z])/g, (match, p1) => `-${p1.toLowerCase()}`)
+  return str.replace(/([A-Z])/g, (match, p1) => `-${p1.toLowerCase()}`);
 };
 
 
@@ -107,7 +107,7 @@ module.exports = (output, autotrackPlugins = []) => {
               new SourceMapConsumer(fromMap));
 
           generator.applySourceMap(
-              new SourceMapConsumer(toMap), path.basename(output))
+              new SourceMapConsumer(toMap), path.basename(output));
 
           const sourceMap = generator.toString();
 
