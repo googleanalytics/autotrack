@@ -2,6 +2,10 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.3.1 (2017-04-09)
+
+- Rename misspelled `pageloadMetricIndex` option to `pageloadsMetricIndex`
+
 ### 2.3.0 (2017-04-07)
 
 - Add a `sendInitialPageview` option to the `pageVisibilityTracker` plugin (#167)
