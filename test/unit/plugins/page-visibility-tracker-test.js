@@ -72,7 +72,7 @@ describe('PageVisibilityTracker', function() {
         visibleThreshold: 0,
         timeZone: 'America/Los_Angeles',
         sendInitialPageview: false,
-        pageLoadMetricIndex: 1,
+        pageLoadsMetricIndex: 1,
         visibleMetricIndex: 2,
         fieldsObj: {nonInteraction: true},
         hitFilter: sinon.stub(),

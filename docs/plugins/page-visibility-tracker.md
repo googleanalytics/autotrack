@@ -39,7 +39,7 @@ When using the `pageVisibilityTracker` plugin, you may notice an increase or dec
 
 If your users tend to leave your site open in a background tab and switch to it frequently, you'll likely notice an increase in session and pageview counts. By contrast, if a significant portion of your users load your site in a background tab and later close the tab without ever viewing the content, you'll likely see your session and pageview counts go down.
 
-**Note:** you can set the [`pageLoadMetricIndex`](#options) option to track page loads (via a [custom metric](https://support.google.com/analytics/answer/2709828)) separately from pageviews in the event you also want to know how often your pages are loaded.
+**Note:** you can set the [`pageLoadsMetricIndex`](#options) option to track page loads (via a [custom metric](https://support.google.com/analytics/answer/2709828)) separately from pageviews in the event you also want to know how often your pages are loaded.
 
 ## Usage
 
@@ -110,7 +110,7 @@ The following table outlines all possible configuration options for the `pageVis
     </td>
   </tr>
   <tr valign="top">
-    <td><code>pageLoadMetricIndex</code></td>
+    <td><code>pageLoadsMetricIndex</code></td>
     <td><code>number</code></td>
     <td>
       If this option and the <code>sendInitialPageview</code> option are both set, a <a href="https://support.google.com/analytics/answer/2709828">custom metric</a> at the index provided is set on the first hit to track page loads. If the page is loaded in the visible state, the custom metric is set on the pageview hit. If the page is loaded in a background tab, an event is sent with the custom metric set on it. See the <a href="#page-load-events">page load hits</a> section for field details.
@@ -196,7 +196,7 @@ If the `sendInitialPageview` option is set and the page's visibility state is vi
   </tr>
 </table>
 
-If the `pageLoadMetricIndex` option is set in addition to the `sendInitialPageview` option (and the page was loaded in the visible state), a pageview is sent with the following default field values:
+If the `pageLoadsMetricIndex` option is set in addition to the `sendInitialPageview` option (and the page was loaded in the visible state), a pageview is sent with the following default field values:
 
 <table>
   <tr valign="top">
@@ -208,12 +208,12 @@ If the `pageLoadMetricIndex` option is set in addition to the `sendInitialPagevi
     <td><code>'pageview'</code></td>
   </tr>
   <tr valign="top">
-    <td><code>metric&lt;pageLoadMetricIndex&gt;</code></td>
+    <td><code>metric&lt;pageLoadsMetricIndex&gt;</code></td>
     <td><code>1</code></td>
   </tr>
 </table>
 
-If the `sendInitialPageview` and `pageLoadMetricIndex` options are set, and the page was loaded in a background tab, an event is sent with the following default field values:
+If the `sendInitialPageview` and `pageLoadsMetricIndex` options are set, and the page was loaded in a background tab, an event is sent with the following default field values:
 
 <table>
   <tr valign="top">
@@ -233,7 +233,7 @@ If the `sendInitialPageview` and `pageLoadMetricIndex` options are set, and the 
     <td><code>'page load'</code></td>
   </tr>
   <tr valign="top">
-    <td><code>metric&lt;pageLoadMetricIndex&gt;</code></td>
+    <td><code>metric&lt;pageLoadsMetricIndex&gt;</code></td>
     <td><code>1</code></td>
   </tr>
   <tr valign="top">
@@ -298,12 +298,12 @@ ga('require', 'pageVisibilityTracker', {
 
 ### Setting custom metrics to track page loads and visible time
 
-If you want to track page load (in addition to pageviews) as well as the total (or average) time a user spends in the visible state on your site, you can do so via [custom metrics](https://support.google.com/analytics/answer/2709828) and the `pageLoadMetricIndex` and `visibleMetricIndex` options.
+If you want to track page load (in addition to pageviews) as well as the total (or average) time a user spends in the visible state on your site, you can do so via [custom metrics](https://support.google.com/analytics/answer/2709828) and the `pageLoadsMetricIndex` and `visibleMetricIndex` options.
 
 ```js
 ga('require', 'pageVisibilityTracker', {
   sendInitialPageview: true,
-  pageLoadMetricIndex: 1,
+  pageLoadsMetricIndex: 1,
   visibleMetricIndex: 2,
   timeZone: 'America/Los_Angeles',
 });
