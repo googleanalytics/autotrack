@@ -2,6 +2,11 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.3.2 (2017-04-10)
+
+- Fix incorrect plugin usage attribution on the initial pageview sent by the `pageVisibilityTracker` if other plugins are required after it [#169]
+- Fix a bug where `impressionTracker` would error on page load if not passed any elements [#169]
+
 ### 2.3.1 (2017-04-09)
 
 - Rename misspelled `pageLoadMetricIndex` option to `pageLoadsMetricIndex`
