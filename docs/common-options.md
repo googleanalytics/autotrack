@@ -38,7 +38,7 @@ ga('require', 'urlChangeTracker', {
   }
 });
 ga('send', 'pageview', {
-  dimension1: 'pageload'
+  dimension1: 'page load'
 });
 ```
 

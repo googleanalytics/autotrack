@@ -156,4 +156,35 @@ describe('index', function() {
     // '3ff' = '1111111111' in hex
     assert.strictEqual(lastHit[constants.USAGE_PARAM], '3ff');
   });
+
+  it('tracks usage when plugins send hits before other plugins are required',
+      () => {
+    browser.url('/test/e2e/fixtures/autotrack.html');
+    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
+    browser.execute(ga.logHitData, testId);
+
+    // Run all require commands in the same execute() block so they occur in
+    // the same call stack (as most people do in their tracking snippet).
+    browser.execute(() => {
+      ga('require', 'cleanUrlTracker');
+      ga('require', 'eventTracker');
+      ga('require', 'impressionTracker');
+      ga('require', 'outboundLinkTracker');
+      ga('require', 'mediaQueryTracker');
+      ga('require', 'outboundFormTracker');
+      ga('require', 'pageVisibilityTracker', {sendInitialPageview: true});
+      ga('require', 'socialWidgetTracker');
+      ga('require', 'urlChangeTracker');
+      ga('require', 'maxScrollTracker');
+    });
+
+    browser.waitUntil(log.hitCountIsAtLeast(1));
+
+    const lastHit = log.getHits().slice(-1)[0];
+    assert.strictEqual(lastHit.did, constants.DEV_ID);
+    assert.strictEqual(lastHit[constants.VERSION_PARAM], pkg.version);
+
+    // '3ff' = '1111111111' in hex
+    assert.strictEqual(lastHit[constants.USAGE_PARAM], '3ff');
+  });
 });

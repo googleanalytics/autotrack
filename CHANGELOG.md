@@ -4,12 +4,12 @@ This document lists the changes between each minor and patch versions. For chang
 
 ### 2.3.1 (2017-04-09)
 
-- Rename misspelled `pageloadMetricIndex` option to `pageloadsMetricIndex`
+- Rename misspelled `pageLoadMetricIndex` option to `pageLoadsMetricIndex`
 
 ### 2.3.0 (2017-04-07)
 
 - Add a `sendInitialPageview` option to the `pageVisibilityTracker` plugin (#167)
-- Add a `pageloadMetricIndex` option to the `pageVisibilityTracker` plugin (#167)
+- Add a `pageLoadMetricIndex` option to the `pageVisibilityTracker` plugin (#167)
 
 ### 2.2.0 (2017-03-28)
 
@@ -22,7 +22,7 @@ This document lists the changes between each minor and patch versions. For chang
 
 ### 2.1.0 (2017-03-06)
 
-- Fix a double-pageview bug on pageload after session timeout (#150)
+- Fix a double-pageview bug on page load after session timeout (#150)
 - Add a `visibleThreshold` option to `pageVisibilityTracker` (#148)
 
 ### 2.0.4 (2017-02-24)

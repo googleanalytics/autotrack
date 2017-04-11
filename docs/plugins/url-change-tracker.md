@@ -120,7 +120,7 @@ ga('require', 'urlChangeTracker', {
 
 ### Differentiating between virtual pageviews and the initial pageview
 
-If you want to be able to report on pageviews sent by the `urlChangeTracker` separately from pageviews sent in the initial pageload, you can use a [custom dimension](https://support.google.com/analytics/answer/2709828) to add additional metadata to the pageview hit.
+If you want to be able to report on pageviews sent by the `urlChangeTracker` separately from pageviews sent in the initial page load, you can use a [custom dimension](https://support.google.com/analytics/answer/2709828) to add additional metadata to the pageview hit.
 
 The following code uses the `fieldsObj` option to set a custom dimension at index 1 for all pageview hits sent by the `urlChangeTracker` plugin:
 
@@ -131,6 +131,6 @@ ga('require', 'urlChangeTracker', {
   }
 });
 ga('send', 'pageview', {
-  dimension1: 'pageload'
+  dimension1: 'page load'
 });
 ```
