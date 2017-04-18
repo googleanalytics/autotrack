@@ -85,7 +85,7 @@ If your site is currently using the [default JavaScript tracking snippet](https:
 
 ```html
 <script>
-window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments);ga.l=+new Date;}
 ga('create', 'UA-XXXXX-Y', 'auto');
 
 // Replace the following lines with the plugins you want to use.
