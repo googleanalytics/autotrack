@@ -317,13 +317,8 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
     browser.pause(500);
 
-    const backgroundTab = openNewTabInBackground(
-        '/test/e2e/fixtures/autotrack.html?tab=2');
-
-    browser.switchTab(backgroundTab);
-    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
-    browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    openNewTabInBackground('/test/e2e/fixtures' +
+        '/page-visibility-tracker-pageload.html?testId=' + testId);
 
     browser.waitUntil(log.hitCountEquals(2));
 
@@ -331,7 +326,7 @@ describe('pageVisibilityTracker', function() {
     assert(hits[0].dl.endsWith('tab=1'));
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[0].cm1, '1');
-    assert(hits[1].dl.endsWith('tab=2'));
+    assert(hits[1].dl.includes('page-visibility-tracker-pageload.html'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
     assert.strictEqual(hits[1].ea, 'page load');
     assert.strictEqual(hits[1].ni, '1');
@@ -350,23 +345,12 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
     browser.pause(500);
 
-    const backgroundTab = openNewTabInBackground(
-        '/test/e2e/fixtures/autotrack.html?tab=2');
-
-    browser.switchTab(backgroundTab);
-    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
-    browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    const backgroundTab = openNewTabInBackground('/test/e2e/fixtures' +
+        '/page-visibility-tracker-pageload.html?testId=' + testId);
 
     browser.waitUntil(log.hitCountEquals(2));
 
-    // The `switchTab()` command alone don't switch focus to the newly opened
-    // background tab, so we have to display an alert to force it.
-    browser.execute(() => {
-      alert('focus');
-    });
-    browser.pause(500);
-    browser.alertAccept();
+    browser.switchTab(backgroundTab);
 
     browser.waitUntil(log.hitCountEquals(4));
 
@@ -374,7 +358,7 @@ describe('pageVisibilityTracker', function() {
     assert(hits[0].dl.endsWith('tab=1'));
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[0].cm1, '1');
-    assert(hits[1].dl.endsWith('tab=2'));
+    assert(hits[1].dl.includes('page-visibility-tracker-pageload.html'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
     assert.strictEqual(hits[1].ea, 'page load');
     assert.strictEqual(hits[1].ni, '1');
@@ -383,7 +367,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[2].ec, 'Page Visibility');
     assert.strictEqual(hits[2].ea, 'track');
     assert(hits[2].ev > 0);
-    assert(hits[3].dl.endsWith('tab=2'));
+    assert(hits[3].dl.includes('page-visibility-tracker-pageload.html'));
     assert.strictEqual(hits[3].t, 'pageview');
     assert(!hits[3].cm1);
   });
@@ -400,10 +384,9 @@ describe('pageVisibilityTracker', function() {
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
     browser.pause(500);
 
-    const backgroundTab = openNewTabInBackground(
-        '/test/e2e/fixtures/autotrack.html?tab=2');
+    const backgroundTab = openNewTabInBackground('/test/e2e/fixtures' +
+        '/page-visibility-tracker-pageload.html?testId=' + testId);
 
-    browser.switchTab(backgroundTab);
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
@@ -411,14 +394,7 @@ describe('pageVisibilityTracker', function() {
     browser.waitUntil(log.hitCountEquals(2));
     expireSession();
 
-    // The `switchTab()` command alone don't switch focus to the newly opened
-    // background tab, so we have to display an alert to force it.
-    browser.execute(() => {
-      alert('focus');
-    });
-    browser.pause(500);
-    browser.alertAccept();
-
+    browser.switchTab(backgroundTab);
     browser.waitUntil(log.hitCountEquals(3));
 
     const hits = log.getHits();
@@ -428,12 +404,12 @@ describe('pageVisibilityTracker', function() {
     assert(hits[0].dl.endsWith('tab=1'));
     assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[0].cm1, '1');
-    assert(hits[1].dl.endsWith('tab=2'));
+    assert(hits[1].dl.includes('page-visibility-tracker-pageload.html'));
     assert.strictEqual(hits[1].ec, 'Page Visibility');
     assert.strictEqual(hits[1].ea, 'page load');
     assert.strictEqual(hits[1].ni, '1');
     assert.strictEqual(hits[1].cm1, '1');
-    assert(hits[2].dl.endsWith('tab=2'));
+    assert(hits[2].dl.includes('page-visibility-tracker-pageload.html'));
     assert.strictEqual(hits[2].t, 'pageview');
     assert(!hits[2].cm1);
   });
@@ -931,7 +907,8 @@ function openNewTab(url) {
  */
 function openNewTabInBackground(url) {
   const browserCaps = browser.session().value;
-  const cmdKey = browserCaps.platform == 'MAC' ? '\uE03D' : '\uE009';
+  const cmdKey = browserCaps.platform.toLowerCase().startsWith('mac') ?
+      '\uE03D' : '\uE009';
 
   const oldTabIds = browser.getTabIds();
   browser.execute((url) => {
