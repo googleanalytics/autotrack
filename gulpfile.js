@@ -26,6 +26,7 @@ const gulp = require('gulp');
 const gutil = require('gulp-util');
 const webdriver = require('gulp-webdriver');
 const gzipSize = require('gzip-size');
+const path = require('path');
 const {rollup} = require('rollup');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
@@ -90,7 +91,7 @@ gulp.task('javascript:unit', ((compiler) => {
     return webpack({
       entry: glob.sync('./test/unit/**/*-test.js'),
       output: {
-        path: 'test/unit',
+        path: path.resolve(__dirname, 'test/unit'),
         filename: 'index.js',
       },
       devtool: '#source-map',

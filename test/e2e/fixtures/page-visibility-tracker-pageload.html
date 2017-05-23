@@ -1,0 +1,45 @@
+<!doctype html>
+<html>
+<head>
+  <script>
+    window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
+
+    ga('create', 'UA-12345-1', {
+      trackingId: 'UA-12345-1',
+      cookieDomain: 'auto',
+      siteSpeedSampleRate: 0,
+    });
+
+    var testId = location.search.match(/testId=([\w\-]+)/)[1];
+    ga(function (tracker) {
+      var oldSendHitTask = tracker.get('sendHitTask');
+      tracker.set('sendHitTask', function (model) {
+        var hitIndex = +(localStorage.getItem('hitcounter') || -1) + 1;
+        var hitTime = +new Date() - (model.get('queueTime') || 0);
+        var hitPayload = model.get('hitPayload') +
+            '&time=' + hitTime +'&index=' + hitIndex;
+
+        oldSendHitTask(model);
+
+        if ('sendBeacon' in navigator) {
+          navigator.sendBeacon('/collect/' + testId, hitPayload);
+        } else {
+          var beacon = new Image();
+          beacon.src = '/collect/' + testId + '?' + hitPayload;
+        }
+        localStorage.setItem('hitcounter', hitIndex);
+      });
+    });
+
+    ga('require', 'pageVisibilityTracker', {
+      sendInitialPageview: true,
+      visibleThreshold: 0,
+      pageLoadsMetricIndex: 1,
+    });
+  </script>
+  <script async src="/test/analytics.js"></script>
+  <script async src="/autotrack.js"></script>
+</head>
+<body>
+</body>
+</html>

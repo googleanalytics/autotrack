@@ -156,6 +156,38 @@ describe('maxScrollTracker', function() {
     log.assertNoHitsReceived();
   });
 
+  it('does not report cross-session even with corrupt store data', () => {
+    browser.execute(ga.run, 'require', 'maxScrollTracker');
+
+    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .25);
+    browser.waitUntil(log.hitCountEquals(1));
+
+    corruptSession();
+
+    // Scrolling here should clear the corrupt data but not send a hit.
+    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .5);
+    browser.pause(DEBOUNCE_TIMEOUT);
+
+    browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .75);
+    browser.pause(DEBOUNCE_TIMEOUT);
+
+    browser.waitUntil(log.hitCountEquals(3));
+
+    const hits = log.getHits();
+    assert.strictEqual(hits[0].ec, 'Max Scroll');
+    assert.strictEqual(hits[0].ea, 'increase');
+    assert.strictEqual(hits[0].ev, '25');
+    assert.strictEqual(hits[0].el, '25');
+    assert.strictEqual(hits[1].ec, 'Max Scroll');
+    assert.strictEqual(hits[1].ea, 'increase');
+    assert.strictEqual(hits[1].ev, '50');
+    assert.strictEqual(hits[1].el, '50');
+    assert.strictEqual(hits[2].ec, 'Max Scroll');
+    assert.strictEqual(hits[2].ea, 'increase');
+    assert.strictEqual(hits[2].ev, '25');
+    assert.strictEqual(hits[2].el, '75');
+  });
+
   it('only sends new events after max scroll passes the thereshold', () => {
     browser.execute(ga.run, 'require', 'maxScrollTracker');
 
@@ -323,6 +355,19 @@ function clearStorage() {
  */
 function expireSession() {
   setStoreData('autotrack:UA-12345-1:session', {isExpired: true});
+}
+
+
+/**
+ * Update the session ID and time to simulate a situation where the plugin's
+ * store data gets out of sync with the session store.
+ */
+function corruptSession() {
+  setStoreData('autotrack:UA-12345-1:session', {
+    id: 'new-id',
+    hitTime: +new Date,
+    isExpired: false,
+  });
 }
 
 
