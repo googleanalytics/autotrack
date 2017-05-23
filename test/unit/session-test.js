@@ -55,6 +55,24 @@ describe('Session', () => {
   });
 
   describe('constructor', () => {
+    it('stores a unique ID', () => {
+      const session = new Session(tracker);
+
+      assert(session.getId());
+
+      session.destroy();
+    });
+
+    it('reuses a stored ID if found', () => {
+      localStorage.setItem(
+          'autotrack:UA-12345-1:session', JSON.stringify({id: 'foo'}));
+
+      const session = new Session(tracker);
+      assert.strictEqual(session.getId(), 'foo');
+
+      session.destroy();
+    });
+
     it('sets the passed args on the instance', () => {
       const session = new Session(tracker, 123, 'America/Los_Angeles');
 
@@ -86,11 +104,22 @@ describe('Session', () => {
     });
   });
 
+  describe('getId', () => {
+    it('returns the stored ID', () => {
+      const session = new Session(tracker);
+
+      assert(session.getId());
+
+      session.destroy();
+    });
+  });
+
   describe('isExpired', () => {
     it('returns true if the last hit was too long ago', () => {
       const session = new Session(tracker);
 
       session.store.set({hitTime: now() - (60 * MINUTES)});
+
       assert(session.isExpired());
 
       session.store.set({hitTime: now() - (15 * MINUTES)});
@@ -143,9 +172,17 @@ describe('Session', () => {
       const session = new Session(tracker, 30, 'America/Los_Angeles');
       session.store.set({hitTime: now()});
 
-      assert.doesNotThrow(() => {
-        session.isExpired();
-      });
+      assert.doesNotThrow(() => session.isExpired());
+
+      session.destroy();
+    });
+
+    it('accepts an optional session ID', () => {
+      const session = new Session(tracker);
+      session.store.set({hitTime: now()});
+
+      assert(!session.isExpired());
+      assert(session.isExpired('old-id'));
 
       session.destroy();
     });
@@ -164,6 +201,36 @@ describe('Session', () => {
       tracker.send('timing', 'foo', 'bar', 1000);
       lastHitTime = session.store.get().hitTime;
       assert(lastHitTime >= timeBeforeTimingHit);
+
+      session.destroy();
+    });
+
+    it('updates the session ID if the session has expired', () => {
+      const session = new Session(tracker);
+      const id = session.getId();
+      session.store.set({hitTime: now() - (60 * MINUTES)});
+
+      assert.strictEqual(id, session.getId());
+
+      // Start a new session by sending a hit, which should generate a new ID.
+      tracker.send('pageview');
+
+      assert.notStrictEqual(id, session.getId());
+
+      session.destroy();
+    });
+
+    it('updates the session ID if sessionControl was set to start', () => {
+      const session = new Session(tracker);
+      const id = session.getId();
+      session.store.set({hitTime: now()});
+
+      assert.strictEqual(id, session.getId());
+
+      // Start a new session via the sessionControl field.
+      tracker.send('pageview', {sessionControl: 'start'});
+
+      assert.notStrictEqual(id, session.getId());
 
       session.destroy();
     });
