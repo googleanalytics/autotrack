@@ -82,23 +82,28 @@ describe('PageVisibilityTracker', function() {
       pvt.remove();
     });
 
-    it('stores the initial visibility state', function() {
+    it('stores the initial visibility state', function(done) {
       if (!document.visibilityState) this.skip();
 
       const pvt = new PageVisibilityTracker(tracker);
 
-      const storeData = pvt.store.get();
-      assert(storeData.state);
-      assert(storeData.time);
-      assert(storeData.pageId);
+      // The data is written async, so we use a timeout before checking.
+      setTimeout(() => {
+        const storeData = pvt.store.get();
+        assert(storeData.state);
+        assert(storeData.time);
+        assert(storeData.pageId);
+        assert(storeData.sessionId);
 
-      const localStorageData = JSON.parse(localStorage.getItem(
-          `autotrack:${TRACKING_ID}:plugins/page-visibility-tracker`));
-      assert(localStorageData.state);
-      assert(localStorageData.time);
-      assert(localStorageData.pageId);
+        const localStorageData = JSON.parse(localStorage.getItem(
+            `autotrack:${TRACKING_ID}:plugins/page-visibility-tracker`));
+        assert(localStorageData.state);
+        assert(localStorageData.time);
+        assert(localStorageData.pageId);
 
-      pvt.remove();
+        pvt.remove();
+        done();
+      });
     });
   });
 });
