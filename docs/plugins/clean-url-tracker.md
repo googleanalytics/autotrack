@@ -37,7 +37,7 @@ The `cleanUrlTracker` plugin helps you do this. It lets you specify a preference
 
 The `cleanUrlPlugin` works by intercepting each hit as it's being sent and modifying the [`page`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#page) field based on the rules specified by the configuration [options](#options). The plugin also intercepts calls to [`tracker.get()`] that reference the `page` field, so other plugins that use `page` data get the cleaned versions instead of the original versions.
 
-**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field. This allows campaign and site search data encoded in the full URL to be preserved.
+**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field. This allows campaign (e.g. `utm` params) and adwords (e.g. `glclid`) data encoded in the full URL to be preserved.
 
 ## Usage
 
@@ -92,7 +92,7 @@ The following table outlines all possible configuration options for the `cleanUr
     <td>
       <p>A function that is passed a <a href="/docs/common-options.md#fieldsobj"><code>fieldsObj</code></a> (containing the <code>location</code> and <code>page</code> fields and optionally the custom dimension field set via <code>queryDimensionIndex</code>) as its first argument and a <code>parseUrl</code> utility function (which returns a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>-like object) as its second argument.</p>
       <p>The <code>urlFieldsFilter</code> function must return a <code>fieldsObj</code> (either the passed one or a new one), and the returned fields will be sent with all hits. Non-URL fields set on the <code>fieldsObj</code> are ignored.</p>
-      <p><strong>Warning:</strong> be careful when modifying the <code>location</code> field as it's used to determine many session-level dimensions in Google Analytics (e.g. utm campaign data, site search, hostname, etc.). Unless you need to update the hostname, it's usually better to only modify the <code>page</code> field.</p>
+      <p><strong>Warning:</strong> be careful when modifying the <code>location</code> field as it's used to determine many session-level dimensions in Google Analytics (e.g. utm campaign data, adwords identifiers, hostname, etc.). Unless you need to update the hostname, it's usually better to only modify the <code>page</code> field.</p>
     </td>
   </tr>
 </table>
