@@ -25,7 +25,7 @@ import pkg from '../../package.json';
 
 const SESSION_TIMEOUT_IN_MILLISECONDS = 3000; // 3 seconds
 const SESSION_TIMEOUT_IN_MINUTES = (1/60) * 3; // 3 seconds
-const VISIBLE_THRESHOLD = 2000; // 2 seconds
+const VISIBLE_THRESHOLD = 4000; // 4 seconds
 
 
 const DEFAULT_TRACKER_FIELDS = {
