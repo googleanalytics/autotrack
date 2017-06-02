@@ -66,6 +66,13 @@ The following table outlines all possible configuration options for the `cleanUr
     </td>
   </tr>
   <tr valign="top">
+    <td><code>queryParamsWhitelist</code></td>
+    <td><code>Array</code></td>
+    <td>
+      An array of query params not to strip. This is most commonly used in conjunction with site search, as shown in the <a href=""><code>queryParamsWhitelist</code> example</a> below.
+    </td>
+  </tr>
+  <tr valign="top">
     <td><code>queryDimensionIndex</code></td>
     <td><code>number</code></td>
     <td>
@@ -153,6 +160,26 @@ And given those four URLs, the following fields would be sent to Google Analytic
       "page": "/contact"
     }
 ```
+
+### Using the `queryParamsWhitelist` option
+
+Unlike campaign (e.g. `utm` params) and adwords (e.g. `glclid`) data, [Site Search](https://support.google.com/analytics/answer/1012264) data is not inferred by Google Analytics from the `location` field when the `page` field is present, so any site search query params *must not* be stripped from the `page` field.
+
+You can preserve individual query params via the `queryParamsWhitelist` option:
+
+```js
+ga('require', 'cleanUrlTracker', {
+  stripQuery: true,
+  queryParamsWhitelist: ['q'],
+});
+```
+
+Note that *not* stripping site search params from your URLs means those params will still show up in your page reports. If you don't want this to happen you can update your view's [Site Search setup](https://support.google.com/analytics/answer/1012264) as follows:
+
+1. Specify the same parameter(s) you set in the `queryParamsWhitelist` option.
+2. Check the "Strip query parameters out of URL" box.
+
+These options combined will allow you to keep all unwanted query params out of your page reports and still use site search.
 
 ### Using the `urlFieldsFilter` option
 
