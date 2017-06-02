@@ -66,7 +66,7 @@ describe('CleanUrlTracker', () => {
       const fn = () => {};
       const opts = {
         stripQuery: true,
-        siteSearchQueryParams: ['q', 's'],
+        queryParamsWhitelist: ['q', 's'],
         queryDimensionIndex: 1,
         indexFilename: 'index.html',
         trailingSlash: 'remove',
@@ -106,61 +106,62 @@ describe('CleanUrlTracker', () => {
     });
   });
 
-  describe('stripNonSiteSearchParams', () => {
-    it('returns a URL search string with only site search params', () => {
+  describe('stripNonWhitelistedQueryParams', () => {
+    it('returns a URL search string with only whitelisted params', () => {
       const cut = new CleanUrlTracker(tracker, {
-        siteSearchQueryParams: ['q', 's'],
+        queryParamsWhitelist: ['q', 's'],
       });
 
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?gclid=foo'), '');
+          cut.stripNonWhitelistedQueryParams('?gclid=foo'), '');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?gclid=foo&q=1'), '?q=1');
+          cut.stripNonWhitelistedQueryParams('?gclid=foo&q=1'), '?q=1');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?q=1&gclid=foo'), '?q=1');
+          cut.stripNonWhitelistedQueryParams('?q=1&gclid=foo'), '?q=1');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?gclid=foo&q=1&s=2'),
+          cut.stripNonWhitelistedQueryParams('?gclid=foo&q=1&s=2'),
           '?q=1&s=2');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?q=1&gclid=foo&s=2'), '?q=1&s=2');
+          cut.stripNonWhitelistedQueryParams('?q=1&gclid=foo&s=2'), '?q=1&s=2');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?q=1&s=2&gclid=foo'), '?q=1&s=2');
+          cut.stripNonWhitelistedQueryParams('?q=1&s=2&gclid=foo'), '?q=1&s=2');
 
       cut.remove();
     });
 
     it('does not modify URL encoded keys or values', () => {
       const cut = new CleanUrlTracker(tracker, {
-        siteSearchQueryParams: ['q', 's'],
+        queryParamsWhitelist: ['q', 's'],
       });
 
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?gclid=foo&q=1%202'), '?q=1%202');
+          cut.stripNonWhitelistedQueryParams('?gclid=foo&q=1%202'), '?q=1%202');
 
       cut.remove();
     });
 
     it('works with empty or missing param values', () => {
       const cut = new CleanUrlTracker(tracker, {
-        siteSearchQueryParams: ['q', 's'],
+        queryParamsWhitelist: ['q', 's'],
       });
 
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?q=1&s=2&gclid=foo'), '?q=1&s=2');
+          cut.stripNonWhitelistedQueryParams('?q=1&s=2&gclid=foo'), '?q=1&s=2');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?q&s=&gclid=foo'), '');
+          cut.stripNonWhitelistedQueryParams('?q&s=&gclid=foo'), '');
 
       cut.remove();
     });
 
-    it('works when the siteSearchQueryParams option is not set', () => {
+    it('works when the queryParamsWhitelist option is not set', () => {
       const cut = new CleanUrlTracker(tracker);
 
-      assert.strictEqual(cut.stripNonSiteSearchParams('?utm_source=foo'), '');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?utm_source=foo&q=1'), '');
+          cut.stripNonWhitelistedQueryParams('?utm_source=foo'), '');
       assert.strictEqual(
-          cut.stripNonSiteSearchParams('?utm_source=foo&q=1&s=2'), '');
+          cut.stripNonWhitelistedQueryParams('?utm_source=foo&q=1'), '');
+      assert.strictEqual(
+          cut.stripNonWhitelistedQueryParams('?utm_source=foo&q=1&s=2'), '');
 
       cut.remove();
     });

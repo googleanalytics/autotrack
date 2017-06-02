@@ -176,7 +176,7 @@ describe('cleanUrlTracker', function() {
 function requireCleanUrlTracker_multipleOpts() {
   ga('require', 'cleanUrlTracker', {
     stripQuery: true,
-    siteSearchQueryParams: ['q', 's'],
+    queryParamsWhitelist: ['q', 's'],
     queryDimensionIndex: 1,
     indexFilename: 'index.html',
     trailingSlash: 'remove',
