@@ -66,10 +66,10 @@ The following table outlines all possible configuration options for the `cleanUr
     </td>
   </tr>
   <tr valign="top">
-    <td><code>queryParamWhitelist</code></td>
+    <td><code>queryParamsWhitelist</code></td>
     <td><code>Array</code></td>
     <td>
-      An array of query params not to strip. This is most commonly used in conjunction with site search, as shown in the <a href=""><code>queryParamWhitelist</code> example</a> below.
+      An array of query params not to strip. This is most commonly used in conjunction with site search, as shown in the <a href=""><code>queryParamsWhitelist</code> example</a> below.
     </td>
   </tr>
   <tr valign="top">
