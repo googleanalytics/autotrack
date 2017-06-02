@@ -56,8 +56,6 @@ describe('CleanUrlTracker', () => {
     });
 
     it('merges the passed options with the defaults', () => {
-      if (!document.visibilityState) this.skip();
-
       let cut = new CleanUrlTracker(tracker);
 
       assert.deepEqual(cut.opts, {});
