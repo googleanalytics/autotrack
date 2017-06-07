@@ -21,7 +21,7 @@ Autotrack was created to solve this problem. It provides default tracking for th
 
 ## Plugins
 
-The `autotrack.js` file in this repository is small (7K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom build](#custom-builds) that only includes the plugins you want to make it even smaller.
+The `autotrack.js` file in this repository is small (8K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom build](#custom-builds) that only includes the plugins you want to make it even smaller.
 
 The following table briefly explains what each plugin does; you can click on the plugin name to see the full documentation and usage instructions:
 
