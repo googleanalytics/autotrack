@@ -51,11 +51,11 @@ const getCapabilities = () => {
       //   platform: 'OS X 10.11',
       //   version: 'latest',
       // },
-      // {
-      //   browserName: 'safari',
-      //   platform: 'OS X 10.12',
-      //   version: '10.0',
-      // },
+      {
+        browserName: 'safari',
+        platform: 'OS X 10.12',
+        version: '10.0',
+      },
       // {
       //   browserName: 'safari',
       //   platform: 'OS X 10.11',
