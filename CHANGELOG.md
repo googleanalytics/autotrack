@@ -2,6 +2,14 @@
 
 This document lists the changes between each minor and patch versions. For changes between major versions, see the [Upgrade Reference](/docs/upgrading.md)
 
+### 2.4.1 (2017-06-07)
+
+- Fix a bug in Safari where `outboundLinkTracker` doesn't work with the back button [#185]
+
+### 2.4.0 (2017-06-02)
+
+- Add a `queryParamsWhitelist` option to the `cleanUrlTracker` plugin [#181]
+
 ### 2.3.3 (2017-05-23)
 
 - Fix a bug where, in rare cases, visibility times were being tracked cross-session [#177]
