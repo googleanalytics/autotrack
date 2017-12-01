@@ -41,7 +41,7 @@ The easiest way to track max scroll percentage is to create a [custom metric](ht
 Since the max scroll tracker plugin only reports a single max scroll percentage per unique page path per session, you can calculate the average max scroll percentage for any dimension by dividing the value of your *Max Scroll Percentage* custom metric by the *Unique Pageviews* metrics. Here's what the formula looks like:
 
 ```
-{{Max Scroll Percentage}} / ( 100 * {{Unique Pageviews}} )
+{{Max Scroll Percentage}} / ( 100 * {{Unique Page Views}} )
 ```
 
 The screenshot in the [overview](#overview) shows some examples of what reports with these custom and calculated metrics look like.
