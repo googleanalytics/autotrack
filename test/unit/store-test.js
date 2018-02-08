@@ -182,7 +182,7 @@ describe('Store', () => {
       // Feature detect event constructor support, skip otherwise.
       try {
         new StorageEvent('storage', {});
-      } catch(err) {
+      } catch (err) {
         this.skip();
       }
 

@@ -1032,7 +1032,7 @@ function setStoreData(key, value) {
       window.localStorage.setItem(key, newValue);
       window.dispatchEvent(
           new StorageEvent('storage', {key, oldValue, newValue}));
-    } catch(err) {
+    } catch (err) {
       // Do nothing
     }
   }, key, value);

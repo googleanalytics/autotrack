@@ -133,7 +133,7 @@ describe('Session', () => {
         new Intl.DateTimeFormat('en-US', {
           timeZone: 'America/Los_Angeles',
         }).format(new Date());
-      } catch(err) {
+      } catch (err) {
         // Skip this test in browsers that don't support time zones.
         return this.skip();
       }
