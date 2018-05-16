@@ -53,16 +53,16 @@ ga('require', 'pageVisibilityTracker', options);
 
 The easiest way to track the time a page was visible is to create a [custom metric](https://support.google.com/analytics/answer/2709828) called *Page Visible Time* that you set in your plugin configuration options, and then to create [calculated metrics](https://support.google.com/analytics/answer/6121409) called *Avg. Page Visible Time (per Page)* and *Avg. Page Visible Time (per Session)* that you use in your reports.
 
-Which calculated metric you need will depend on which dimensions you're using in your report. For session-level dimensions (e.g. *Referrer* or *Device Category*) you'll want to use the session version, and for page-specific dimensions (e.g. *Page* or *Title*) you'll want to use the page version.
+Which calculated metric you need will depend on which dimensions you're using in your report. For page-specific dimensions (e.g. *Page* or *Title*) you'll want to use the page version, and for session-level dimensions (e.g. *Referrer* or *Device Category*) you'll want to use the session version.
 
 Here are the formulas for both:
 
 ```
-{{Page Visible Time}} / {{Sessions}}
+{{Page Visible Time}} / {{Unique Pageviews}}
 ```
 
 ```
-{{Page Visible Time}} / {{Unique Pageviews}}
+{{Page Visible Time}} / {{Sessions}}
 ```
 
 The screenshots in the [overview](#overview) shows some examples of what reports with these custom and calculated metrics look like.
