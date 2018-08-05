@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-
-require('babel-register')({presets: ['es2015']});
-
-
 const {spawn} = require('child_process');
 const fs = require('fs-extra');
 const eslint = require('gulp-eslint');
@@ -52,7 +48,7 @@ const isProd = () => {
 };
 
 
-gulp.task('javascript', () => {
+gulp.task('js:lib', () => {
   if (isProd()) {
     return build('autotrack.js').then(({code, map}) => {
       fs.outputFileSync('autotrack.js', code, 'utf-8');
@@ -66,29 +62,36 @@ gulp.task('javascript', () => {
     });
   } else {
     return rollup({
-      entry: './lib/index.js',
+      input: './lib/index.js',
       plugins: [
         nodeResolve(),
         babel({
           babelrc: false,
           plugins: ['external-helpers'],
-          presets: [['es2015', {modules: false}]],
+          presets: [['env', {
+            modules: false,
+            // Note: uncomment when developing for easier debugging.
+            // targets: {
+            //   browsers: ['last 2 Chrome versions'],
+            // },
+          }]],
         }),
       ],
     }).then((bundle) => {
       return bundle.write({
-        dest: 'autotrack.js',
+        file: 'autotrack.js',
         format: 'iife',
-        sourceMap: true,
+        sourcemap: true,
       });
     });
   }
 });
 
 
-gulp.task('javascript:unit', ((compiler) => {
+gulp.task('js:test', ((compiler) => {
   const createCompiler = () => {
     return webpack({
+      mode: 'development',
       entry: glob.sync('./test/unit/**/*-test.js'),
       output: {
         path: path.resolve(__dirname, 'test/unit'),
@@ -98,18 +101,21 @@ gulp.task('javascript:unit', ((compiler) => {
       cache: {},
       performance: {hints: false},
       module: {
-        loaders: [{
-          test: /\.js$/,
-          exclude: /node_modules\/(?!(dom-utils)\/).*/,
-          loader: 'babel-loader',
-          query: {
-            babelrc: false,
-            cacheDirectory: false,
-            presets: [
-              ['es2015', {'modules': false}],
-            ],
+        // Note: comment this rule out when testing for easier debugging.
+        rules: [
+          {
+            test: /\.js$/,
+            exclude: /node_modules\/(?!(dom-utils)\/).*/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                babelrc: false,
+                cacheDirectory: true,
+                presets: [['env', {modules: false}]],
+              },
+            },
           },
-        }],
+        ],
       },
     });
   };
@@ -123,9 +129,12 @@ gulp.task('javascript:unit', ((compiler) => {
 })());
 
 
+gulp.task('js', gulp.parallel('js:lib', 'js:test'));
+
+
 gulp.task('lint', () => {
   return gulp.src([
-    'gulpfile.babel.js',
+    'gulpfile.js',
     'bin/autotrack',
     'bin/*.js',
     'lib/*.js',
@@ -140,37 +149,27 @@ gulp.task('lint', () => {
 });
 
 
-gulp.task('test:e2e', ['javascript', 'lint', 'tunnel', 'selenium'], () => {
-  const stopServers = () => {
-    // TODO(philipwalton): re-add this logic to close the tunnel once this is
-    // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
-    // process.on('exit', sshTunnel.close.bind(sshTunnel));
-    sshTunnel.close();
-    server.stop();
-    if (!process.env.CI) {
-      seleniumServer.kill();
+gulp.task('selenium', (done) => {
+  // Don't start the selenium server on CI.
+  if (process.env.CI) return done();
+
+  seleniumServer = spawn('java', ['-jar', seleniumServerJar.path]);
+  seleniumServer.stderr.on('data', (data) => {
+    if (data.indexOf('Selenium Server is up and running') > -1) {
+      done();
     }
-  };
-  return gulp.src('./test/e2e/wdio.conf.js')
-      .pipe(webdriver())
-      .on('end', stopServers);
+  });
+  process.on('exit', seleniumServer.kill.bind(seleniumServer));
 });
 
 
-gulp.task('test:unit', ['javascript', 'javascript:unit'], (done) => {
-  spawn(
-      './node_modules/.bin/easy-sauce',
-      ['-c', 'test/unit/easy-sauce-config.json'],
-      {stdio: [0, 1, 2]}).on('end', done);
-});
+gulp.task('serve', gulp.series('js', (done) => {
+  server.start(done);
+  process.on('exit', server.stop.bind(server));
+}));
 
 
-gulp.task('test', (done) => {
-  runSequence('test:e2e', 'test:unit', done);
-});
-
-
-gulp.task('tunnel', ['serve'], (done) => {
+gulp.task('tunnel', gulp.series('serve', (done) => {
   const opts = {
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
@@ -189,33 +188,41 @@ gulp.task('tunnel', ['serve'], (done) => {
       done();
     }
   });
-});
+}));
 
 
-gulp.task('serve', ['javascript', 'javascript:unit'], (done) => {
-  server.start(done);
-  process.on('exit', server.stop.bind(server));
-});
-
-
-gulp.task('selenium', (done) => {
-  // Don't start the selenium server on CI.
-  if (process.env.CI) return done();
-
-  seleniumServer = spawn('java', ['-jar', seleniumServerJar.path]);
-  seleniumServer.stderr.on('data', (data) => {
-    if (data.indexOf('Selenium Server is up and running') > -1) {
-      done();
+gulp.task('test:e2e', gulp.series('js', 'lint', 'tunnel', 'selenium', () => {
+  const stopServers = () => {
+    // TODO(philipwalton): re-add this logic to close the tunnel once this is
+    // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
+    // process.on('exit', sshTunnel.close.bind(sshTunnel));
+    sshTunnel.close();
+    server.stop();
+    if (!process.env.CI) {
+      seleniumServer.kill();
     }
-  });
-  process.on('exit', seleniumServer.kill.bind(seleniumServer));
+  };
+  return gulp.src('./test/e2e/wdio.conf.js')
+      .pipe(webdriver())
+      .on('end', stopServers);
+}));
+
+
+gulp.task('test:unit', gulp.series('js', (done) => {
+  spawn(
+      './node_modules/.bin/easy-sauce',
+      ['-c', 'test/unit/easy-sauce-config.json'],
+      {stdio: [0, 1, 2]}).on('end', done);
+}));
+
+
+gulp.task('test', (done) => {
+  runSequence('test:e2e', 'test:unit', done);
 });
 
 
-gulp.task('watch', ['serve'], () => {
-  gulp.watch('./lib/**/*.js', ['javascript']);
-  gulp.watch([
-    './lib/**/*.js',
-    './test/unit/**/*-test.js',
-  ], ['javascript:unit']);
-});
+gulp.task('watch', gulp.series('serve', () => {
+  gulp.watch('./lib/**/*.js', gulp.series('js:lib'));
+  gulp.watch(['./lib/**/*.js', './test/unit/**/*-test.js'],
+      gulp.series('js:test'));
+}));

@@ -5,9 +5,11 @@
   "main": "lib",
   "bin": "./bin/autotrack",
   "scripts": {
-    "build": "gulp build",
-    "start": "gulp watch",
-    "test": "gulp test"
+    "build": "node -r esm ./node_modules/.bin/gulp js:lib",
+    "start": "node -r esm ./node_modules/.bin/gulp watch",
+    "test": "node -r esm ./node_modules/.bin/gulp test",
+    "selenium": "node -r esm ./node_modules/.bin/gulp selenium",
+    "wdio": "node -r esm ./node_modules/.bin/wdio ./test/e2e/wdio.conf.js"
   },
   "repository": {
     "type": "git",
