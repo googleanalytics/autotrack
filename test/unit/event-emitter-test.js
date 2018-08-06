@@ -15,8 +15,6 @@
  */
 
 
-import assert from 'assert';
-import sinon from 'sinon';
 import EventEmitter from '../../lib/event-emitter';
 
 

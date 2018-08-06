@@ -15,8 +15,6 @@
  */
 
 
-import assert from 'assert';
-import qs from 'querystring';
 import * as utilities from '../../lib/utilities';
 
 
@@ -26,19 +24,29 @@ const DEFAULT_FIELDS = {
   siteSpeedSampleRate: 0,
 };
 
+const sandbox = sinon.createSandbox();
 
 describe('utilities', () => {
   let tracker;
   let hits;
 
   beforeEach((done) => {
+    sandbox.restore();
+
     hits = [];
     window.ga('create', DEFAULT_FIELDS);
     window.ga((t) => {
       tracker = t;
       const originalSendHitTask = tracker.get('sendHitTask');
       tracker.set('sendHitTask', (model) => {
-        hits.push(qs.parse(model.get('hitPayload')));
+        const query = {};
+        const hitPayload = model.get('hitPayload');
+        hitPayload.split('&').forEach((entry) => {
+          const [key, value] = entry.split('=');
+          query[decodeURIComponent(key)] = decodeURIComponent(value);
+        });
+
+        hits.push(query);
         originalSendHitTask(model);
       });
 
@@ -47,6 +55,7 @@ describe('utilities', () => {
   });
 
   afterEach(() => {
+    sandbox.restore();
     window.ga('remove');
   });
 

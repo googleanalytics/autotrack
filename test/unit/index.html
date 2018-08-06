@@ -3,12 +3,27 @@
 <head>
   <meta charset="utf-8">
   <title>Mocha Tests</title>
-  <link id="mocha-css" href="/node_modules/mocha/mocha.css" rel="stylesheet" />
+  <!-- Mocha v5+ doesn't work with IE9-10 -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.1.0/mocha.min.css" rel="stylesheet">
 </head>
 <body>
   <div id="mocha"></div>
-  <script src="/node_modules/mocha/mocha.js"></script>
-  <script>mocha.ui('bdd');mocha.timeout(60000)</script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
+
+  <!-- Mocha v5+ doesn't work with IE9-10 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.1.0/mocha.min.js"></script>
+
+  <!-- Sinon v6+ doesn't work with IE9-10 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/5.1.0/sinon.min.js"></script>
+
+  <script>
+  mocha.ui('bdd');
+  mocha.timeout(60000);
+
+  // Expose chai's assert globally.
+  self.assert = chai.assert;
+  </script>
+
   <script src="index.js"></script>
 
   <script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;</script>

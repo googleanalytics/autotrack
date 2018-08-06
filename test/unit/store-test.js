@@ -15,8 +15,6 @@
  */
 
 
-import assert from 'assert';
-import sinon from 'sinon';
 import Store from '../../lib/store';
 
 
@@ -110,7 +108,7 @@ describe('Store', () => {
     });
 
     it('returns the cached data if localStorage is not supported', () => {
-      sinon.stub(Store, 'isSupported_', () => false);
+      sinon.stub(Store, 'isSupported_').returns(false);
 
       const store1 = Store.getOrCreate(
           'UA-12345-1', 'ns1', {default: true, foo: 1});
