@@ -88,18 +88,18 @@ describe('TrackerQueue', () => {
       const spy4 = blockingSpy(45);
 
       // Add blocking spies to the beginning of the queue to ensure it
-      // requests additional idle callbacks. Otherwise the callbacks will be
+      // requests additional idle callbacks. Otherwise the tasks will be
       // invoked sync and it won't test that tracker.send was really deferred.
-      queue.addCallback(spy1);
-      queue.addCallback(spy2);
-      queue.addCallback(spy3);
-      queue.addCallback(spy4);
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+      queue.add(spy4);
 
-      queue.addCallback(() => {
+      queue.add(() => {
         tracker.set('dimension1', 'A');
         tracker.set('dimension2', 'A');
       });
-      queue.addCallback(() => {
+      queue.add(() => {
         tracker.set('dimension2', 'B');
         tracker.set('dimension3', 'B');
       });

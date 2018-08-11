@@ -73,8 +73,7 @@ describe('IdleQueue', () => {
   });
 
   describe('constructor', () => {
-    it('adds lifecycle event listeners that process callbacks immediately',
-        () => {
+    it('adds lifecycle event listeners that process tasks immediately', () => {
       sandbox.spy(window, 'addEventListener');
 
       const queue = new IdleQueue();
@@ -95,8 +94,8 @@ describe('IdleQueue', () => {
       const spy1 = sinon.spy();
       const spy2 = sinon.spy();
 
-      queue.addCallback(spy1);
-      queue.addCallback(spy2);
+      queue.add(spy1);
+      queue.add(spy2);
       dispatch(window, 'beforeunload');
 
       if (isSafari()) {
@@ -111,9 +110,9 @@ describe('IdleQueue', () => {
       const spy4 = sinon.spy();
       const spy5 = sinon.spy();
 
-      queue.addCallback(spy3);
-      queue.addCallback(spy4);
-      queue.addCallback(spy5);
+      queue.add(spy3);
+      queue.add(spy4);
+      queue.add(spy5);
 
       stubProperty(document, 'visibilityState').value('hidden');
       dispatch(document, 'visibilitychange');
@@ -126,7 +125,7 @@ describe('IdleQueue', () => {
     });
   });
 
-  describe('addCallback', () => {
+  describe('add', () => {
     it('queues a task to run when idle', async () => {
       stubProperty(document, 'visibilityState').value('visible');
 
@@ -136,9 +135,39 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.addCallback(spy1);
-      queue.addCallback(spy2);
-      queue.addCallback(spy3);
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+
+      assert(spy1.notCalled);
+      assert(spy2.notCalled);
+      assert(spy3.notCalled);
+
+      await nextIdleCallback();
+
+      // At this point at least one of the spies should have been called, but
+      // not necessarily all of them (it depends on the idle time remaining).
+      assert(spy1.calledOnce);
+
+      await when(() => spy3.calledOnce);
+
+      assert(spy1.calledOnce);
+      assert(spy2.calledOnce);
+      assert(spy3.calledOnce);
+
+      queue.destroy();
+    });
+
+    it('supports passing an array of tasks', async () => {
+      stubProperty(document, 'visibilityState').value('visible');
+
+      const spy1 = sinon.spy();
+      const spy2 = sinon.spy();
+      const spy3 = sinon.spy();
+
+      const queue = new IdleQueue();
+
+      queue.add([spy1, spy2, spy3]);
 
       assert(spy1.notCalled);
       assert(spy2.notCalled);
@@ -171,10 +200,7 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.addCallback(spy1);
-      queue.addCallback(spy2);
-      queue.addCallback(spy3);
-      queue.addCallback(spy4);
+      queue.add([spy1, spy2, spy3, spy4]);
 
       // rICSpy is queued after the 4 spies above,
       // but it should run at some point between them.
@@ -209,7 +235,7 @@ describe('IdleQueue', () => {
       queue.destroy();
     });
 
-    it('runs the callback as a microtask when in the hidden state',
+    it('runs the task as a microtask when in the hidden state',
         async () => {
       stubProperty(document, 'visibilityState').value('hidden');
 
@@ -219,9 +245,7 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.addCallback(spy1);
-      queue.addCallback(spy2);
-      queue.addCallback(spy3);
+      queue.add([spy1, spy2, spy3]);
 
       assert(spy1.notCalled);
       assert(spy2.notCalled);
@@ -245,9 +269,7 @@ describe('IdleQueue', () => {
         const spy3 = sinon.spy();
         const queue = new IdleQueue();
 
-        queue.addCallback(spy1);
-        queue.addCallback(spy2);
-        queue.addCallback(spy3);
+        queue.add([spy1, spy2, spy3]);
 
         assert(spy1.notCalled);
         assert(spy2.notCalled);
@@ -281,16 +303,16 @@ describe('IdleQueue', () => {
 
         const queue = new IdleQueue();
 
-        queue.addCallback(spy1);
-        queue.addCallback(() => {
-          queue.addCallback(() => {
+        queue.add(spy1);
+        queue.add(() => {
+          queue.add(() => {
             spy4();
-            queue.addCallback(spy6);
+            queue.add(spy6);
           });
           spy2();
         });
-        queue.addCallback(() => {
-          queue.addCallback(spy5);
+        queue.add(() => {
+          queue.add(spy5);
           spy3();
         });
 
@@ -327,16 +349,16 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.addCallback(spy1);
-      queue.addCallback(() => {
-        queue.addCallback(() => {
+      queue.add(spy1);
+      queue.add(() => {
+        queue.add(() => {
           spy4();
-          queue.addCallback(spy6);
+          queue.add(spy6);
         });
         spy2();
       });
-      queue.addCallback(() => {
-        queue.addCallback(spy5);
+      queue.add(() => {
+        queue.add(spy5);
         spy3();
       });
 
@@ -370,16 +392,16 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.addCallback(spy1);
-      queue.addCallback(() => {
-        queue.addCallback(() => {
+      queue.add(spy1);
+      queue.add(() => {
+        queue.add(() => {
           spy4();
-          queue.addCallback(spy6);
+          queue.add(spy6);
         });
         spy2();
       });
-      queue.addCallback(() => {
-        queue.addCallback(spy5);
+      queue.add(() => {
+        queue.add(spy5);
         spy3();
       });
 
@@ -427,8 +449,7 @@ describe('IdleQueue', () => {
       const spy2 = sinon.spy();
       const queue = new IdleQueue();
 
-      queue.addCallback(spy1);
-      queue.addCallback(spy2);
+      queue.add([spy1, spy2]);
       assert(spy1.notCalled);
       assert(spy2.notCalled);
 
