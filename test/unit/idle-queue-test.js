@@ -28,7 +28,7 @@ const sandbox = sinon.createSandbox();
  * @param {*} value
  * @return {{value: !Function}}
  */
-export const stubProperty = (obj, prop, value) => {
+const stubProperty = (obj, prop, value) => {
   if (!obj.hasOwnProperty(prop)) {
     return {
       value: (value) => {
@@ -40,7 +40,7 @@ export const stubProperty = (obj, prop, value) => {
   }
 };
 
-export const blockingSpy = (ms) => {
+const blockingSpy = (ms) => {
   return sandbox.stub().callsFake(() => {
     const startTime = performance.now();
     while (performance.now() - startTime < ms) {
@@ -49,7 +49,7 @@ export const blockingSpy = (ms) => {
   });
 };
 
-export const when = async (fn, intervalMillis = 100, retries = 20) => {
+const when = async (fn, intervalMillis = 100, retries = 20) => {
   for (let i = 0; i < retries; i++) {
     const result = await fn();
     if (result) {
@@ -66,6 +66,7 @@ const nextIdleCallback = () => new Promise((res) => rIC(res));
 describe('IdleQueue', () => {
   beforeEach(() => {
     sandbox.restore();
+    stubProperty(document, 'visibilityState').value('visible');
   });
 
   afterEach(() => {
@@ -89,10 +90,8 @@ describe('IdleQueue', () => {
             'beforeunload', sinon.match.func, true));
       }
 
-      stubProperty(document, 'visibilityState').value('visible');
-
-      const spy1 = sinon.spy();
-      const spy2 = sinon.spy();
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
 
       queue.add(spy1);
       queue.add(spy2);
@@ -106,9 +105,9 @@ describe('IdleQueue', () => {
         assert(spy2.notCalled);
       }
 
-      const spy3 = sinon.spy();
-      const spy4 = sinon.spy();
-      const spy5 = sinon.spy();
+      const spy3 = sandbox.spy();
+      const spy4 = sandbox.spy();
+      const spy5 = sandbox.spy();
 
       queue.add(spy3);
       queue.add(spy4);
@@ -117,9 +116,9 @@ describe('IdleQueue', () => {
       stubProperty(document, 'visibilityState').value('hidden');
       dispatch(document, 'visibilitychange');
 
-      assert(spy1.calledOnce);
-      assert(spy2.calledOnce);
       assert(spy3.calledOnce);
+      assert(spy4.calledOnce);
+      assert(spy5.calledOnce);
 
       queue.destroy();
     });
@@ -127,11 +126,9 @@ describe('IdleQueue', () => {
 
   describe('add', () => {
     it('queues a task to run when idle', async () => {
-      stubProperty(document, 'visibilityState').value('visible');
-
-      const spy1 = sinon.spy();
-      const spy2 = sinon.spy();
-      const spy3 = sinon.spy();
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+      const spy3 = sandbox.spy();
 
       const queue = new IdleQueue();
 
@@ -159,11 +156,9 @@ describe('IdleQueue', () => {
     });
 
     it('supports passing an array of tasks', async () => {
-      stubProperty(document, 'visibilityState').value('visible');
-
-      const spy1 = sinon.spy();
-      const spy2 = sinon.spy();
-      const spy3 = sinon.spy();
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+      const spy3 = sandbox.spy();
 
       const queue = new IdleQueue();
 
@@ -190,13 +185,11 @@ describe('IdleQueue', () => {
 
     it('waits until the next idle period if all tasks cannot finish',
         async () => {
-      stubProperty(document, 'visibilityState').value('visible');
-
       const spy1 = blockingSpy(5);
       const spy2 = blockingSpy(45);
       const spy3 = blockingSpy(5);
       const spy4 = blockingSpy(5);
-      const rICSpy = sinon.spy();
+      const rICSpy = sandbox.spy();
 
       const queue = new IdleQueue();
 
@@ -239,9 +232,9 @@ describe('IdleQueue', () => {
         async () => {
       stubProperty(document, 'visibilityState').value('hidden');
 
-      const spy1 = sinon.spy();
-      const spy2 = sinon.spy();
-      const spy3 = sinon.spy();
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+      const spy3 = sandbox.spy();
 
       const queue = new IdleQueue();
 
@@ -264,9 +257,9 @@ describe('IdleQueue', () => {
       const testQueueOrder = async (visibilityState) => {
         stubProperty(document, 'visibilityState').value(visibilityState);
 
-        const spy1 = sinon.spy();
-        const spy2 = sinon.spy();
-        const spy3 = sinon.spy();
+        const spy1 = sandbox.spy();
+        const spy2 = sandbox.spy();
+        const spy3 = sandbox.spy();
         const queue = new IdleQueue();
 
         queue.add([spy1, spy2, spy3]);
@@ -294,12 +287,12 @@ describe('IdleQueue', () => {
       const testQueueOrder = async (visibilityState) => {
         stubProperty(document, 'visibilityState').value(visibilityState);
 
-        const spy1 = sinon.spy();
-        const spy2 = sinon.spy();
-        const spy3 = sinon.spy();
-        const spy4 = sinon.spy();
-        const spy5 = sinon.spy();
-        const spy6 = sinon.spy();
+        const spy1 = sandbox.spy();
+        const spy2 = sandbox.spy();
+        const spy3 = sandbox.spy();
+        const spy4 = sandbox.spy();
+        const spy5 = sandbox.spy();
+        const spy6 = sandbox.spy();
 
         const queue = new IdleQueue();
 
@@ -338,8 +331,6 @@ describe('IdleQueue', () => {
     });
 
     it('runs nested tasks in order across idle periods', async () => {
-      stubProperty(document, 'visibilityState').value('visible');
-
       const spy1 = blockingSpy(5);
       const spy2 = blockingSpy(45);
       const spy3 = blockingSpy(5);
@@ -381,8 +372,6 @@ describe('IdleQueue', () => {
 
     it('handles changes in visibilityState while the queue is pending',
         async () => {
-      stubProperty(document, 'visibilityState').value('visible');
-
       const spy1 = blockingSpy(5);
       const spy2 = blockingSpy(45);
       const spy3 = blockingSpy(5);
@@ -443,10 +432,8 @@ describe('IdleQueue', () => {
     });
 
     it('does not run queued tasks twice after a visibilitychange', async () => {
-      stubProperty(document, 'visibilityState').value('visible');
-
-      const spy1 = sinon.spy();
-      const spy2 = sinon.spy();
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
       const queue = new IdleQueue();
 
       queue.add([spy1, spy2]);
