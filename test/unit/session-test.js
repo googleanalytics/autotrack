@@ -16,7 +16,6 @@
 
 
 import Session from '../../lib/session';
-import {now} from '../../lib/utilities';
 
 
 const TRACKING_ID = 'UA-12345-1';
@@ -56,7 +55,7 @@ describe('Session', () => {
     it('stores a unique ID', () => {
       const session = new Session(tracker);
 
-      assert(session.getId());
+      assert(session.id);
 
       session.destroy();
     });
@@ -66,7 +65,7 @@ describe('Session', () => {
           'autotrack:UA-12345-1:session', JSON.stringify({id: 'foo'}));
 
       const session = new Session(tracker);
-      assert.strictEqual(session.getId(), 'foo');
+      assert.strictEqual(session.id, 'foo');
 
       session.destroy();
     });
@@ -102,11 +101,11 @@ describe('Session', () => {
     });
   });
 
-  describe('getId', () => {
+  describe('get id', () => {
     it('returns the stored ID', () => {
       const session = new Session(tracker);
 
-      assert(session.getId());
+      assert(session.id);
 
       session.destroy();
     });
@@ -114,23 +113,29 @@ describe('Session', () => {
 
   describe('isExpired', () => {
     it('returns true if the last hit was too long ago', () => {
+      const clock = sinon.useFakeTimers({now: 1e12});
+
       const session = new Session(tracker);
-
-      session.store.set({hitTime: now() - (60 * MINUTES)});
-
-      assert(session.isExpired());
-
-      session.store.set({hitTime: now() - (15 * MINUTES)});
+      tracker.send('pageview');
       assert(!session.isExpired());
 
+      clock.tick(15 * MINUTES);
+      assert(!session.isExpired());
+
+      clock.tick(60 * MINUTES);
+      assert(session.isExpired());
+
       session.destroy();
+      clock.restore();
     });
 
     it('returns true if a new day has started', function() {
+      const clock = sinon.useFakeTimers({now: 1e12});
+
       try {
         new Intl.DateTimeFormat('en-US', {
           timeZone: 'America/Los_Angeles',
-        }).format(new Date());
+        });
       } catch (err) {
         // Skip this test in browsers that don't support time zones.
         return this.skip();
@@ -139,10 +144,11 @@ describe('Session', () => {
       const dateTimeFormatStub = stubDateTimeFormat();
       dateTimeFormatStub.onCall(0).returns('9/15/1982');
       dateTimeFormatStub.onCall(1).returns('9/14/1982');
-      dateTimeFormatStub.returns('9/14/1982');
 
       const session = new Session(tracker, 30, 'America/Los_Angeles');
-      session.store.set({hitTime: now() - (15 * MINUTES)});
+      tracker.send('pageview');
+
+      clock.tick(15 * MINUTES);
 
       // The stubs above should return difference dates for now vs the last
       // hit, so even though 30 minutes hasn't passed, the session has expired.
@@ -153,6 +159,7 @@ describe('Session', () => {
 
       session.destroy();
       restoreDateTimeFormat();
+      clock.restore();
     });
 
     it('returns true if the previous hit ended the session', () => {
@@ -168,7 +175,6 @@ describe('Session', () => {
 
     it('does not error in browsers with no time zone support', () => {
       const session = new Session(tracker, 30, 'America/Los_Angeles');
-      session.store.set({hitTime: now()});
 
       assert.doesNotThrow(() => session.isExpired());
 
@@ -177,7 +183,6 @@ describe('Session', () => {
 
     it('accepts an optional session ID', () => {
       const session = new Session(tracker);
-      session.store.set({hitTime: now()});
 
       assert(!session.isExpired());
       assert(session.isExpired('old-id'));
@@ -188,47 +193,52 @@ describe('Session', () => {
 
   describe('sendHitTaskHook', () => {
     it('logs the time of the last hit', () => {
+      const clock = sinon.useFakeTimers({now: 1e12});
+
       const session = new Session(tracker);
-
-      const timeBeforePageview = now();
       tracker.send('pageview');
-      let lastHitTime = session.store.get().hitTime;
-      assert(lastHitTime >= timeBeforePageview);
 
-      const timeBeforeTimingHit = now();
+      assert(session.store.get().hitTime, 1e12);
+
+      clock.tick(10 * MINUTES);
+
       tracker.send('timing', 'foo', 'bar', 1000);
-      lastHitTime = session.store.get().hitTime;
-      assert(lastHitTime >= timeBeforeTimingHit);
+      assert(session.store.get().hitTime, 1e12 + (10 * MINUTES));
 
       session.destroy();
+      clock.restore();
     });
 
     it('updates the session ID if the session has expired', () => {
-      const session = new Session(tracker);
-      const id = session.getId();
-      session.store.set({hitTime: now() - (60 * MINUTES)});
+      const clock = sinon.useFakeTimers({now: 1e12});
 
-      assert.strictEqual(id, session.getId());
+      const session = new Session(tracker);
+      const id = session.id;
+      tracker.send('pageview');
+
+      clock.tick(60 * MINUTES);
+
+      assert.strictEqual(id, session.id);
 
       // Start a new session by sending a hit, which should generate a new ID.
       tracker.send('pageview');
 
-      assert.notStrictEqual(id, session.getId());
+      assert.notStrictEqual(id, session.id);
 
       session.destroy();
+      clock.restore();
     });
 
     it('updates the session ID if sessionControl was set to start', () => {
       const session = new Session(tracker);
-      const id = session.getId();
-      session.store.set({hitTime: now()});
+      const id = session.id;
 
-      assert.strictEqual(id, session.getId());
+      assert.strictEqual(id, session.id);
 
       // Start a new session via the sessionControl field.
       tracker.send('pageview', {sessionControl: 'start'});
 
-      assert.notStrictEqual(id, session.getId());
+      assert.notStrictEqual(id, session.id);
 
       session.destroy();
     });
