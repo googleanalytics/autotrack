@@ -16,6 +16,7 @@
 
 
 import * as utilities from '../../lib/utilities';
+import {nextIdleCallback} from './helpers';
 
 
 const DEFAULT_FIELDS = {
@@ -118,6 +119,142 @@ describe('utilities', () => {
       assert.strictEqual(order[0], 1);
       assert.strictEqual(order[1], 2);
       assert.strictEqual(order[2], 3);
+    });
+  });
+
+  describe('defineIdleProperty', () => {
+    it('defines a getter whose value is idly initialized', async () => {
+      const obj = {};
+
+      const init = sandbox.stub().returns('expensiveValue');
+      utilities.defineIdleProperty(obj, 'expensiveProp', init);
+
+      assert(init.notCalled);
+
+      await nextIdleCallback();
+
+      assert(init.calledOnce);
+      assert.strictEqual(obj.expensiveProp, 'expensiveValue');
+    });
+
+    it('initilizes immediately if the property is accessed', async () => {
+      const obj = {};
+
+      const init = sandbox.stub().returns('expensiveValue');
+      utilities.defineIdleProperty(obj, 'expensiveProp', init);
+
+      assert(init.notCalled);
+
+      assert.strictEqual(obj.expensiveProp, 'expensiveValue');
+      assert(init.calledOnce);
+    });
+
+    it('does not initialize the property more than once', async () => {
+      const obj = {};
+
+      const init = sandbox.stub().returns('expensiveValue');
+      utilities.defineIdleProperty(obj, 'expensiveProp', init);
+
+      assert(init.notCalled);
+
+      obj.expensiveProp;
+      obj.expensiveProp;
+      obj.expensiveProp;
+      assert(init.calledOnce);
+    });
+
+    it('lets the property be set', () => {
+      const obj = {};
+
+      const init = sandbox.stub().returns('expensiveValue');
+      utilities.defineIdleProperty(obj, 'expensiveProp', init);
+
+      assert(init.notCalled);
+
+      assert.strictEqual(obj.expensiveProp, 'expensiveValue');
+      assert(init.calledOnce);
+
+      obj.expensiveProp = 'newValue';
+      assert.strictEqual(obj.expensiveProp, 'newValue');
+    });
+
+    it('lets the property be re-idly-defined', () => {
+      sandbox.spy(Object, 'defineProperty');
+
+      const obj = {};
+
+      const init1 = sandbox.stub().returns('expensiveValue');
+      const init2 = sandbox.stub().returns('newExpensiveValue');
+      utilities.defineIdleProperty(obj, 'expensiveProp', init1);
+
+      assert(Object.defineProperty.calledOnce);
+      assert(Object.defineProperty.firstCall.calledWith(obj, 'expensiveProp',
+          sinon.match({
+        configurable: true,
+        get: sinon.match.func,
+        set: sinon.match.func,
+      })));
+
+      assert(init1.notCalled);
+
+      assert.strictEqual(obj.expensiveProp, 'expensiveValue');
+      assert(init1.calledOnce);
+
+      utilities.defineIdleProperty(obj, 'expensiveProp', init2);
+
+      assert(Object.defineProperty.calledTwice);
+      assert(Object.defineProperty.secondCall.calledWith(obj, 'expensiveProp',
+          sinon.match({
+        configurable: true,
+        get: sinon.match.func,
+        set: sinon.match.func,
+      })));
+
+      assert(init2.notCalled);
+
+      assert.strictEqual(obj.expensiveProp, 'newExpensiveValue');
+      assert(init2.calledOnce);
+    });
+  });
+
+  describe('defineIdleProperties', () => {
+    it('calls defineIdleProperty for each passed prop', async () => {
+      sandbox.spy(Object, 'defineProperty');
+
+      const obj = {};
+
+      const init1 = sandbox.stub().returns('value1');
+      const init2 = sandbox.stub().returns('value2');
+
+      utilities.defineIdleProperties(obj, {
+        prop1: init1,
+        prop2: init2,
+      });
+
+      assert(Object.defineProperty.calledTwice);
+      assert(Object.defineProperty.firstCall.calledWith(obj, 'prop1',
+          sinon.match({
+        configurable: true,
+        get: sinon.match.func,
+        set: sinon.match.func,
+      })));
+      assert(Object.defineProperty.secondCall.calledWith(obj, 'prop2',
+          sinon.match({
+        configurable: true,
+        get: sinon.match.func,
+        set: sinon.match.func,
+      })));
+
+      assert(init1.notCalled);
+      assert(init2.notCalled);
+
+      assert.strictEqual(obj.prop1, 'value1');
+      assert(init2.notCalled);
+
+      await nextIdleCallback();
+
+      assert.strictEqual(obj.prop1, 'value1');
+      assert.strictEqual(obj.prop2, 'value2');
     });
   });
 });
