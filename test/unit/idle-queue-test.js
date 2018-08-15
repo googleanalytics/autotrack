@@ -16,8 +16,10 @@
 
 
 import {dispatch} from 'dom-utils';
+import {nextMicroTask, nextIdleCallback, when} from './helpers';
 import IdleQueue from '../../lib/idle-queue';
-import {isSafari, queueMicrotask, rIC} from '../../lib/utilities';
+import {isSafari, rIC} from '../../lib/utilities';
+
 
 const sandbox = sinon.createSandbox();
 
@@ -48,20 +50,6 @@ const blockingSpy = (ms) => {
     }
   });
 };
-
-const when = async (fn, intervalMillis = 100, retries = 20) => {
-  for (let i = 0; i < retries; i++) {
-    const result = await fn();
-    if (result) {
-      return;
-    }
-    await new Promise((resolve) => setTimeout(resolve, intervalMillis));
-  }
-  throw new Error(`${fn} didn't return true after ${retries} retries.`);
-};
-
-const nextMicroTask = () => new Promise((res) => queueMicrotask(res));
-const nextIdleCallback = () => new Promise((res) => rIC(res));
 
 describe('IdleQueue', () => {
   beforeEach(() => {
