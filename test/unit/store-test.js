@@ -85,7 +85,7 @@ describe('Store', () => {
     });
   });
 
-  describe('get', () => {
+  describe('get data', () => {
     it('reads data from localStorage for the store key', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
@@ -93,8 +93,8 @@ describe('Store', () => {
       localStorage.setItem(store1.key_, JSON.stringify({foo: 12, bar: 34}));
       localStorage.setItem(store2.key_, JSON.stringify({qux: 56, baz: 78}));
 
-      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
-      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+      assert.deepEqual(store1.data, {foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {qux: 56, baz: 78});
 
       store1.destroy();
       store2.destroy();
@@ -111,8 +111,8 @@ describe('Store', () => {
       localStorage.setItem(store1.key_, JSON.stringify({foo: 12, bar: 34}));
       localStorage.setItem(store2.key_, JSON.stringify({qux: 56, baz: 78}));
 
-      assert.deepEqual(store1.get(), {default: true, foo: 12, bar: 34});
-      assert.deepEqual(store2.get(), {default: true, qux: 56, baz: 78});
+      assert.deepEqual(store1.data, {default: true, foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {default: true, qux: 56, baz: 78});
 
       store1.destroy();
       store2.destroy();
@@ -126,10 +126,10 @@ describe('Store', () => {
         defaults: {default: true, qux: 2},
       });
 
-      localStorage.setItem(store1.key_, 'bad data');
+      localStorage.setItem('autotrack:UA-12345-1:ns1', 'bad data');
 
-      assert.deepEqual(store1.get(), {default: true, foo: 1});
-      assert.deepEqual(store2.get(), {default: true, qux: 2});
+      assert.deepEqual(store1.data, {default: true, foo: 1});
+      assert.deepEqual(store2.data, {default: true, qux: 2});
 
       store1.destroy();
       store2.destroy();
@@ -145,45 +145,49 @@ describe('Store', () => {
         defaults: {default: true, qux: 2},
       });
 
-      store1.set({bar: 3});
-      store2.set({baz: 4});
+      store1.update({bar: 3});
+      store2.update({baz: 4});
 
-      assert.deepEqual(store1.get(), {default: true, foo: 1, bar: 3});
-      assert.deepEqual(store2.get(), {default: true, qux: 2, baz: 4});
+      assert.deepEqual(store1.data, {default: true, foo: 1, bar: 3});
+      assert.deepEqual(store2.data, {default: true, qux: 2, baz: 4});
 
       store1.destroy();
       store2.destroy();
     });
   });
 
-  describe('set', () => {
+  describe('update', () => {
     it('writes data to localStorage for the store key', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 
-      store1.set({foo: 12, bar: 34});
-      store2.set({qux: 56, baz: 78});
+      store1.update({foo: 12, bar: 34});
+      store2.update({qux: 56, baz: 78});
 
       assert.deepEqual(
-          JSON.parse(localStorage.getItem(store1.key_)),
+          JSON.parse(localStorage.getItem('autotrack:UA-12345-1:ns1')),
           {foo: 12, bar: 34});
       assert.deepEqual(
-          JSON.parse(localStorage.getItem(store2.key_)),
+          JSON.parse(localStorage.getItem('autotrack:UA-67890-1:ns2')),
           {qux: 56, baz: 78});
 
       store1.destroy();
       store2.destroy();
     });
 
-    it('stores the updated data in the local cache', () => {
+    it('stores the updated data in the local cache to quicker reads', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 
-      store1.set({foo: 12, bar: 34});
-      store2.set({qux: 56, baz: 78});
+      store1.update({foo: 12, bar: 34});
+      store2.update({qux: 56, baz: 78});
 
-      assert.deepEqual(store1.cache_, {foo: 12, bar: 34});
-      assert.deepEqual(store2.cache_, {qux: 56, baz: 78});
+      sandbox.spy(localStorage, 'getItem');
+
+      assert.deepEqual(store1.data, {foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {qux: 56, baz: 78});
+
+      assert(localStorage.getItem.notCalled);
 
       store1.destroy();
       store2.destroy();
@@ -193,12 +197,23 @@ describe('Store', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 
-      sandbox.stub(Store, 'set_').throws();
-      store1.set({foo: 12, bar: 34});
-      store2.set({qux: 56, baz: 78});
+      sandbox.stub(localStorage, 'setItem').throws();
 
-      assert.deepEqual(store1.cache_, {foo: 12, bar: 34});
-      assert.deepEqual(store2.cache_, {qux: 56, baz: 78});
+      store1.update({foo: 12, bar: 34});
+      store2.update({qux: 56, baz: 78});
+
+      // No write should have happened.
+      assert.strictEqual(
+          localStorage.getItem('autotrack:UA-12345-1:ns1'), null);
+      assert.strictEqual(
+          localStorage.getItem('autotrack:UA-67890-1:ns2'), null);
+
+      sandbox.spy(localStorage, 'getItem');
+      assert.deepEqual(store1.data, {foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {qux: 56, baz: 78});
+
+      // The `.data getter`should read from cache.
+      assert(localStorage.getItem.notCalled);
 
       store1.destroy();
       store2.destroy();
@@ -210,19 +225,28 @@ describe('Store', () => {
         timestampKey: 'time',
       });
 
-      store1.set({time: 1000, value: 'A'});
-      store2.set({time: 1000, value: 'A'});
+      store1.update({time: 1000, value: 'A'});
+      store2.update({time: 1000, value: 'A'});
 
-      assert.deepEqual(store1.cache_, {time: 1000, value: 'A'});
-      assert.deepEqual(store2.cache_, {time: 1000, value: 'A'});
+      assert.deepEqual(
+          JSON.parse(localStorage.getItem('autotrack:UA-12345-1:ns1')),
+          {time: 1000, value: 'A'});
 
-      store1.set({time: 999, value: 'B'});
-      store2.set({time: 999, value: 'B'});
+      assert.deepEqual(
+          JSON.parse(localStorage.getItem('autotrack:UA-67890-1:ns2')),
+          {time: 1000, value: 'A'});
 
-      assert.deepEqual(store1.cache_, {time: 999, value: 'B'});
+      store1.update({time: 999, value: 'B'});
+      store2.update({time: 999, value: 'B'});
+
+      assert.deepEqual(
+          JSON.parse(localStorage.getItem('autotrack:UA-12345-1:ns1')),
+          {time: 999, value: 'B'});
 
       // No data should have been written because the stored time is newer.
-      assert.deepEqual(store2.cache_, {time: 1000, value: 'A'});
+      assert.deepEqual(
+          JSON.parse(localStorage.getItem('autotrack:UA-67890-1:ns2')),
+          {time: 1000, value: 'A'});
 
       store1.destroy();
       store2.destroy();
@@ -235,18 +259,22 @@ describe('Store', () => {
       // Simulate a storage event, meaning a `set()` call was made in
       // another tab.
       dispatchStorageEvent({
-        key: store1.key_,
+        key: 'autotrack:UA-12345-1:ns1',
         oldValue: '',
         newValue: JSON.stringify({foo: 12, bar: 34}),
       });
       dispatchStorageEvent({
-        key: store2.key_,
+        key: 'autotrack:UA-67890-1:ns2',
         oldValue: '',
         newValue: JSON.stringify({qux: 56, baz: 78}),
       });
 
-      assert.deepEqual(store1.cache_, {foo: 12, bar: 34});
-      assert.deepEqual(store2.cache_, {qux: 56, baz: 78});
+      sandbox.spy(localStorage, 'getItem');
+
+      assert.deepEqual(store1.data, {foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {qux: 56, baz: 78});
+
+      assert(localStorage.getItem.notCalled);
 
       store1.destroy();
       store2.destroy();
@@ -256,21 +284,26 @@ describe('Store', () => {
   describe('clear', () => {
     it('removes the key from localStorage', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2', {
+        defaults: {qux: 1},
+      });
 
-      store1.set({foo: 12, bar: 34});
-      store2.set({qux: 56, baz: 78});
+      store1.update({foo: 12, bar: 34});
+      store2.update({qux: 56, baz: 78});
 
-      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
-      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+      assert.deepEqual(store1.data, {foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {qux: 56, baz: 78});
 
       store1.clear();
       store2.clear();
 
-      assert.deepEqual(store1.get(), {});
-      assert.deepEqual(store2.get(), {});
-      assert.strictEqual(localStorage.getItem(store1.key_), null);
-      assert.strictEqual(localStorage.getItem(store2.key_), null);
+      assert.deepEqual(store1.data, {});
+      assert.deepEqual(store2.data, {qux: 1});
+
+      assert.strictEqual(
+          localStorage.getItem('autotrack:UA-12345-1:ns1'), null);
+      assert.strictEqual(
+          localStorage.getItem('autotrack:UA-67890-1:ns2'), null);
 
       store1.destroy();
       store2.destroy();
@@ -278,20 +311,23 @@ describe('Store', () => {
 
     it('clears the cache even if the localStorage clear fails', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
+      const store2 = Store.getOrCreate('UA-67890-1', 'ns2', {
+        defaults: {qux: 1},
+      });
+
       sandbox.stub(Store, 'clear_').throws();
 
-      store1.set({foo: 12, bar: 34});
-      store2.set({qux: 56, baz: 78});
+      store1.update({foo: 12, bar: 34});
+      store2.update({qux: 56, baz: 78});
 
-      assert.deepEqual(store1.get(), {foo: 12, bar: 34});
-      assert.deepEqual(store2.get(), {qux: 56, baz: 78});
+      assert.deepEqual(store1.data, {foo: 12, bar: 34});
+      assert.deepEqual(store2.data, {qux: 56, baz: 78});
 
       store1.clear();
       store2.clear();
 
-      assert.deepEqual(store1.get(), {});
-      assert.deepEqual(store2.get(), {});
+      assert.deepEqual(store1.data, {});
+      assert.deepEqual(store2.data, {qux: 1});
 
       store1.destroy();
       store2.destroy();
