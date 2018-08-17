@@ -64,41 +64,54 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
-    openNewTab();
-
+    browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
+    openNewTab();
+    browser.waitUntil(log.hitCountEquals(2));
+
     const hits = log.getHits();
-    assert.strictEqual(hits[0].ec, 'Page Visibility');
-    assert.strictEqual(hits[0].ea, 'track');
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'track');
   });
 
   it('tracks the elapsed time a page was visible', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
-    browser.pause(2000);
-    openNewTab();
-
+    browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
+    browser.pause(1500);
+    openNewTab();
+    browser.waitUntil(log.hitCountEquals(2));
+
     const hits = log.getHits();
-    assert(Number(hits[0].ev) >= 2);
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert.strictEqual(hits[1].ec, 'Page Visibility');
+    assert.strictEqual(hits[1].ea, 'track');
+    assert(Number(hits[1].ev) >= 2);
   });
 
   it('sends events as nonInteraction by default', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
-    openNewTab();
-    closeAllButFirstTab();
-    openNewTab();
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
+    openNewTab();
     browser.waitUntil(log.hitCountEquals(2));
 
+    closeAllButFirstTab();
+    openNewTab();
+    browser.waitUntil(log.hitCountEquals(3));
+
     const hits = log.getHits();
-    assert.strictEqual(hits[0].ni, '1');
+    assert.strictEqual(hits[0].t, 'pageview');
     assert.strictEqual(hits[1].ni, '1');
+    assert.strictEqual(hits[2].ni, '1');
   });
 
   it('uses a custom metric if specified', function() {
@@ -108,15 +121,18 @@ describe('pageVisibilityTracker', function() {
       visibleThreshold: 0,
       visibleMetricIndex: 1,
     });
-
-    browser.pause(1000);
-    openNewTab();
-
+    browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(1));
 
+    browser.pause(500);
+    openNewTab();
+    browser.waitUntil(log.hitCountEquals(2));
+
     const hits = log.getHits();
-    assert(Number(hits[0].ev) >= 1);
-    assert(Number(hits[0].cm1) >= 1);
+
+    assert.strictEqual(hits[0].t, 'pageview');
+    assert(Number(hits[1].ev) >= 1);
+    assert(Number(hits[1].cm1) >= 1);
   });
 
   it('does not send any hidden events if the session has expired', function() {
@@ -126,6 +142,8 @@ describe('pageVisibilityTracker', function() {
       visibleThreshold: 0,
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     expireSession();
     log.removeHits();
@@ -139,6 +157,8 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     expireSession();
     log.removeHits();
@@ -158,7 +178,11 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
+
     expireSession();
+    log.removeHits();
 
     openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
@@ -176,12 +200,15 @@ describe('pageVisibilityTracker', function() {
       sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
     browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
     browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'unimportant');
+    browser.waitUntil(log.hitCountEquals(2));
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
     browser.execute(ga.run, 'send', 'event', 'Uncategorized', 'unimportant');
+    browser.waitUntil(log.hitCountEquals(3));
     browser.pause(SESSION_TIMEOUT_IN_MILLISECONDS / 3);
 
     openNewTab();
@@ -204,8 +231,11 @@ describe('pageVisibilityTracker', function() {
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       visibleThreshold: VISIBLE_THRESHOLD,
-      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
+    log.removeHits();
+
     openNewTab();
     closeAllButFirstTab();
     openNewTab();
@@ -228,8 +258,9 @@ describe('pageVisibilityTracker', function() {
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', {
       visibleThreshold: VISIBLE_THRESHOLD,
-      sessionTimeout: SESSION_TIMEOUT_IN_MINUTES,
     });
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     expireSession();
     log.removeHits();
@@ -237,12 +268,9 @@ describe('pageVisibilityTracker', function() {
     openNewTab();
     closeAllButFirstTab();
     const start = Date.now();
-
     browser.waitUntil(log.hitCountEquals(1));
     const end = Date.now();
 
-    // Expects non-pageview hits queued to be sent after the session has timed
-    // out to include a pageview immediately before them.
     const hits = log.getHits();
     assert.strictEqual(hits[0].t, 'pageview');
     assert(hits[0].qt >= VISIBLE_THRESHOLD);
@@ -258,13 +286,13 @@ describe('pageVisibilityTracker', function() {
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.waitUntil(log.hitCountEquals(1));
     browser.pause(500);
 
     openNewTab('/test/e2e/fixtures/autotrack.html?tab=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
-
     browser.waitUntil(log.hitCountEquals(3));
 
     const hits = log.getHits();
@@ -282,8 +310,11 @@ describe('pageVisibilityTracker', function() {
     if (!browserSupportsTabs()) return this.skip();
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     corruptSession();
+    log.removeHits();
 
     openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
@@ -315,6 +346,7 @@ describe('pageVisibilityTracker', function() {
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.waitUntil(log.hitCountEquals(1));
     browser.pause(500);
 
     openNewTabInBackground('/test/e2e/fixtures' +
@@ -343,6 +375,7 @@ describe('pageVisibilityTracker', function() {
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.waitUntil(log.hitCountEquals(1));
     browser.pause(500);
 
     const backgroundTab = openNewTabInBackground('/test/e2e/fixtures' +
@@ -382,14 +415,11 @@ describe('pageVisibilityTracker', function() {
     };
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
+    browser.waitUntil(log.hitCountEquals(1));
     browser.pause(500);
 
     const backgroundTab = openNewTabInBackground('/test/e2e/fixtures' +
         '/page-visibility-tracker-pageload.html?testId=' + testId);
-
-    browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
-    browser.execute(ga.logHitData, testId);
-    browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
 
     browser.waitUntil(log.hitCountEquals(2));
     expireSession();
@@ -420,31 +450,36 @@ describe('pageVisibilityTracker', function() {
 
     const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     const window1 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
+    browser.waitUntil(log.hitCountEquals(2));
 
     browser.close(tab1); // Close window1 and switch to tab1.
-    openNewTab();
-
     browser.waitUntil(log.hitCountEquals(3));
+
+    openNewTab();
+    browser.waitUntil(log.hitCountEquals(4));
 
     // Use the references to make the linter happy.
     assert(tab1 && window1);
 
     const hits = log.getHits();
 
+    assert.strictEqual(hits[0].t, 'pageview');
     // window1 change:visible
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].ea, 'track');
-    // window1 change:hidden
-    assert(hits[1].dl.endsWith('window=1'));
+    assert(hits[1].dl.endsWith('tab=1'));
     assert.strictEqual(hits[1].ea, 'track');
-    // tab1 url change to tab=1a
-    assert(hits[2].dl.endsWith('tab=1'));
+    // window1 change:hidden
+    assert(hits[2].dl.endsWith('window=1'));
     assert.strictEqual(hits[2].ea, 'track');
+    // tab1 url change to tab=1a
+    assert(hits[3].dl.endsWith('tab=1'));
+    assert.strictEqual(hits[3].ea, 'track');
   });
 
   it('reports visibility if the page path changes on a visible page',
@@ -453,19 +488,23 @@ describe('pageVisibilityTracker', function() {
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(1));
+    browser.pause(500);
 
     // Simulate a URL change on the tracker.
     browser.execute(ga.run,
         'set', 'page', '/test/e2e/fixtures/autotrack.html?tab=1a');
+    browser.waitUntil(log.hitCountEquals(2));
+
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.pause(500);
 
     // Simulate another URL change on the tracker.
     browser.execute(ga.run,
         'set', 'page', '/test/e2e/fixtures/autotrack.html?tab=1b');
-    browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(4));
 
+    browser.execute(ga.run, 'send', 'pageview');
     browser.waitUntil(log.hitCountEquals(5));
     const hits = log.getHits();
 
@@ -474,6 +513,7 @@ describe('pageVisibilityTracker', function() {
     assert.strictEqual(hits[0].t, 'pageview');
     // Tab 1 url change to tab=1a
     assert(hits[1].dl.endsWith('tab=1'));
+    assert(!hits[1].dp);
     assert.strictEqual(hits[1].ea, 'track');
     assert(Number(hits[1].ev) > 0);
     // Pageview
@@ -495,23 +535,26 @@ describe('pageVisibilityTracker', function() {
     const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(1));
+    browser.pause(500);
 
     const tab2 = openNewTab('/test/e2e/fixtures/blank.html');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(2));
+    browser.pause(500);
 
     const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(3));
+    browser.pause(500);
 
     browser.close(tab2); // Close tab3 and go to tab2.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(4));
+    browser.pause(500);
 
     browser.close(tab1); // Close tab2 and go to tab1.
-    browser.waitUntil(log.hitCountEquals(4));
 
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3);
@@ -544,30 +587,35 @@ describe('pageVisibilityTracker', function() {
     const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(1));
+    browser.pause(500);
 
     const tab2 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(3));
+    browser.pause(500);
 
     const tab3 = openNewTab('/test/e2e/fixtures/blank.html');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(4));
+    browser.pause(500);
 
     const tab4 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=4');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(5));
+    browser.pause(500);
 
     browser.close(tab3); // Close tab4 and go to tab3.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(6));
+    browser.pause(500);
 
     browser.close(tab2); // Close tab3 and go to tab2.
-    browser.pause(randomInteger(500, 2000));
+    browser.pause(500);
 
     browser.close(tab1); // Close tab2 and go to tab1.
     browser.waitUntil(log.hitCountEquals(7));
@@ -615,44 +663,50 @@ describe('pageVisibilityTracker', function() {
     const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(1));
+    browser.pause(500);
 
     const tab2 = openNewTab('/test/e2e/fixtures/blank.html');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(2));
+    browser.pause(500);
 
     const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(3));
+    browser.pause(500);
 
     const window1 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=1');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(5));
+    browser.pause(500);
 
     const window2 = openNewWindow('/test/e2e/fixtures/autotrack.html?window=2');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(7));
+    browser.pause(500);
 
     browser.close(tab3); // Close window2 and switch to tab3.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(8));
+    browser.pause(500);
 
     browser.close(window1); // Close tab3 and go to window1.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(9));
+    browser.pause(500);
 
     browser.close(tab2); // Close window1 and go to tab2.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(10));
+    browser.pause(500);
 
     browser.close(tab1); // Close tab2 and go to tab1.
-
-    browser.waitUntil(log.hitCountEquals(10));
 
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3 && window1 && window2);
@@ -670,20 +724,45 @@ describe('pageVisibilityTracker', function() {
     // tab3 pageview (change:visible)
     assert(hits[2].dl.endsWith('tab=3'));
     assert.strictEqual(hits[2].t, 'pageview');
-    // window1 change:visible
-    assert(hits[3].dl.endsWith('tab=3'));
-    assert.strictEqual(hits[3].ea, 'track');
-    assert(Number(hits[3].ev) > 0);
-    // window1 pageview
-    assert(hits[4].dl.endsWith('window=1'));
-    assert.strictEqual(hits[4].t, 'pageview');
-    // window2 change:visible
-    assert(hits[5].dl.endsWith('window=1'));
-    assert.strictEqual(hits[5].ea, 'track');
-    assert(Number(hits[5].ev) > 0);
-    // window2 pageview
-    assert(hits[6].dl.endsWith('window=2'));
-    assert.strictEqual(hits[6].t, 'pageview');
+
+    // The following can race, so we check both orders.
+    try {
+      // window1 change:visible
+      assert(hits[3].dl.endsWith('tab=3'));
+      assert.strictEqual(hits[3].ea, 'track');
+      assert(Number(hits[3].ev) > 0);
+      // window1 pageview
+      assert(hits[4].dl.endsWith('window=1'));
+      assert.strictEqual(hits[4].t, 'pageview');
+    } catch (err) {
+      // window1 pageview
+      assert(hits[3].dl.endsWith('window=1'));
+      assert.strictEqual(hits[3].t, 'pageview');
+      // window1 change:visible
+      assert(hits[4].dl.endsWith('tab=3'));
+      assert.strictEqual(hits[4].ea, 'track');
+      assert(Number(hits[4].ev) > 0);
+    }
+
+    // The following can race, so we check both orders.
+    try {
+      // window2 change:visible
+      assert(hits[5].dl.endsWith('window=1'));
+      assert.strictEqual(hits[5].ea, 'track');
+      assert(Number(hits[5].ev) > 0);
+      // window2 pageview
+      assert(hits[6].dl.endsWith('window=2'));
+      assert.strictEqual(hits[6].t, 'pageview');
+    } catch (err) {
+      // window2 pageview
+      assert(hits[5].dl.endsWith('window=2'));
+      assert.strictEqual(hits[5].t, 'pageview');
+      // window2 change:visible
+      assert(hits[6].dl.endsWith('window=1'));
+      assert.strictEqual(hits[6].ea, 'track');
+      assert(Number(hits[6].ev) > 0);
+    }
+
     // window2 change:hidden
     assert(hits[7].dl.endsWith('window=2'));
     assert.strictEqual(hits[7].ea, 'track');
@@ -707,39 +786,39 @@ describe('pageVisibilityTracker', function() {
     const tab1 = browser.getCurrentTabId();
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(1));
+    browser.pause(500);
 
     const tab2 = openNewTab('/test/e2e/fixtures/blank.html');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(2));
+    browser.pause(500);
 
     const tab3 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=3');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(3));
+    browser.pause(500);
 
     const tab4 = openNewTab('/test/e2e/fixtures/autotrack.html?tab=4');
     browser.execute(ga.run, 'create', DEFAULT_TRACKER_FIELDS);
     browser.execute(ga.logHitData, testId);
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
     browser.execute(ga.run, 'send', 'pageview');
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(5));
 
     // Manually expire session 1
     expireSession();
-    browser.pause(randomInteger(500, 2000));
 
     browser.close(tab3); // Close tab4 and go to tab3.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(6));
+    browser.pause(500);
 
     browser.close(tab2); // Close tab3 and go to tab2.
-    browser.pause(randomInteger(500, 2000));
+    browser.waitUntil(log.hitCountEquals(7));
 
     browser.close(tab1); // Close tab2 and go to tab1.
-
-    // browser.waitUntil(log.hitCountEquals(11));
-    browser.pause(1000);
 
     // Use the references to make the linter happy.
     assert(tab1 && tab2 && tab3 && tab4);
@@ -791,6 +870,7 @@ describe('pageVisibilityTracker', function() {
       },
     });
     browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     openNewTab();
     browser.waitUntil(log.hitCountEquals(2));
@@ -807,6 +887,7 @@ describe('pageVisibilityTracker', function() {
 
     browser.execute(requirePageVisibilityTracker_hitFilter);
     browser.execute(ga.run, 'send', 'pageview');
+    browser.waitUntil(log.hitCountEquals(1));
 
     openNewTab();
     browser.waitUntil(log.hitCountEquals(2));
@@ -835,6 +916,7 @@ describe('pageVisibilityTracker', function() {
     it('destroys all bound events and functionality', () => {
       browser.execute(ga.run, 'require', 'pageVisibilityTracker', TEST_OPTS);
       browser.execute(ga.run, 'send', 'pageview');
+      browser.waitUntil(log.hitCountEquals(1));
 
       log.removeHits();
       browser.execute(ga.run, 'pageVisibilityTracker:remove');
@@ -843,6 +925,7 @@ describe('pageVisibilityTracker', function() {
       log.assertNoHitsReceived();
     });
   });
+  /* */
 });
 
 
@@ -997,7 +1080,10 @@ function clearStorage() {
  * Manually expires the session.
  */
 function expireSession() {
-  setStoreData('autotrack:UA-12345-1:session', {isExpired: true});
+  setStoreData('autotrack:UA-12345-1:session', {
+    isExpired: true,
+    hitTime: +new Date,
+  });
 }
 
 
@@ -1052,15 +1138,4 @@ function requirePageVisibilityTracker_hitFilter() {
       model.set('dimension1', String(eventValue), true);
     },
   });
-}
-
-
-/**
- * Randomly picks an interger between the two passed values (inclusively).
- * @param {number} min The lowest value to pick.
- * @param {number} max The lowest value to pick.
- * @return {number} The random integer picked.
- */
-function randomInteger(min, max) {
-  return Math.floor(Math.random() * (max - min)) + min;
 }
