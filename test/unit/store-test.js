@@ -41,25 +41,12 @@ const dispatchStorageEvent = ({key, oldValue, newValue}) => {
 describe('Store', () => {
   beforeEach(() => {
     sandbox.restore();
-    localStorage.clear();
   });
   afterEach(() => {
     sandbox.restore();
-    localStorage.clear();
   });
 
   describe('static getOrCreate', () => {
-    it('creates a localStorage key from the tracking ID and namespace', () => {
-      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
-      assert.strictEqual(store1.key_, 'autotrack:UA-12345-1:ns1');
-
-      const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
-      assert.strictEqual(store2.key_, 'autotrack:UA-67890-1:ns2');
-
-      store1.destroy();
-      store2.destroy();
-    });
-
     it('does not create multiple instances for the same key', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
@@ -70,6 +57,7 @@ describe('Store', () => {
 
       store1.destroy();
       store2.destroy();
+      store3.destroy();
     });
 
     it('adds a single event listener for the storage event', () => {
@@ -335,24 +323,68 @@ describe('Store', () => {
   });
 
   describe('destroy', () => {
-    it('removes the instance from the global store', () => {
+    it('releases the reference to the instance', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-12345-1', 'ns1');
 
       assert.strictEqual(store1, store2);
 
       store1.destroy();
-      store2.destroy();
 
+      // store2 still has a reference, so this shouldn't create a new one
       const store3 = Store.getOrCreate('UA-12345-1', 'ns1');
-      assert.notStrictEqual(store3, store1);
-      assert.notStrictEqual(store3, store2);
+      assert.strictEqual(store2, store3);
 
+      store2.destroy();
       store3.destroy();
+
+      // All the references should be released, so a new one should be created.
+      const store4 = Store.getOrCreate('UA-12345-1', 'ns1');
+      assert.notStrictEqual(store3, store4);
+
+      store4.destroy();
     });
 
-    it('removes the storage listener when the last instance is destroyed',
-        () => {
+    it('clears the localStorage entry if no more references exist', () => {
+      const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store2 = Store.getOrCreate('UA-12345-1', 'ns1');
+      const store3 = Store.getOrCreate('UA-67890-1', 'ns2');
+      const store4 = Store.getOrCreate('UA-67890-1', 'ns2');
+
+      assert.strictEqual(store1, store2);
+      assert.strictEqual(store3, store4);
+
+      store1.update({stuff: 1});
+      store3.update({things: 2});
+
+      assert.notStrictEqual(
+          localStorage.getItem('autotrack:UA-12345-1:ns1'), null);
+
+      assert.notStrictEqual(
+          localStorage.getItem('autotrack:UA-67890-1:ns2'), null);
+
+      // This shouldn't clear the stores since other references exist.
+      store1.destroy();
+      store3.destroy();
+
+      assert.notStrictEqual(
+          localStorage.getItem('autotrack:UA-12345-1:ns1'), null);
+
+      assert.notStrictEqual(
+          localStorage.getItem('autotrack:UA-67890-1:ns2'), null);
+
+      // This *should* clear the stores because no other references exist.
+      store2.destroy();
+      store4.destroy();
+
+      assert.strictEqual(
+          localStorage.getItem('autotrack:UA-12345-1:ns1'), null);
+
+      assert.strictEqual(
+          localStorage.getItem('autotrack:UA-67890-1:ns2'), null);
+    });
+
+    it('removes the storage listener when all instances are destroyed', () => {
       sandbox.spy(window, 'addEventListener');
       sandbox.spy(window, 'removeEventListener');
 

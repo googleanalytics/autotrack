@@ -14,8 +14,8 @@
  * limitations under the License.
  */
 
- import IdleQueue from '../../lib/idle-queue';
-import {getOrCreateTrackerQueue} from '../../lib/tracker-queue';
+import IdleQueue from '../../lib/idle-queue';
+import TrackerQueue from '../../lib/tracker-queue';
 
 const sandbox = sinon.createSandbox();
 let tracker;
@@ -28,7 +28,7 @@ const getFields = (overrides = {}) => {
   }, overrides);
 };
 
-describe('getOrCreateTrackerQueue', () => {
+describe('TrackerQueue', () => {
   beforeEach((done) => {
     sandbox.restore();
 
@@ -44,21 +44,76 @@ describe('getOrCreateTrackerQueue', () => {
     window.ga('remove');
   });
 
-  it('creates an instance of IdleQueue for the passed tracker', () => {
-    const queue = getOrCreateTrackerQueue(tracker);
+  describe('static getOrCreate', () => {
+    it('creates an instance of for the passed tracker', () => {
+      const queue = TrackerQueue.getOrCreate(tracker);
 
-    assert(queue instanceof IdleQueue);
+      assert(queue instanceof TrackerQueue);
 
-    queue.destroy();
+      queue.destroy();
+    });
+
+    it('creates an instance that extends IdleQueue', () => {
+      const queue = TrackerQueue.getOrCreate(tracker);
+
+      assert(queue instanceof IdleQueue);
+
+      queue.destroy();
+    });
+
+    it('does not create more than one instance per tracking ID', () => {
+      const queue1 = TrackerQueue.getOrCreate(tracker);
+      const queue2 = TrackerQueue.getOrCreate(tracker);
+
+      assert.strictEqual(queue1, queue2);
+
+      queue1.destroy();
+      queue2.destroy(); // Not really needed.
+    });
   });
 
-  it('does not create more than one instance per tracking ID', () => {
-    const queue1 = getOrCreateTrackerQueue(tracker);
-    const queue2 = getOrCreateTrackerQueue(tracker);
+  describe('destroy', () => {
+    it('releases the reference to the instance', () => {
+      const queue1 = TrackerQueue.getOrCreate(tracker);
+      const queue2 = TrackerQueue.getOrCreate(tracker);
 
-    assert.strictEqual(queue1, queue2);
+      assert.strictEqual(queue1, queue2);
 
-    queue1.destroy();
-    queue2.destroy(); // Not really needed.
+      queue1.destroy();
+
+      // queue2 still has a reference, so this shouldn't create a new one
+      const queue3 = TrackerQueue.getOrCreate(tracker);
+      assert.strictEqual(queue2, queue3);
+
+      queue2.destroy();
+      queue3.destroy();
+
+      // All the references should be released, so a new one should be created.
+      const queue4 = TrackerQueue.getOrCreate(tracker);
+      assert.notStrictEqual(queue3, queue4);
+
+      queue4.destroy();
+    });
+
+    it('destroys the instance if no more references exist', () => {
+      sandbox.spy(IdleQueue.prototype, 'destroy');
+
+      const queue1 = TrackerQueue.getOrCreate(tracker);
+      const queue2 = TrackerQueue.getOrCreate(tracker);
+
+      assert.strictEqual(queue1, queue2);
+
+      // Force the queue to write store data.
+      tracker.send('pageview');
+
+      queue1.destroy();
+
+      assert(IdleQueue.prototype.destroy.notCalled);
+
+      queue2.destroy();
+
+      assert(IdleQueue.prototype.destroy.calledOnce);
+      assert(IdleQueue.prototype.destroy.calledOn(queue2));
+    });
   });
 });
