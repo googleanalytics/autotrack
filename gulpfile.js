@@ -26,7 +26,6 @@ const path = require('path');
 const {rollup} = require('rollup');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
-const runSequence = require('run-sequence');
 const sauceConnectLauncher = require('sauce-connect-launcher');
 const seleniumServerJar = require('selenium-server-standalone-jar');
 const webpack = require('webpack');
@@ -48,7 +47,7 @@ const isProd = () => {
 };
 
 
-gulp.task('js:lib', () => {
+gulp.task('js:lib', async () => {
   if (isProd()) {
     return build('autotrack.js').then(({code, map}) => {
       fs.outputFileSync('autotrack.js', code, 'utf-8');
@@ -61,28 +60,41 @@ gulp.task('js:lib', () => {
       throw new Error('failed to build autotrack.js');
     });
   } else {
-    return rollup({
+    const plugins = [nodeResolve()];
+
+    // At the moment this first conditional is a no-op, but after this issue
+    // is resolved we can switch to using the closure compiler plugin:
+    // https://github.com/ampproject/rollup-plugin-closure-compiler/issues/42
+    if (isProd()) {
+      // const compiler = require('@ampproject/rollup-plugin-closure-compiler');
+      // plugins.push(compiler({
+      //   compilation_level: 'ADVANCED',
+      //   warning_level: 'VERBOSE',
+      //   language_out: 'ES5',
+      //   output_wrapper: '(function(){%output%})();',
+      //   assume_function_wrapper: true,
+      //   use_types_for_optimization: true,
+      //   rewrite_polyfills: false,
+      //   externs: glob.sync('lib/externs/*.js'),
+      // }));
+    } else {
+      // Note: remove babel() when developing for easier debugging.
+      plugins.push(babel({
+        babelrc: false,
+        plugins: ['external-helpers'],
+        presets: [['env', {modules: false}]],
+      }));
+    }
+
+    const bundle = await rollup({
       input: './lib/index.js',
-      plugins: [
-        nodeResolve(),
-        babel({
-          babelrc: false,
-          plugins: ['external-helpers'],
-          presets: [['env', {
-            modules: false,
-            // Note: uncomment when developing for easier debugging.
-            // targets: {
-            //   browsers: ['last 2 Chrome versions'],
-            // },
-          }]],
-        }),
-      ],
-    }).then((bundle) => {
-      return bundle.write({
-        file: 'autotrack.js',
-        format: 'iife',
-        sourcemap: true,
-      });
+      plugins,
+    });
+
+    await bundle.write({
+      file: 'autotrack.js',
+      format: 'es',
+      sourcemap: true,
     });
   }
 });
@@ -216,9 +228,7 @@ gulp.task('test:unit', gulp.series('js', (done) => {
 }));
 
 
-gulp.task('test', (done) => {
-  runSequence('test:e2e', 'test:unit', done);
-});
+gulp.task('test', gulp.series('test:e2e', 'test:unit'));
 
 
 gulp.task('watch', gulp.series('serve', () => {
