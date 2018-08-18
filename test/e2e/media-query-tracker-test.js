@@ -96,28 +96,30 @@ describe('mediaQueryTracker', function() {
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
 
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].ec, 'Width');
+    const hits = log.getHits().sort(sortHitDataByEventCategory);
+
+    assert.strictEqual(hits[0].ec, 'Height');
     assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'lg => sm');
-    assert.strictEqual(hits[1].ec, 'Height');
+    assert.strictEqual(hits[0].el, 'md => sm');
+    assert.strictEqual(hits[1].ec, 'Width');
     assert.strictEqual(hits[1].ea, 'change');
-    assert.strictEqual(hits[1].el, 'md => sm');
+    assert.strictEqual(hits[1].el, 'lg => sm');
   });
+
 
   it('sends events as nonInteraction by default', () => {
     browser.execute(ga.run, 'require', 'mediaQueryTracker', opts);
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
 
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].ec, 'Width');
+    const hits = log.getHits().sort(sortHitDataByEventCategory);
+    assert.strictEqual(hits[0].ec, 'Height');
     assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'lg => sm');
+    assert.strictEqual(hits[0].el, 'md => sm');
     assert.strictEqual(hits[0].ni, '1');
-    assert.strictEqual(hits[1].ec, 'Height');
+    assert.strictEqual(hits[1].ec, 'Width');
     assert.strictEqual(hits[1].ea, 'change');
-    assert.strictEqual(hits[1].el, 'md => sm');
+    assert.strictEqual(hits[1].el, 'lg => sm');
     assert.strictEqual(hits[1].ni, '1');
   });
 
@@ -163,9 +165,9 @@ describe('mediaQueryTracker', function() {
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
 
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].el, 'lg:sm');
-    assert.strictEqual(hits[1].el, 'md:sm');
+    const hits = log.getHits().sort(sortHitDataByEventCategory);
+    assert.strictEqual(hits[0].el, 'md:sm');
+    assert.strictEqual(hits[1].el, 'lg:sm');
   });
 
   it('supports customizing any field via the fieldsObj', () => {
@@ -179,14 +181,14 @@ describe('mediaQueryTracker', function() {
     browser.setViewportSize({width: 400, height: 400}, false);
     browser.waitUntil(log.hitCountEquals(2));
 
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].ec, 'Width');
+    const hits = log.getHits().sort(sortHitDataByEventCategory);
+    assert.strictEqual(hits[0].ec, 'Height');
     assert.strictEqual(hits[0].ea, 'change');
-    assert.strictEqual(hits[0].el, 'lg => sm');
+    assert.strictEqual(hits[0].el, 'md => sm');
     assert.strictEqual(hits[0].ni, '0');
-    assert.strictEqual(hits[1].ec, 'Height');
+    assert.strictEqual(hits[1].ec, 'Width');
     assert.strictEqual(hits[1].ea, 'change');
-    assert.strictEqual(hits[1].el, 'md => sm');
+    assert.strictEqual(hits[1].el, 'lg => sm');
     assert.strictEqual(hits[1].ni, '0');
   });
 
@@ -224,9 +226,9 @@ describe('mediaQueryTracker', function() {
       browser.setViewportSize({width: 400, height: 400}, false);
       browser.waitUntil(log.hitCountEquals(2));
 
-      const hits = log.getHits();
-      assert.strictEqual(hits[0].ec, 'Width');
-      assert.strictEqual(hits[1].ec, 'Height');
+      const hits = log.getHits().sort(sortHitDataByEventCategory);
+      assert.strictEqual(hits[0].ec, 'Height');
+      assert.strictEqual(hits[1].ec, 'Width');
       log.removeHits();
 
       browser.execute(ga.run, 'mediaQueryTracker:remove');
@@ -313,3 +315,17 @@ function requireMediaQueryTracker_hitFilter() {
   });
 }
 
+
+/**
+ * A comparison function that sorts hits by the `ec` param.
+ * This is needed because the code wdio is injecting into the page to
+ * calculate the time seems to often be off for a few milliseconds.
+ * (This doesn't seem to happen when using the browser normally.)
+ * @param {Object} a The first hit to compare.
+ * @param {Object} b The second hit to compare.
+ * @return {number} A negative number if `a` should appear first in the sorted
+ *     array, and a positive number if `b` should appear first.
+ */
+function sortHitDataByEventCategory(a, b) {
+  return a.ec < b.ec ? -1 : 1;
+}
