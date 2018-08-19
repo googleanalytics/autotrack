@@ -18,106 +18,22 @@
 import * as utilities from '../../lib/utilities';
 
 
-const DEFAULT_FIELDS = {
-  trackingId: 'UA-12345-1',
-  cookieDomain: 'auto',
-  siteSpeedSampleRate: 0,
-};
-
 const sandbox = sinon.createSandbox();
 
 describe('utilities', () => {
-  let tracker;
-  let hits;
-
   beforeEach((done) => {
     sandbox.restore();
-
-    hits = [];
-    window.ga('create', DEFAULT_FIELDS);
-    window.ga((t) => {
-      tracker = t;
-      const originalSendHitTask = tracker.get('sendHitTask');
-      tracker.set('sendHitTask', (model) => {
-        const query = {};
-        const hitPayload = model.get('hitPayload');
-        hitPayload.split('&').forEach((entry) => {
-          const [key, value] = entry.split('=');
-          query[decodeURIComponent(key)] = decodeURIComponent(value);
-        });
-
-        hits.push(query);
-        originalSendHitTask(model);
-      });
-
-      done();
-    });
   });
 
   afterEach(() => {
     sandbox.restore();
-    window.ga('remove');
   });
 
-  describe('deferUntilPluginsLoaded', () => {
-    it('queues a function to be run prior to the first send', () => {
-      utilities.deferUntilPluginsLoaded(tracker, () => {
-        tracker.set('dimension1', '1');
-        tracker.send('event');
-      });
-      utilities.deferUntilPluginsLoaded(tracker, () => {
-        tracker.set('dimension2', '2');
-      });
-      utilities.deferUntilPluginsLoaded(tracker, () => {
-        tracker.set('dimension3', '3');
-      });
-      tracker.send('pageview');
+  describe('rIC', () => {
+    it('runs requestIdleCallback if supported');
+  });
 
-      assert.strictEqual(hits[0].cd1, '1');
-      assert.strictEqual(hits[0].cd2, undefined);
-      assert.strictEqual(hits[0].cd3, undefined);
-
-      assert.strictEqual(hits[1].cd1, '1');
-      assert.strictEqual(hits[1].cd2, '2');
-      assert.strictEqual(hits[1].cd3, '3');
-    });
-
-    it('runs the function in the next task if send is not yet called',
-        (done) => {
-      utilities.deferUntilPluginsLoaded(tracker, () => {
-        tracker.set('dimension1', '1');
-        tracker.send('event');
-      });
-      utilities.deferUntilPluginsLoaded(tracker, () => {
-        tracker.set('dimension2', '2');
-      });
-      utilities.deferUntilPluginsLoaded(tracker, () => {
-        tracker.set('dimension3', '3');
-      });
-      setTimeout(() => {
-        tracker.send('pageview');
-
-        assert.strictEqual(hits[0].cd1, '1');
-        assert.strictEqual(hits[0].cd2, undefined);
-        assert.strictEqual(hits[0].cd3, undefined);
-
-        assert.strictEqual(hits[1].cd1, '1');
-        assert.strictEqual(hits[1].cd2, '2');
-        assert.strictEqual(hits[1].cd3, '3');
-        done();
-      }, 100);
-    });
-
-    it('runs queued functions in the order they were queued', () => {
-      const order = [];
-      utilities.deferUntilPluginsLoaded(tracker, () => order.push(1));
-      utilities.deferUntilPluginsLoaded(tracker, () => order.push(2));
-      utilities.deferUntilPluginsLoaded(tracker, () => order.push(3));
-      tracker.send('pageview');
-
-      assert.strictEqual(order[0], 1);
-      assert.strictEqual(order[1], 2);
-      assert.strictEqual(order[2], 3);
-    });
+  describe('cIC', () => {
+    it('runs cancelIdleCallback if supported');
   });
 });
