@@ -42,7 +42,7 @@ describe('PageVisibilityTracker', function() {
     window.ga('remove');
   });
 
-  describe('constructor', function() {
+  xdescribe('constructor', function() {
     it('stores the tracker on the instance', function() {
       if (!document.visibilityState) this.skip();
 

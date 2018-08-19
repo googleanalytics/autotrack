@@ -104,7 +104,7 @@ gulp.task('js:test', ((compiler) => {
   const createCompiler = () => {
     return webpack({
       mode: 'development',
-      entry: glob.sync('./test/unit/**/*-test.js'),
+      entry: ['babel-polyfill', ...glob.sync('./test/unit/**/*-test.js')],
       output: {
         path: path.resolve(__dirname, 'test/unit'),
         filename: 'index.js',
@@ -117,13 +117,15 @@ gulp.task('js:test', ((compiler) => {
         rules: [
           {
             test: /\.js$/,
-            exclude: /node_modules\/(?!(dom-utils)\/).*/,
             use: {
               loader: 'babel-loader',
               options: {
                 babelrc: false,
                 cacheDirectory: true,
-                presets: [['env', {modules: false}]],
+                presets: [['env', {
+                  modules: false,
+                  useBuiltIns: true,
+                }]],
               },
             },
           },
@@ -148,7 +150,7 @@ gulp.task('lint', () => {
   return gulp.src([
     'gulpfile.js',
     'bin/autotrack',
-    'bin/*.js',
+    'bin/build.js',
     'lib/*.js',
     'lib/plugins/*.js',
     'test/e2e/*.js',
@@ -203,7 +205,7 @@ gulp.task('tunnel', gulp.series('serve', (done) => {
 }));
 
 
-gulp.task('test:e2e', gulp.series('js', 'lint', 'tunnel', 'selenium', () => {
+gulp.task('test:e2e', gulp.series('lint', 'js', 'tunnel', 'selenium', () => {
   const stopServers = () => {
     // TODO(philipwalton): re-add this logic to close the tunnel once this is
     // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
@@ -220,11 +222,22 @@ gulp.task('test:e2e', gulp.series('js', 'lint', 'tunnel', 'selenium', () => {
 }));
 
 
-gulp.task('test:unit', gulp.series('js', (done) => {
-  spawn(
-      './node_modules/.bin/easy-sauce',
+gulp.task('test:unit', gulp.series(/* 'lint', 'js',*/ (done) => {
+  const easySauceProcess = spawn('./node_modules/.bin/easy-sauce',
       ['-c', 'test/unit/easy-sauce-config.json'],
-      {stdio: [0, 1, 2]}).on('end', done);
+      {stdio: [0, 1, 2]});
+
+  easySauceProcess
+    .on('error', (err) => done(err))
+    .on('exit', (code, signal) => {
+      if (code > 0) {
+        return done(new Error(`Process exited with code ${code}`));
+      }
+      if (signal) {
+        return done(new Error(`Process exited with signal ${signal}`));
+      }
+      done();
+    });
 }));
 
 
@@ -233,6 +246,6 @@ gulp.task('test', gulp.series('test:e2e', 'test:unit'));
 
 gulp.task('watch', gulp.series('serve', () => {
   gulp.watch('./lib/**/*.js', gulp.series('js:lib'));
-  gulp.watch(['./lib/**/*.js', './test/unit/**/*-test.js'],
+  gulp.watch(['./lib/**/*.js', './test/unit/**/*.js', '!./test/unit/index.js'],
       gulp.series('js:test'));
 }));

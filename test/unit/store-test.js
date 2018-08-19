@@ -26,8 +26,9 @@ const dispatchStorageEvent = ({key, oldValue, newValue}) => {
   try {
     event = new StorageEvent('storage', {key, oldValue, newValue});
   } catch (err) {
-    event = document.createEvent('StorageEvent');
-    event.initEvent('storage');
+    // We can't use StorageEvent because the properties aren't writable in IE.
+    event = document.createEvent('Event');
+    event.initEvent('storage', false, false);
     Object.defineProperties(event, {
       key: {value: key},
       newValue: {value: newValue},
@@ -39,9 +40,14 @@ const dispatchStorageEvent = ({key, oldValue, newValue}) => {
 
 
 describe('Store', () => {
+  before(() => {
+    localStorage.clear();
+  });
+
   beforeEach(() => {
     sandbox.restore();
   });
+
   afterEach(() => {
     sandbox.restore();
   });
@@ -170,12 +176,13 @@ describe('Store', () => {
       store1.update({foo: 12, bar: 34});
       store2.update({qux: 56, baz: 78});
 
-      sandbox.spy(localStorage, 'getItem');
+      // `localStorage.setItem` can't be stubbed in some browsers.
+      sandbox.spy(Store, 'get_');
 
       assert.deepEqual(store1.data, {foo: 12, bar: 34});
       assert.deepEqual(store2.data, {qux: 56, baz: 78});
 
-      assert(localStorage.getItem.notCalled);
+      assert(Store.get_.notCalled);
 
       store1.destroy();
       store2.destroy();
@@ -185,7 +192,8 @@ describe('Store', () => {
       const store1 = Store.getOrCreate('UA-12345-1', 'ns1');
       const store2 = Store.getOrCreate('UA-67890-1', 'ns2');
 
-      sandbox.stub(localStorage, 'setItem').throws();
+      // `localStorage.setItem` can't be stubbed in some browsers.
+      sandbox.stub(Store, 'set_').throws();
 
       store1.update({foo: 12, bar: 34});
       store2.update({qux: 56, baz: 78});
@@ -196,12 +204,13 @@ describe('Store', () => {
       assert.strictEqual(
           localStorage.getItem('autotrack:UA-67890-1:ns2'), null);
 
-      sandbox.spy(localStorage, 'getItem');
+      // `localStorage.getItem` can't be stubbed in some browsers.
+      sandbox.spy(Store, 'get_');
       assert.deepEqual(store1.data, {foo: 12, bar: 34});
       assert.deepEqual(store2.data, {qux: 56, baz: 78});
 
       // The `.data getter`should read from cache.
-      assert(localStorage.getItem.notCalled);
+      assert(Store.get_.notCalled);
 
       store1.destroy();
       store2.destroy();
@@ -257,12 +266,13 @@ describe('Store', () => {
         newValue: JSON.stringify({qux: 56, baz: 78}),
       });
 
-      sandbox.spy(localStorage, 'getItem');
+      // `localStorage.getItem` can't be stubbed in some browsers.
+      sandbox.spy(Store, 'get_');
 
       assert.deepEqual(store1.data, {foo: 12, bar: 34});
       assert.deepEqual(store2.data, {qux: 56, baz: 78});
 
-      assert(localStorage.getItem.notCalled);
+      assert(Store.get_.notCalled);
 
       store1.destroy();
       store2.destroy();

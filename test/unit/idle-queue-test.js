@@ -44,8 +44,8 @@ const stubProperty = (obj, prop, value) => {
 
 const blockingSpy = (ms) => {
   return sandbox.stub().callsFake(() => {
-    const startTime = performance.now();
-    while (performance.now() - startTime < ms) {
+    const startTime = +new Date;
+    while (new Date - startTime < ms) {
       // Do nothing.
     }
   });
@@ -120,6 +120,14 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
+      // Since this idle callback is scheduled before the spies are added,
+      // It should always run first.
+      rIC(() => {
+        assert(spy1.notCalled);
+        assert(spy2.notCalled);
+        assert(spy3.notCalled);
+      });
+
       queue.add(spy1);
       queue.add(spy2);
       queue.add(spy3);
@@ -127,12 +135,6 @@ describe('IdleQueue', () => {
       assert(spy1.notCalled);
       assert(spy2.notCalled);
       assert(spy3.notCalled);
-
-      await nextIdleCallback();
-
-      // At this point at least one of the spies should have been called, but
-      // not necessarily all of them (it depends on the idle time remaining).
-      assert(spy1.calledOnce);
 
       await when(() => spy3.calledOnce);
 
@@ -156,12 +158,6 @@ describe('IdleQueue', () => {
       assert(spy2.notCalled);
       assert(spy3.notCalled);
 
-      await nextIdleCallback();
-
-      // At this point at least one of the spies should have been called, but
-      // not necessarily all of them (it depends on the idle time remaining).
-      assert(spy1.calledOnce);
-
       await when(() => spy3.calledOnce);
 
       assert(spy1.calledOnce);
@@ -183,8 +179,8 @@ describe('IdleQueue', () => {
 
       queue.add([spy1, spy2, spy3, spy4]);
 
-      // rICSpy is queued after the 4 spies above,
-      // but it should run at some point between them.
+      // This callback is queue after the 4 spies, but it should run at some
+      // point between them.
       rIC(rICSpy);
 
       assert(spy1.notCalled);
@@ -192,15 +188,6 @@ describe('IdleQueue', () => {
       assert(spy3.notCalled);
       assert(spy4.notCalled);
       assert(rICSpy.notCalled);
-
-      await nextIdleCallback();
-
-      // At this point the one set of idle callbacks should have been called,
-      // but any that couldn't finished within the time remaining should have
-      // been queued for the next idle time.
-      assert(spy1.calledOnce);
-      assert(rICSpy.calledOnce);
-      assert(spy4.notCalled);
 
       await when(() => spy4.calledOnce);
 

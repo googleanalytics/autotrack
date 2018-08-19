@@ -22,11 +22,14 @@ const TRACKING_ID = 'UA-12345-1';
 const MINUTES = 60 * 1000;
 const DEFAULT_TIMEOUT = 30; // minutes
 
+let tracker;
 
 describe('Session', () => {
-  let tracker;
-  beforeEach((done) => {
+  before(() => {
     localStorage.clear();
+  });
+
+  beforeEach((done) => {
     window.ga('create', TRACKING_ID, 'auto');
     window.ga((t) => {
       tracker = t;
@@ -35,7 +38,6 @@ describe('Session', () => {
   });
 
   afterEach(() => {
-    localStorage.clear();
     window.ga('remove');
   });
 
@@ -51,8 +53,8 @@ describe('Session', () => {
     });
   });
 
-  describe('constructor', () => {
-    xit('stores a unique ID', () => {
+  xdescribe('constructor', () => {
+    it('stores a unique ID', () => {
       const session = Session.getOrCreate(tracker);
 
       assert(session.id);
@@ -60,7 +62,7 @@ describe('Session', () => {
       session.destroy();
     });
 
-    xit('reuses a stored ID if found', () => {
+    it('reuses a stored ID if found', () => {
       localStorage.setItem(
           'autotrack:UA-12345-1:session', JSON.stringify({id: 'foo'}));
 
@@ -70,7 +72,7 @@ describe('Session', () => {
       session.destroy();
     });
 
-    xit('sets the passed args on the instance', () => {
+    it('sets the passed args on the instance', () => {
       const session = Session.getOrCreate(tracker, 123, 'America/Los_Angeles');
 
       assert.strictEqual(session.tracker, tracker);
@@ -80,7 +82,7 @@ describe('Session', () => {
       session.destroy();
     });
 
-    xit('uses the default timeout if not set', () => {
+    it('uses the default timeout if not set', () => {
       const session = Session.getOrCreate(tracker);
 
       assert.strictEqual(session.tracker, tracker);
@@ -90,7 +92,7 @@ describe('Session', () => {
       session.destroy();
     });
 
-    xit('adds a listener for storage changes', () => {
+    it('adds a listener for storage changes', () => {
       const session = Session.getOrCreate(tracker);
 
       assert.strictEqual(
@@ -130,8 +132,6 @@ describe('Session', () => {
     });
 
     it('returns true if a new day has started', function() {
-      const clock = sinon.useFakeTimers({now: 1e12});
-
       try {
         new Intl.DateTimeFormat('en-US', {
           timeZone: 'America/Los_Angeles',
@@ -140,6 +140,8 @@ describe('Session', () => {
         // Skip this test in browsers that don't support time zones.
         return this.skip();
       }
+
+      const clock = sinon.useFakeTimers({now: 1e12});
 
       const dateTimeFormatStub = stubDateTimeFormat();
       dateTimeFormatStub.onCall(0).returns('9/15/1982');
