@@ -6,6 +6,7 @@
   "bin": "./bin/autotrack",
   "scripts": {
     "build": "node -r esm ./node_modules/.bin/gulp js:lib",
+    "build": "node -r esm ./node_modules/.bin/gulp lint",
     "start": "node -r esm ./node_modules/.bin/gulp watch",
     "test": "node -r esm ./node_modules/.bin/gulp test",
     "selenium": "node -r esm ./node_modules/.bin/gulp selenium",

@@ -143,7 +143,7 @@ gulp.task('js:test', ((compiler) => {
 })());
 
 
-gulp.task('js', gulp.parallel('js:lib', 'js:test'));
+gulp.task('js', gulp.series('js:lib', 'js:test'));
 
 
 gulp.task('lint', () => {
@@ -222,7 +222,7 @@ gulp.task('test:e2e', gulp.series('lint', 'js', 'tunnel', 'selenium', () => {
 }));
 
 
-gulp.task('test:unit', gulp.series(/* 'lint', 'js',*/ (done) => {
+gulp.task('test:unit', gulp.series('lint', 'js', (done) => {
   const easySauceProcess = spawn('./node_modules/.bin/easy-sauce',
       ['-c', 'test/unit/easy-sauce-config.json'],
       {stdio: [0, 1, 2]});
