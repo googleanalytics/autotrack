@@ -183,7 +183,7 @@ gulp.task('serve', gulp.series('js', (done) => {
 }));
 
 
-gulp.task('tunnel', gulp.series('serve', (done) => {
+gulp.task('tunnel', (done) => {
   const opts = {
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
@@ -202,10 +202,11 @@ gulp.task('tunnel', gulp.series('serve', (done) => {
       done();
     }
   });
-}));
+});
 
 
-gulp.task('test:e2e', gulp.series('lint', 'js', 'tunnel', 'selenium', () => {
+gulp.task('test:e2e', gulp.series(
+    'lint', 'js', 'serve', 'tunnel', 'selenium', () => {
   const stopServers = () => {
     // TODO(philipwalton): re-add this logic to close the tunnel once this is
     // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116

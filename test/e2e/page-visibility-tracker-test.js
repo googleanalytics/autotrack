@@ -376,33 +376,43 @@ describe('pageVisibilityTracker', function() {
 
     browser.execute(ga.run, 'require', 'pageVisibilityTracker', opts);
     browser.waitUntil(log.hitCountEquals(1));
-    browser.pause(500);
+
+    const [tab1Hit1] = log.getHits();
+    assert(tab1Hit1.dl.endsWith('tab=1'));
+    assert.strictEqual(tab1Hit1.t, 'pageview');
+    assert.strictEqual(tab1Hit1.cm1, '1');
+    log.removeHits();
 
     const backgroundTab = openNewTabInBackground('/test/e2e/fixtures' +
         '/page-visibility-tracker-pageload.html?testId=' + testId);
 
+    browser.waitUntil(log.hitCountEquals(1));
+
+    const [tab2Hit1] = log.getHits();
+    assert(tab2Hit1.dl.includes('page-visibility-tracker-pageload.html'));
+    assert.strictEqual(tab2Hit1.ec, 'Page Visibility');
+    assert.strictEqual(tab2Hit1.ea, 'page load');
+    assert.strictEqual(tab2Hit1.ni, '1');
+    assert.strictEqual(tab2Hit1.cm1, '1');
+    log.removeHits();
+
+    browser.pause(500);
+    browser.switchTab(backgroundTab);
     browser.waitUntil(log.hitCountEquals(2));
 
-    browser.switchTab(backgroundTab);
+    // TODO(philipwalton): refactor all tests to assert order by page and
+    // not global order since cross-tab event order is non-deterministic.
+    const [tab1Hit2] = log.getHits().filter((h) => h.dl.includes('autotrack'));
+    const [tab2Hit2] = log.getHits().filter((h) => h.dl.includes('pageload'));
 
-    browser.waitUntil(log.hitCountEquals(4));
+    assert(tab1Hit2.dl.endsWith('tab=1'));
+    assert.strictEqual(tab1Hit2.ec, 'Page Visibility');
+    assert.strictEqual(tab1Hit2.ea, 'track');
+    assert(tab1Hit2.ev > 0);
 
-    const hits = log.getHits();
-    assert(hits[0].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[0].t, 'pageview');
-    assert.strictEqual(hits[0].cm1, '1');
-    assert(hits[1].dl.includes('page-visibility-tracker-pageload.html'));
-    assert.strictEqual(hits[1].ec, 'Page Visibility');
-    assert.strictEqual(hits[1].ea, 'page load');
-    assert.strictEqual(hits[1].ni, '1');
-    assert.strictEqual(hits[1].cm1, '1');
-    assert(hits[2].dl.endsWith('tab=1'));
-    assert.strictEqual(hits[2].ec, 'Page Visibility');
-    assert.strictEqual(hits[2].ea, 'track');
-    assert(hits[2].ev > 0);
-    assert(hits[3].dl.includes('page-visibility-tracker-pageload.html'));
-    assert.strictEqual(hits[3].t, 'pageview');
-    assert(!hits[3].cm1);
+    assert(tab2Hit2.dl.includes('page-visibility-tracker-pageload.html'));
+    assert.strictEqual(tab2Hit2.t, 'pageview');
+    assert(!tab2Hit2.cm1);
   });
 
   it('does not double-send pageviews on session timeout', function() {
