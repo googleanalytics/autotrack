@@ -277,6 +277,24 @@ describe('Store', () => {
       store1.destroy();
       store2.destroy();
     });
+
+    it('is not invoked when the storage event fires for other keys', () => {
+      const store = Store.getOrCreate('UA-12345-1', 'ns1');
+
+      sandbox.spy(store, 'update');
+
+      // Simulate a storage event, meaning a `set()` call was made in
+      // another tab.
+      dispatchStorageEvent({
+        key: 'other-key',
+        oldValue: '',
+        newValue: JSON.stringify({foo: 12, bar: 34}),
+      });
+
+      assert(store.update.notCalled);
+
+      store.destroy();
+    });
   });
 
   describe('clear', () => {
