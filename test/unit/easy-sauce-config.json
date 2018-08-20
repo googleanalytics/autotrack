@@ -11,9 +11,24 @@
       "latest"
     ],
     [
-      "Linux",
+      "macOS 10.13",
+      "chrome",
+      "latest"
+    ],
+    [
+      "Windows 10",
       "firefox",
       "latest"
+    ],
+    [
+      "macOS 10.13",
+      "firefox",
+      "latest"
+    ],
+    [
+      "Windows 10",
+      "firefox",
+      "60"
     ],
     [
       "macOS 10.13",
