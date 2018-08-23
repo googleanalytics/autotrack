@@ -14,8 +14,10 @@
  * limitations under the License.
  */
 
+import {getIdleDeadlinePrototype, when} from './helpers';
 import IdleQueue from '../../lib/idle-queue';
 import TrackerQueue from '../../lib/tracker-queue';
+import {rIC} from '../../lib/utilities';
 
 
 const TRACKING_ID = 'UA-12345-1';
@@ -56,6 +58,33 @@ describe('TrackerQueue', () => {
 
       queue1.destroy();
       queue2.destroy(); // Not really needed.
+    });
+
+    it('sets a defaultMinTaskTime of 25', async () => {
+      const idleDeadlinePrototype = await getIdleDeadlinePrototype();
+
+      let timeRemaining;
+      sandbox.stub(idleDeadlinePrototype, 'timeRemaining').callsFake(() => {
+        return timeRemaining;
+      });
+
+      timeRemaining = 13;
+
+      const spy = sandbox.spy();
+      const rICSpy = sandbox.spy();
+
+      const queue = TrackerQueue.getOrCreate(TRACKING_ID);
+      queue.add(spy);
+      rIC(rICSpy);
+
+      await when(() => rICSpy.calledOnce);
+      assert(spy.notCalled);
+
+      // Simulate a longer idle period and assert spy is eventually called.
+      timeRemaining = 50;
+      await when(() => spy.calledOnce);
+
+      queue.destroy();
     });
   });
 

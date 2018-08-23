@@ -16,7 +16,8 @@
 
 
 import {dispatch} from 'dom-utils';
-import {nextMicroTask, nextIdleCallback, when} from './helpers';
+import {getIdleDeadlinePrototype, nextMicroTask, nextIdleCallback, when}
+    from './helpers';
 import IdleQueue from '../../lib/idle-queue';
 import {isSafari, rIC} from '../../lib/utilities';
 
@@ -110,6 +111,86 @@ describe('IdleQueue', () => {
 
       queue.destroy();
     });
+
+    it('handles changes in lifecycle state while the queue is pending',
+        async () => {
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+      const spy3 = sandbox.spy();
+
+      const queue = new IdleQueue();
+
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+
+      assert(spy1.notCalled);
+      assert(spy2.notCalled);
+      assert(spy3.notCalled);
+
+      dispatch(window, 'beforeunload');
+
+      if (isSafari()) {
+        assert(spy1.calledOnce);
+        assert(spy2.calledOnce);
+        assert(spy3.calledOnce);
+      } else {
+        assert(spy1.notCalled);
+        assert(spy2.notCalled);
+        assert(spy3.notCalled);
+      }
+
+      stubProperty(document, 'visibilityState').value('hidden');
+      dispatch(document, 'visibilitychange');
+
+      assert(spy1.calledOnce);
+      assert(spy2.calledOnce);
+      assert(spy3.calledOnce);
+
+      queue.destroy();
+    });
+
+
+    it('accepts a defaultMinTaskTime option', async () => {
+      const idleDeadlinePrototype = await getIdleDeadlinePrototype();
+
+      let timeRemaining;
+      sandbox.stub(idleDeadlinePrototype, 'timeRemaining').callsFake(() => {
+        return timeRemaining;
+      });
+
+      const queue1 = new IdleQueue({defaultMinTaskTime: 10});
+      const spy1 = sandbox.spy();
+      const rICSpy1 = sandbox.spy();
+
+      timeRemaining = 9;
+      queue1.add(spy1);
+      rIC(rICSpy1);
+
+      // The added spy should not run because the timeRemaining value will
+      // always be less than the defaultMinTaskTime.
+      await when(() => rICSpy1.calledOnce);
+      assert(spy1.notCalled);
+
+      // Simulate a longer idle period and assert spy1 is eventually called.
+      timeRemaining = 50;
+      await when(() => spy1.calledOnce);
+
+      const queue2 = new IdleQueue({defaultMinTaskTime: 25});
+      const spy2 = sandbox.spy();
+      const rICSpy2 = sandbox.spy();
+
+      timeRemaining = 26;
+
+      queue2.add(spy2);
+      rIC(rICSpy2);
+
+      await when(() => rICSpy2.calledOnce);
+      assert(spy1.calledOnce);
+
+      queue1.destroy();
+      queue2.destroy();
+    });
   });
 
   describe('add', () => {
@@ -145,28 +226,6 @@ describe('IdleQueue', () => {
       queue.destroy();
     });
 
-    it('supports passing an array of tasks', async () => {
-      const spy1 = sandbox.spy();
-      const spy2 = sandbox.spy();
-      const spy3 = sandbox.spy();
-
-      const queue = new IdleQueue();
-
-      queue.add([spy1, spy2, spy3]);
-
-      assert(spy1.notCalled);
-      assert(spy2.notCalled);
-      assert(spy3.notCalled);
-
-      await when(() => spy3.calledOnce);
-
-      assert(spy1.calledOnce);
-      assert(spy2.calledOnce);
-      assert(spy3.calledOnce);
-
-      queue.destroy();
-    });
-
     it('waits until the next idle period if all tasks cannot finish',
         async () => {
       const spy1 = blockingSpy(5);
@@ -177,10 +236,13 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.add([spy1, spy2, spy3, spy4]);
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+      queue.add(spy4);
 
-      // This callback is queue after the 4 spies, but it should run at some
-      // point between them.
+      // This callback is queued after the 4 spies, but it should run at some
+      // point before the last one (implying the queue needed to reschedule).
       rIC(rICSpy);
 
       assert(spy1.notCalled);
@@ -197,7 +259,6 @@ describe('IdleQueue', () => {
       assert(spy4.calledOnce);
 
       assert(rICSpy.calledOnce);
-      assert(rICSpy.calledAfter(spy1));
       assert(rICSpy.calledBefore(spy4));
 
       queue.destroy();
@@ -213,7 +274,9 @@ describe('IdleQueue', () => {
 
       const queue = new IdleQueue();
 
-      queue.add([spy1, spy2, spy3]);
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
 
       assert(spy1.notCalled);
       assert(spy2.notCalled);
@@ -237,7 +300,9 @@ describe('IdleQueue', () => {
         const spy3 = sandbox.spy();
         const queue = new IdleQueue();
 
-        queue.add([spy1, spy2, spy3]);
+        queue.add(spy1);
+        queue.add(spy2);
+        queue.add(spy3);
 
         assert(spy1.notCalled);
         assert(spy2.notCalled);
@@ -345,8 +410,73 @@ describe('IdleQueue', () => {
       queue.destroy();
     });
 
-    it('handles changes in visibilityState while the queue is pending',
-        async () => {
+    it('accepts a minTaskTime option', async () => {
+      const idleDeadlinePrototype = await getIdleDeadlinePrototype();
+
+      const queue = new IdleQueue();
+
+      let timeRemaining;
+      sandbox.stub(idleDeadlinePrototype, 'timeRemaining').callsFake(() => {
+        return timeRemaining;
+      });
+
+      const spy1 = sandbox.spy();
+      const rICSpy1 = sandbox.spy();
+
+      timeRemaining = 13;
+      queue.add(spy1);
+      rIC(rICSpy1);
+
+      // With the default minTaskTime, spy1 should be called before rICSpy1.
+      await when(() => rICSpy1.calledOnce);
+      assert(spy1.called);
+
+
+      const spy2 = sandbox.spy();
+      const rICSpy2 = sandbox.spy();
+
+      queue.add(spy2, {minTaskTime: 25});
+      rIC(rICSpy2);
+
+      // With a minTaskTime of 25, rICSpy should be called before spy1.
+      await when(() => rICSpy2.calledOnce);
+      assert(spy2.notCalled);
+
+      // Simulate a longer idle period.
+      timeRemaining = 50;
+
+      await when(() => spy2.calledOnce);
+
+      queue.destroy();
+    });
+  });
+
+  describe('processTasksImmediately', () => {
+    it('runs all pending tasks synchronously', () => {
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+      const spy3 = sandbox.spy();
+
+      const queue = new IdleQueue();
+
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+
+      assert(spy1.notCalled);
+      assert(spy2.notCalled);
+      assert(spy3.notCalled);
+
+      queue.processTasksImmediately();
+
+      assert(spy1.calledOnce);
+      assert(spy2.calledOnce);
+      assert(spy3.calledOnce);
+
+      queue.destroy();
+    });
+
+    it('works when the queue is already being processed', async () => {
       const spy1 = blockingSpy(5);
       const spy2 = blockingSpy(45);
       const spy3 = blockingSpy(5);
@@ -372,19 +502,9 @@ describe('IdleQueue', () => {
       // This should run at some point in the middle of the 6 spies running.
       // Ensure that the remaining spies are called immediately.
       rIC(() => {
-        assert(spy1.calledOnce);
         assert(spy6.notCalled);
 
-        dispatch(window, 'beforeunload');
-
-        if (isSafari()) {
-          assert(spy6.calledOnce);
-        } else {
-          assert(spy6.notCalled);
-        }
-
-        stubProperty(document, 'visibilityState').value('hidden');
-        dispatch(document, 'visibilitychange');
+        queue.processTasksImmediately();
 
         assert(spy6.calledOnce);
       });
@@ -406,28 +526,82 @@ describe('IdleQueue', () => {
       queue.destroy();
     });
 
-    it('does not run queued tasks twice after a visibilitychange', async () => {
+    it('cancels pending idle callbacks to not run tasks twice', async () => {
       const spy1 = sandbox.spy();
       const spy2 = sandbox.spy();
       const queue = new IdleQueue();
 
-      queue.add([spy1, spy2]);
+      queue.add(spy1);
+      queue.add(spy2);
+
       assert(spy1.notCalled);
       assert(spy2.notCalled);
 
-      dispatch(window, 'beforeunload');
-
-      stubProperty(document, 'visibilityState').value('hidden');
-      dispatch(document, 'visibilitychange');
+      queue.processTasksImmediately();
 
       assert(spy1.calledOnce);
       assert(spy2.calledOnce);
 
-      // Wait until the next idle point to assert the tasks weren't re-called.
+      // Wait until the next idle point to assert the tasks weren't re-run.
       await nextIdleCallback();
 
       assert(spy1.calledOnce);
       assert(spy2.calledOnce);
+
+      queue.destroy();
+    });
+  });
+
+  describe('hasPendingTasks', () => {
+    it('returns true if there are tasks in the queue', async () => {
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+      const spy3 = sandbox.spy();
+
+      const queue = new IdleQueue();
+
+      assert.strictEqual(queue.hasPendingTasks(), false);
+
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+
+      assert.strictEqual(queue.hasPendingTasks(), true);
+
+      await when(() => spy3.calledOnce);
+
+      assert.strictEqual(queue.hasPendingTasks(), false);
+
+      queue.destroy();
+    });
+
+    it('returns true after processing if more tasks are still scheduled',
+        async () => {
+      const spy1 = blockingSpy(5);
+      const spy2 = blockingSpy(45);
+      const spy3 = blockingSpy(5);
+      const spy4 = blockingSpy(5);
+
+      const queue = new IdleQueue();
+
+      assert.strictEqual(queue.hasPendingTasks(), false);
+
+      queue.add(spy1);
+      queue.add(spy2);
+      queue.add(spy3);
+      queue.add(spy4);
+
+      assert.strictEqual(queue.hasPendingTasks(), true);
+
+      // This callback is queued after the 4 spies, but it should run at some
+      // point before the last one (implying the queue needed to reschedule).
+      rIC(() => {
+        assert.strictEqual(queue.hasPendingTasks(), true);
+      });
+
+      await when(() => spy4.calledOnce);
+
+      assert.strictEqual(queue.hasPendingTasks(), false);
 
       queue.destroy();
     });

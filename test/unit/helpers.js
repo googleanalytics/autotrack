@@ -30,3 +30,9 @@ export const when = async (fn, intervalMillis = 100, retries = 20) => {
 
 export const nextMicroTask = () => new Promise((res) => queueMicrotask(res));
 export const nextIdleCallback = () => new Promise((res) => rIC(res));
+
+export const getIdleDeadlinePrototype = async () => {
+  return await new Promise((resolve) => {
+    rIC((deadline) => resolve(deadline.constructor.prototype));
+  });
+};
