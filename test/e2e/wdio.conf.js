@@ -20,7 +20,7 @@ const getCapabilities = () => {
   let capabilities;
   if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
     capabilities = [
-      {browserName: 'chrome'},
+      // {browserName: 'chrome'},
       // {
       //   browserName: 'firefox',
       //   'moz:firefoxOptions': {
@@ -46,11 +46,11 @@ const getCapabilities = () => {
       //   platform: 'OS X 10.11',
       //   version: 'latest',
       // },
-      {
-        browserName: 'safari',
-        platform: 'macOS 10.13',
-        version: '11.1',
-      },
+      // {
+      //   browserName: 'safari',
+      //   platform: 'macOS 10.13',
+      //   version: '11.1',
+      // },
       // {
       //   browserName: 'safari',
       //   platform: 'OS X 10.11',
