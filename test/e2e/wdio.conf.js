@@ -20,7 +20,7 @@ const getCapabilities = () => {
   let capabilities;
   if (!(process.env.SAUCE_USERNAME && process.env.SAUCE_ACCESS_KEY)) {
     capabilities = [
-      // {browserName: 'chrome'},
+      {browserName: 'chrome'},
       // {
       //   browserName: 'firefox',
       //   'moz:firefoxOptions': {
