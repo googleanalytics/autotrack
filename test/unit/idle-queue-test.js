@@ -226,6 +226,40 @@ describe('IdleQueue', () => {
       queue.destroy();
     });
 
+    it('calls the task with the state at add time', async () => {
+      const spy1 = sandbox.spy();
+      const spy2 = sandbox.spy();
+
+      const queue = new IdleQueue();
+
+      const clock = sinon.useFakeTimers({now: 1e12});
+
+      stubProperty(document, 'visibilityState').value('hidden');
+      queue.add(spy1);
+
+      clock.tick(1000);
+
+      stubProperty(document, 'visibilityState').value('visible');
+      queue.add(spy2);
+
+      clock.restore();
+
+      assert(spy1.notCalled);
+      assert(spy2.notCalled);
+
+      await when(() => spy2.calledOnce);
+
+      assert(spy1.calledOnce);
+      assert.strictEqual(spy1.firstCall.args[0].time, 1e12);
+      assert.strictEqual(spy1.firstCall.args[0].visibilityState, 'hidden');
+
+      assert(spy2.calledOnce);
+      assert.strictEqual(spy2.firstCall.args[0].time, 1e12 + 1000);
+      assert.strictEqual(spy2.firstCall.args[0].visibilityState, 'visible');
+
+      queue.destroy();
+    });
+
     it('waits until the next idle period if all tasks cannot finish',
         async () => {
       const spy1 = blockingSpy(5);
@@ -602,6 +636,54 @@ describe('IdleQueue', () => {
       await when(() => spy4.calledOnce);
 
       assert.strictEqual(queue.hasPendingTasks(), false);
+
+      queue.destroy();
+    });
+  });
+
+  describe('getState', () => {
+    it('returns the state at add time of the currently processing task',
+        async () => {
+      const queue = new IdleQueue();
+
+      const stub1 = sandbox.stub().callsFake((state) => {
+        assert.strictEqual(queue.getState(), state);
+        assert.strictEqual(queue.getState().time, 1e12);
+        assert.strictEqual(queue.getState().visibilityState, 'hidden');
+      });
+      const stub2 = sandbox.stub().callsFake((state) => {
+        assert.strictEqual(queue.getState(), state);
+        assert.strictEqual(queue.getState().time, 1e12 + 1000);
+        assert.strictEqual(queue.getState().visibilityState, 'visible');
+      });
+
+      const clock = sinon.useFakeTimers({now: 1e12});
+
+      stubProperty(document, 'visibilityState').value('hidden');
+      queue.add(stub1);
+
+      clock.tick(1000);
+
+      stubProperty(document, 'visibilityState').value('visible');
+      queue.add(stub2);
+
+      clock.restore();
+
+      assert(stub1.notCalled);
+      assert(stub2.notCalled);
+
+      await when(() => stub2.calledOnce);
+
+      assert(stub1.calledOnce);
+      assert(stub2.calledOnce);
+
+      queue.destroy();
+    });
+
+    it('returns null if no tasks are processing', () => {
+      const queue = new IdleQueue();
+
+      assert.strictEqual(queue.getState(), null);
 
       queue.destroy();
     });
