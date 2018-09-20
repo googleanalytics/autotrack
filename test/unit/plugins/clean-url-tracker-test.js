@@ -15,8 +15,6 @@
  */
 
 
-import assert from 'assert';
-import sinon from 'sinon';
 import * as constants from '../../../lib/constants';
 import '../../../lib/plugins/clean-url-tracker';
 

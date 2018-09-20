@@ -3,16 +3,38 @@
 <head>
   <meta charset="utf-8">
   <title>Mocha Tests</title>
-  <link id="mocha-css" href="/node_modules/mocha/mocha.css" rel="stylesheet" />
+
 </head>
 <body>
   <div id="mocha"></div>
-  <script src="/node_modules/mocha/mocha.js"></script>
-  <script>mocha.ui('bdd');mocha.timeout(60000)</script>
+  <!-- Mocha and Sinon stopped supported older IE: -->
+
+  <!--[if IE 9]>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.1.0/mocha.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/4.1.0/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/5.1.0/sinon.min.js"></script>
+  <![endif]-->
+  <!--[if !IE]><!-->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/mocha/5.2.0/mocha.min.css" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mocha/5.2.0/mocha.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/sinon.js/6.1.5/sinon.min.js"></script>
+  <!--<![endif]-->
+
+  <!-- Chai works fine in all browsers -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/chai/4.1.2/chai.min.js"></script>
+
+  <script>
+  mocha.ui('bdd');
+  mocha.timeout(60000);
+
+  // Expose chai's assert globally.
+  self.assert = chai.assert;
+  </script>
+
   <script src="index.js"></script>
 
   <script>window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;</script>
-  <script async src="/test/analytics.js"></script>
+  <script async src="https://www.google-analytics.com/analytics.js"></script>
 
   <script>
     var runner = mocha.run();

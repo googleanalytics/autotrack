@@ -164,13 +164,12 @@ describe('maxScrollTracker', function() {
 
     corruptSession();
 
-    // Scrolling here should clear the corrupt data but not send a hit.
+    // Scrolling here should reset the session data and send a scroll event
+    // as if this were a new session.
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .5);
-    browser.pause(DEBOUNCE_TIMEOUT);
+    browser.waitUntil(log.hitCountEquals(2));
 
     browser.scroll(0, (PAGE_HEIGHT - WINDOW_HEIGHT) * .75);
-    browser.pause(DEBOUNCE_TIMEOUT);
-
     browser.waitUntil(log.hitCountEquals(3));
 
     const hits = log.getHits();
@@ -363,9 +362,8 @@ function expireSession() {
  * store data gets out of sync with the session store.
  */
 function corruptSession() {
-  setStoreData('autotrack:UA-12345-1:session', {
+  updateStoreData('autotrack:UA-12345-1:session', {
     id: 'new-id',
-    hitTime: +new Date,
     isExpired: false,
   });
 }
@@ -389,7 +387,32 @@ function setStoreData(key, value) {
       window.localStorage.setItem(key, newValue);
       window.dispatchEvent(
           new StorageEvent('storage', {key, oldValue, newValue}));
-    } catch(err) {
+    } catch (err) {
+      // Do nothing
+    }
+  }, key, value);
+}
+
+
+/**
+ * Merges an object with the data in an existing store.
+ * @param {string} key
+ * @param {!Object} value
+ */
+function updateStoreData(key, value) {
+  browser.execute((key, value) => {
+    const oldValue = window.localStorage.getItem(key);
+    const newValue = JSON.stringify(Object.assign(JSON.parse(oldValue), value));
+
+    // IE11 doesn't support event constructors.
+    try {
+      // Set the value on localStorage so it triggers the storage event in
+      // other tabs. Also, manually dispatch the event in this tab since just
+      // writing to localStorage won't update the locally cached values.
+      window.localStorage.setItem(key, newValue);
+      window.dispatchEvent(
+          new StorageEvent('storage', {key, oldValue, newValue}));
+    } catch (err) {
       // Do nothing
     }
   }, key, value);
