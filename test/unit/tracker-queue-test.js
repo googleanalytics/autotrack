@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
+import {rIC} from 'idlize/idle-callback-polyfills.mjs';
+import {IdleQueue} from 'idlize/IdleQueue.mjs';
 import {getIdleDeadlinePrototype, when} from './helpers';
-import IdleQueue from '../../lib/idle-queue';
 import TrackerQueue from '../../lib/tracker-queue';
-import {rIC} from '../../lib/utilities';
 
 
 const TRACKING_ID = 'UA-12345-1';
@@ -74,7 +74,8 @@ describe('TrackerQueue', () => {
       const rICSpy = sandbox.spy();
 
       const queue = TrackerQueue.getOrCreate(TRACKING_ID);
-      queue.add(spy);
+      queue.pushTask(spy);
+
       rIC(rICSpy);
 
       await when(() => rICSpy.calledOnce);

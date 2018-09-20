@@ -116,7 +116,7 @@ gulp.task('js:test', ((compiler) => {
         // Note: comment this rule out when testing for easier debugging.
         rules: [
           {
-            test: /\.js$/,
+            test: /\.m?js$/,
             use: {
               loader: 'babel-loader',
               options: {

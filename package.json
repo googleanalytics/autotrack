@@ -59,6 +59,7 @@
     "gulp-eslint": "^5.0.0",
     "gulp-util": "^3.0.8",
     "gulp-webdriver": "^2.0.3",
+    "idlize": "^0.1.0",
     "intersection-observer": "^0.5.0",
     "ngrok": "^3.0.1",
     "rollup-plugin-babel": "^3.0.7",

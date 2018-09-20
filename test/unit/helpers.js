@@ -14,7 +14,8 @@
  * limitations under the License.
  */
 
-import {queueMicrotask, rIC} from '../../lib/utilities';
+
+import {rIC} from 'idlize/idle-callback-polyfills.mjs';
 
 
 export const when = async (fn, intervalMillis = 100, retries = 20) => {
@@ -27,9 +28,6 @@ export const when = async (fn, intervalMillis = 100, retries = 20) => {
   }
   throw new Error(`${fn} didn't return true after ${retries} retries.`);
 };
-
-export const nextMicroTask = () => new Promise((res) => queueMicrotask(res));
-export const nextIdleCallback = () => new Promise((res) => rIC(res));
 
 export const getIdleDeadlinePrototype = async () => {
   return await new Promise((resolve) => {
