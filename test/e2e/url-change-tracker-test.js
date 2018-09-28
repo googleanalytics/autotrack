@@ -60,46 +60,60 @@ describe('urlTracker', function() {
     browser.execute(ga.run, 'require', 'urlChangeTracker');
 
     browser.click('#foo');
+    browser.waitUntil(log.hitCountEquals(1));
+
+    let hits = log.getHits();
+    assert.strictEqual(hits[0].dp, '/test/e2e/fixtures/foo.html');
+    assert.strictEqual(hits[0].dt, 'Foo');
     assert.strictEqual(
         browser.url().value, `${BASE_URL}/test/e2e/fixtures/foo.html`);
 
     browser.click('#bar');
+    browser.waitUntil(log.hitCountEquals(2));
+
+    hits = log.getHits();
+    assert.strictEqual(hits[1].dp, '/test/e2e/fixtures/bar.html');
+    assert.strictEqual(hits[1].dt, 'Bar');
     assert.strictEqual(
         browser.url().value, `${BASE_URL}/test/e2e/fixtures/bar.html`);
 
     browser.click('#qux');
+    browser.waitUntil(log.hitCountEquals(3));
+
+    hits = log.getHits();
+    assert.strictEqual(hits[2].dp, '/test/e2e/fixtures/qux.html');
+    assert.strictEqual(hits[2].dt, 'Qux');
     assert.strictEqual(
         browser.url().value, `${BASE_URL}/test/e2e/fixtures/qux.html`);
 
     browser.back();
+    browser.waitUntil(log.hitCountEquals(4));
+
+    hits = log.getHits();
+    assert.strictEqual(hits[3].dp, '/test/e2e/fixtures/bar.html');
+    assert.strictEqual(hits[3].dt, 'Bar');
     assert.strictEqual(
         browser.url().value, `${BASE_URL}/test/e2e/fixtures/bar.html`);
 
     browser.back();
+    browser.waitUntil(log.hitCountEquals(5));
+
+    hits = log.getHits();
+    assert.strictEqual(hits[4].dp, '/test/e2e/fixtures/foo.html');
+    assert.strictEqual(hits[4].dt, 'Foo');
     assert.strictEqual(
         browser.url().value, `${BASE_URL}/test/e2e/fixtures/foo.html`);
 
     browser.back();
-    assert.strictEqual(
-        browser.url().value,
-        `${BASE_URL}/test/e2e/fixtures/url-change-tracker.html`);
-
     browser.waitUntil(log.hitCountEquals(6));
 
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dp, '/test/e2e/fixtures/foo.html');
-    assert.strictEqual(hits[0].dt, 'Foo');
-    assert.strictEqual(hits[1].dp, '/test/e2e/fixtures/bar.html');
-    assert.strictEqual(hits[1].dt, 'Bar');
-    assert.strictEqual(hits[2].dp, '/test/e2e/fixtures/qux.html');
-    assert.strictEqual(hits[2].dt, 'Qux');
-    assert.strictEqual(hits[3].dp, '/test/e2e/fixtures/bar.html');
-    assert.strictEqual(hits[3].dt, 'Bar');
-    assert.strictEqual(hits[4].dp, '/test/e2e/fixtures/foo.html');
-    assert.strictEqual(hits[4].dt, 'Foo');
+    hits = log.getHits();
     assert.strictEqual(hits[5].dp,
         '/test/e2e/fixtures/url-change-tracker.html');
     assert.strictEqual(hits[5].dt, 'Home');
+    assert.strictEqual(
+        browser.url().value,
+        `${BASE_URL}/test/e2e/fixtures/url-change-tracker.html`);
   });
 
   it('updates the tracker but does not send hits when using replaceState',
@@ -171,24 +185,27 @@ describe('urlTracker', function() {
     });
 
     browser.click('#foo');
+    browser.waitUntil(log.hitCountEquals(1));
+
+    let hits = log.getHits();
+    assert.strictEqual(hits[0].dp, '/test/e2e/fixtures/foo.html');
+    assert.strictEqual(hits[0].dt, 'Foo');
+    assert.strictEqual(hits[0].cd1, 'urlChangeTracker');
+
     assert.strictEqual(
         browser.url().value, `${BASE_URL}/test/e2e/fixtures/foo.html`);
 
     browser.back();
-    assert.strictEqual(
-        browser.url().value,
-        `${BASE_URL}/test/e2e/fixtures/url-change-tracker.html`);
-
     browser.waitUntil(log.hitCountEquals(2));
 
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dp, '/test/e2e/fixtures/foo.html');
-    assert.strictEqual(hits[0].dt, 'Foo');
-    assert.strictEqual(hits[0].cd1, 'urlChangeTracker');
+    hits = log.getHits();
     assert.strictEqual(hits[1].dp,
         '/test/e2e/fixtures/url-change-tracker.html');
     assert.strictEqual(hits[1].dt, 'Home');
     assert.strictEqual(hits[1].cd1, 'urlChangeTracker');
+    assert.strictEqual(
+        browser.url().value,
+        `${BASE_URL}/test/e2e/fixtures/url-change-tracker.html`);
   });
 
   it('supports specifying a hit filter', () => {
@@ -249,8 +266,8 @@ function requireUrlChangeTrackerTracker_shouldTrackUrlChange() {
 function requireUrlChangeTrackerTracker_hitFilter() {
   ga('require', 'urlChangeTracker', {
     hitFilter: (model) => {
-      const title = model.get('title');
-      if (title == 'Foo') {
+      const title = model.get('page');
+      if (title.indexOf('foo') >= 0) {
         throw new Error('Exclude Foo pages');
       } else {
         model.set('dimension1', 'urlChangeTracker', true);
