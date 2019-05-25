@@ -1,7 +1,7 @@
 ---
 language: node_js
 node_js:
-  - "10.11.0"
+  - "node"
 
 # If a valid commit range exits, check that it has changes to code files.
 before_install:
