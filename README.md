@@ -1,3 +1,5 @@
+# This library is no longer actively maintained
+
 # Autotrack [![Build Status](https://travis-ci.org/googleanalytics/autotrack.svg?branch=master)](https://travis-ci.org/googleanalytics/autotrack)
 
 - [Overview](#overview)
