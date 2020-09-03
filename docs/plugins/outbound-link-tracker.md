@@ -189,7 +189,7 @@ With the above code, clicks on the following link won't be tracked, even though 
 
 Users don't always click on links with their primary mouse button: sometimes they middle-click to open the link in a background tab or right-click to copy the link address and share it.
 
-To track all types of link clicks, specify the `click`, [`auxclick`](https://wicg.github.io/auxclick/), and [`contextmenu`](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu) events in the [`events`](#options) option:
+To track all types of link clicks, specify the `click`, [`auxclick`](https://w3c.github.io/uievents/#event-type-auxclick), and [`contextmenu`](https://developer.mozilla.org/en-US/docs/Web/Events/contextmenu) events in the [`events`](#options) option:
 
 ```js
 ga('require', 'outboundLinkTracker', {
