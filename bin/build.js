@@ -17,13 +17,13 @@
 
 /* eslint-env node */
 /* eslint require-jsdoc: "off" */
-
+/* eslint no-throw-literal: "off" */
 
 const fs = require('fs-extra');
 const glob = require('glob');
 const {compile}= require('google-closure-compiler-js');
 const {rollup} = require('rollup');
-const memory = require('rollup-plugin-memory');
+const virtual = require('rollup-plugin-virtual');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const path = require('path');
 const {SourceMapGenerator, SourceMapConsumer} = require('source-map');
@@ -34,91 +34,89 @@ const kebabCase = (str) => {
 };
 
 
-module.exports = (output, autotrackPlugins = []) => {
-  const entryPath = path.resolve(__dirname, '../lib/index.js');
-  const entry = autotrackPlugins.length === 0 ? entryPath : {
-    path: entryPath,
-    contents: autotrackPlugins
-        .map((plugin) => `import './plugins/${kebabCase(plugin)}';`)
-        .join('\n'),
-  };
-  const plugins = [nodeResolve()];
-  if (autotrackPlugins.length) plugins.push(memory());
+module.exports = async (output, autotrackPlugins = []) => {
+  const input = path.resolve(__dirname, '../lib/index.js');
 
-  return new Promise((resolve, reject) => {
-    rollup({entry, plugins}).then((bundle) => {
-      try {
-        const rollupResult = bundle.generate({
-          format: 'es',
-          dest: output,
-          sourceMap: true,
-        });
+  const plugins = [];
+  if (autotrackPlugins.length) {
+    const pluginPath = path.resolve(__dirname, '../lib/plugins');
 
-        const externsDir = path.resolve(__dirname, '../lib/externs');
-        const externs = glob.sync(path.join(externsDir, '*.js'))
-            .reduce((acc, cur) => acc + fs.readFileSync(cur, 'utf-8'), '');
+    // Generate the input file based on the autotrack plugins to bundle.
+    plugins.push(virtual({
+      [input]: autotrackPlugins
+          .map((plugin) => `import '${pluginPath}/${kebabCase(plugin)}';`)
+          .join('\n'),
+    }));
+  }
+  plugins.push(nodeResolve());
 
-        const closureFlags = {
-          jsCode: [{
-            src: rollupResult.code,
-            path: path.basename(output),
-          }],
-          compilationLevel: 'ADVANCED',
-          useTypesForOptimization: true,
-          outputWrapper:
-              '(function(){%output%})();\n' +
-              `//# sourceMappingURL=${path.basename(output)}.map`,
-          assumeFunctionWrapper: true,
-          rewritePolyfills: false,
-          warningLevel: 'VERBOSE',
-          createSourceMap: true,
-          externs: [{src: externs}],
-        };
-
-        const closureResult = compile(closureFlags);
-
-        if (closureResult.errors.length || closureResult.warnings.length) {
-          const rollupMap = new SourceMapConsumer(rollupResult.map);
-
-          // Remap errors from the closure compiler output to the original
-          // files before rollup bundled them.
-          const remap = (type) => (item) => {
-            let {line, column, source} = rollupMap.originalPositionFor({
-              line: item.lineNo,
-              column: item.charNo,
-            });
-            source = path.relative('.', path.resolve(__dirname, '..', source));
-            return {type, line, column, source, desc: item.description};
-          };
-
-          reject({
-            errors: [
-              ...closureResult.errors.map(remap('error')),
-              ...closureResult.warnings.map(remap('warning')),
-            ],
-          });
-        } else {
-          // Currently, closure compiler doesn't support applying its generated
-          // source map to an existing source map, so we do it manually.
-          const fromMap = JSON.parse(closureResult.sourceMap);
-          const toMap = rollupResult.map;
-
-          const generator = SourceMapGenerator.fromSourceMap(
-              new SourceMapConsumer(fromMap));
-
-          generator.applySourceMap(
-              new SourceMapConsumer(toMap), path.basename(output));
-
-          const sourceMap = generator.toString();
-
-          resolve({
-            code: closureResult.compiledCode,
-            map: sourceMap,
-          });
-        }
-      } catch(err) {
-        reject(err);
-      }
-    }).catch(reject);
+  const bundle = await rollup({input, plugins});
+  const rollupResult = await bundle.generate({
+    format: 'es',
+    dest: output,
+    sourcemap: true, // Note: lowercase "m" in sourcemap.
   });
+
+  const externsDir = path.resolve(__dirname, '../lib/externs');
+  const externs = glob.sync(path.join(externsDir, '*.js'))
+      .reduce((acc, cur) => acc + fs.readFileSync(cur, 'utf-8'), '');
+
+  const closureFlags = {
+    jsCode: [{
+      src: rollupResult.code,
+      path: path.basename(output),
+    }],
+    compilationLevel: 'ADVANCED',
+    useTypesForOptimization: true,
+    outputWrapper:
+        '(function(){%output%})();\n' +
+        `//# sourceMappingURL=${path.basename(output)}.map`,
+    assumeFunctionWrapper: true,
+    rewritePolyfills: false,
+    warningLevel: 'VERBOSE',
+    createSourceMap: true,
+    externs: [{src: externs}],
+  };
+
+  const closureResult = compile(closureFlags);
+
+  if (closureResult.errors.length || closureResult.warnings.length) {
+    const rollupMap = await new SourceMapConsumer(rollupResult.map);
+
+    // Remap errors from the closure compiler output to the original
+    // files before rollup bundled them.
+    const remap = (type) => (item) => {
+      let {line, column, source} = rollupMap.originalPositionFor({
+        line: item.lineNo,
+        column: item.charNo,
+      });
+      source = path.relative('.', path.resolve(__dirname, '..', source));
+      return {type, line, column, source, desc: item.description};
+    };
+
+    throw {
+      errors: [
+        ...closureResult.errors.map(remap('error')),
+        ...closureResult.warnings.map(remap('warning')),
+      ],
+    };
+  } else {
+    // Currently, closure compiler doesn't support applying its generated
+    // source map to an existing source map, so we do it manually.
+    const fromMap = JSON.parse(closureResult.sourceMap);
+    const toMap = rollupResult.map;
+
+    const generator = SourceMapGenerator.fromSourceMap(
+        await new SourceMapConsumer(fromMap));
+
+    generator.applySourceMap(
+        await new SourceMapConsumer(toMap), path.basename(output));
+
+    const sourceMap = generator.toString();
+
+    return {
+      code: closureResult.compiledCode,
+      map: sourceMap,
+    };
+  }
 };

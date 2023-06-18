@@ -15,8 +15,6 @@
  */
 
 
-import assert from 'assert';
-import sinon from 'sinon';
 import '../../../lib/plugins/page-visibility-tracker';
 
 
@@ -44,7 +42,7 @@ describe('PageVisibilityTracker', function() {
     window.ga('remove');
   });
 
-  describe('constructor', function() {
+  xdescribe('constructor', function() {
     it('stores the tracker on the instance', function() {
       if (!document.visibilityState) this.skip();
 

@@ -11,14 +11,29 @@
       "latest"
     ],
     [
-      "Linux",
+      "macOS 10.13",
+      "chrome",
+      "latest"
+    ],
+    [
+      "Windows 10",
       "firefox",
       "latest"
     ],
     [
-      "OS X 10.12",
+      "macOS 10.13",
+      "firefox",
+      "latest"
+    ],
+    [
+      "Windows 10",
+      "firefox",
+      "60"
+    ],
+    [
+      "macOS 10.13",
       "safari",
-      "10"
+      "11.1"
     ],
     [
       "OS X 10.11",
@@ -34,11 +49,6 @@
       "Windows 8.1",
       "internet explorer",
       "11"
-    ],
-    [
-      "Windows 8",
-      "internet explorer",
-      "10"
     ],
     [
       "Windows 7",
