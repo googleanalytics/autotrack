@@ -86,7 +86,7 @@ export function getHitLogs(testId) {
     let contents;
     try {
       contents = fs.readFileSync(logFile, 'utf-8');
-    } catch(e) {
+    } catch (e) {
       process.stderr.write(e + '\n');
     }
     return contents.trim().split('\n')

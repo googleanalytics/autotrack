@@ -1,3 +1,5 @@
+# This library is no longer actively maintained
+
 # Autotrack [![Build Status](https://travis-ci.org/googleanalytics/autotrack.svg?branch=master)](https://travis-ci.org/googleanalytics/autotrack)
 
 - [Overview](#overview)
@@ -21,7 +23,7 @@ Autotrack was created to solve this problem. It provides default tracking for th
 
 ## Plugins
 
-The `autotrack.js` file in this repository is small (7K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom build](#custom-builds) that only includes the plugins you want to make it even smaller.
+The `autotrack.js` file in this repository is small (8K gzipped) and comes with all plugins included. You can use it as is, or you can create a [custom build](#custom-builds) that only includes the plugins you want to make it even smaller.
 
 The following table briefly explains what each plugin does; you can click on the plugin name to see the full documentation and usage instructions:
 
@@ -72,7 +74,7 @@ The following table briefly explains what each plugin does; you can click on the
   </tr>
 </table>
 
-**Disclaimer:** autotrack is maintained by members of the Google Analytics developer platform team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics 360 support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://www.google.com/analytics/terms/us.html) and the legal obligations of their respective country.
+**Disclaimer:** autotrack is maintained by members of the Google Analytics developer platform team and is primarily intended for a developer audience. It is not an official Google Analytics product and does not qualify for Google Analytics 360 support. Developers who choose to use this library are responsible for ensuring that their implementation meets the requirements of the [Google Analytics Terms of Service](https://marketingplatform.google.com/about/analytics/terms/us/) and the legal obligations of their respective country.
 
 ## Installation and usage
 
@@ -110,7 +112,7 @@ Of course, you'll have to make the following modifications to the above code to 
 
 ### Loading autotrack via npm
 
-If you use npm and a module loader that understands [ES2015 imports](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) (e.g. [Webpack](https://webpack.js.org/), [Rollup](http://rollupjs.org/), or [SystemJS](https://github.com/systemjs/systemjs)), you can include autotrack in your build by importing it as you would any other npm module:
+If you use npm and a module loader that understands [ES2015 imports](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/import) (e.g. [Webpack](https://webpack.js.org/), [Rollup](https://rollupjs.org/), or [SystemJS](https://github.com/systemjs/systemjs)), you can include autotrack in your build by importing it as you would any other npm module:
 
 ```sh
 npm install autotrack
@@ -277,7 +279,7 @@ The following translations have been graciously provided by the community. Pleas
 If you discover issues with a particular translation, please file them with the appropriate repository. To submit your own translation, follow these steps:
 
 1. Fork this repository.
-2. Update the settings of your fork to [allow issues](http://programmers.stackexchange.com/questions/179468/forking-a-repo-on-github-but-allowing-new-issues-on-the-fork).
+2. Update the settings of your fork to [allow issues](https://softwareengineering.stackexchange.com/questions/179468/forking-a-repo-on-github-but-allowing-new-issues-on-the-fork).
 3. Remove all non-documentation files.
 4. Update the documentation files with your translated versions.
 5. Submit a pull request to this repository that adds a link to your fork to the above list.

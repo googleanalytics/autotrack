@@ -14,10 +14,6 @@
  * limitations under the License.
  */
 
-
-require('babel-register')({presets: ['es2015']});
-
-
 const {spawn} = require('child_process');
 const fs = require('fs-extra');
 const eslint = require('gulp-eslint');
@@ -30,7 +26,6 @@ const path = require('path');
 const {rollup} = require('rollup');
 const nodeResolve = require('rollup-plugin-node-resolve');
 const babel = require('rollup-plugin-babel');
-const runSequence = require('run-sequence');
 const sauceConnectLauncher = require('sauce-connect-launcher');
 const seleniumServerJar = require('selenium-server-standalone-jar');
 const webpack = require('webpack');
@@ -52,7 +47,7 @@ const isProd = () => {
 };
 
 
-gulp.task('javascript', () => {
+gulp.task('js:lib', async () => {
   if (isProd()) {
     return build('autotrack.js').then(({code, map}) => {
       fs.outputFileSync('autotrack.js', code, 'utf-8');
@@ -65,31 +60,51 @@ gulp.task('javascript', () => {
       throw new Error('failed to build autotrack.js');
     });
   } else {
-    return rollup({
-      entry: './lib/index.js',
-      plugins: [
-        nodeResolve(),
-        babel({
-          babelrc: false,
-          plugins: ['external-helpers'],
-          presets: [['es2015', {modules: false}]],
-        }),
-      ],
-    }).then((bundle) => {
-      return bundle.write({
-        dest: 'autotrack.js',
-        format: 'iife',
-        sourceMap: true,
-      });
+    const plugins = [nodeResolve()];
+
+    // At the moment this first conditional is a no-op, but after this issue
+    // is resolved we can switch to using the closure compiler plugin:
+    // https://github.com/ampproject/rollup-plugin-closure-compiler/issues/42
+    if (isProd()) {
+      // const compiler = require('@ampproject/rollup-plugin-closure-compiler');
+      // plugins.push(compiler({
+      //   compilation_level: 'ADVANCED',
+      //   warning_level: 'VERBOSE',
+      //   language_out: 'ES5',
+      //   output_wrapper: '(function(){%output%})();',
+      //   assume_function_wrapper: true,
+      //   use_types_for_optimization: true,
+      //   rewrite_polyfills: false,
+      //   externs: glob.sync('lib/externs/*.js'),
+      // }));
+    } else {
+      // Note: remove babel() when developing for easier debugging.
+      plugins.push(babel({
+        babelrc: false,
+        plugins: ['external-helpers'],
+        presets: [['env', {modules: false}]],
+      }));
+    }
+
+    const bundle = await rollup({
+      input: './lib/index.js',
+      plugins,
+    });
+
+    await bundle.write({
+      file: 'autotrack.js',
+      format: 'es',
+      sourcemap: true,
     });
   }
 });
 
 
-gulp.task('javascript:unit', ((compiler) => {
+gulp.task('js:test', ((compiler) => {
   const createCompiler = () => {
     return webpack({
-      entry: glob.sync('./test/unit/**/*-test.js'),
+      mode: 'development',
+      entry: ['babel-polyfill', ...glob.sync('./test/unit/**/*-test.js')],
       output: {
         path: path.resolve(__dirname, 'test/unit'),
         filename: 'index.js',
@@ -98,18 +113,23 @@ gulp.task('javascript:unit', ((compiler) => {
       cache: {},
       performance: {hints: false},
       module: {
-        loaders: [{
-          test: /\.js$/,
-          exclude: /node_modules\/(?!(dom-utils)\/).*/,
-          loader: 'babel-loader',
-          query: {
-            babelrc: false,
-            cacheDirectory: false,
-            presets: [
-              ['es2015', {'modules': false}],
-            ],
+        // Note: comment this rule out when testing for easier debugging.
+        rules: [
+          {
+            test: /\.m?js$/,
+            use: {
+              loader: 'babel-loader',
+              options: {
+                babelrc: false,
+                cacheDirectory: true,
+                presets: [['env', {
+                  modules: false,
+                  useBuiltIns: true,
+                }]],
+              },
+            },
           },
-        }],
+        ],
       },
     });
   };
@@ -123,11 +143,14 @@ gulp.task('javascript:unit', ((compiler) => {
 })());
 
 
+gulp.task('js', gulp.series('js:lib', 'js:test'));
+
+
 gulp.task('lint', () => {
   return gulp.src([
-    'gulpfile.babel.js',
+    'gulpfile.js',
     'bin/autotrack',
-    'bin/*.js',
+    'bin/build.js',
     'lib/*.js',
     'lib/plugins/*.js',
     'test/e2e/*.js',
@@ -140,37 +163,27 @@ gulp.task('lint', () => {
 });
 
 
-gulp.task('test:e2e', ['javascript', 'lint', 'tunnel', 'selenium'], () => {
-  const stopServers = () => {
-    // TODO(philipwalton): re-add this logic to close the tunnel once this is
-    // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
-    // process.on('exit', sshTunnel.close.bind(sshTunnel));
-    sshTunnel.close();
-    server.stop();
-    if (!process.env.CI) {
-      seleniumServer.kill();
+gulp.task('selenium', (done) => {
+  // Don't start the selenium server on CI.
+  if (process.env.CI) return done();
+
+  seleniumServer = spawn('java', ['-jar', seleniumServerJar.path]);
+  seleniumServer.stderr.on('data', (data) => {
+    if (data.indexOf('Selenium Server is up and running') > -1) {
+      done();
     }
-  };
-  return gulp.src('./test/e2e/wdio.conf.js')
-      .pipe(webdriver())
-      .on('end', stopServers);
+  });
+  process.on('exit', seleniumServer.kill.bind(seleniumServer));
 });
 
 
-gulp.task('test:unit', ['javascript', 'javascript:unit'], (done) => {
-  spawn(
-      './node_modules/.bin/easy-sauce',
-      ['-c', 'test/unit/easy-sauce-config.json'],
-      {stdio: [0, 1, 2]}).on('end', done);
-});
+gulp.task('serve', gulp.series('js', (done) => {
+  server.start(done);
+  process.on('exit', server.stop.bind(server));
+}));
 
 
-gulp.task('test', (done) => {
-  runSequence('test:e2e', 'test:unit', done);
-});
-
-
-gulp.task('tunnel', ['serve'], (done) => {
+gulp.task('tunnel', (done) => {
   const opts = {
     username: process.env.SAUCE_USERNAME,
     accessKey: process.env.SAUCE_ACCESS_KEY,
@@ -192,30 +205,48 @@ gulp.task('tunnel', ['serve'], (done) => {
 });
 
 
-gulp.task('serve', ['javascript', 'javascript:unit'], (done) => {
-  server.start(done);
-  process.on('exit', server.stop.bind(server));
-});
-
-
-gulp.task('selenium', (done) => {
-  // Don't start the selenium server on CI.
-  if (process.env.CI) return done();
-
-  seleniumServer = spawn('java', ['-jar', seleniumServerJar.path]);
-  seleniumServer.stderr.on('data', (data) => {
-    if (data.indexOf('Selenium Server is up and running') > -1) {
-      done();
+gulp.task('test:e2e', gulp.series(
+    'lint', 'js', 'serve', 'tunnel', 'selenium', () => {
+  const stopServers = () => {
+    // TODO(philipwalton): re-add this logic to close the tunnel once this is
+    // fixed: https://github.com/bermi/sauce-connect-launcher/issues/116
+    // process.on('exit', sshTunnel.close.bind(sshTunnel));
+    sshTunnel.close();
+    server.stop();
+    if (!process.env.CI) {
+      seleniumServer.kill();
     }
-  });
-  process.on('exit', seleniumServer.kill.bind(seleniumServer));
-});
+  };
+  return gulp.src('./test/e2e/wdio.conf.js')
+      .pipe(webdriver())
+      .on('end', stopServers);
+}));
 
 
-gulp.task('watch', ['serve'], () => {
-  gulp.watch('./lib/**/*.js', ['javascript']);
-  gulp.watch([
-    './lib/**/*.js',
-    './test/unit/**/*-test.js',
-  ], ['javascript:unit']);
-});
+gulp.task('test:unit', gulp.series('lint', 'js', (done) => {
+  const easySauceProcess = spawn('./node_modules/.bin/easy-sauce',
+      ['-c', 'test/unit/easy-sauce-config.json'],
+      {stdio: [0, 1, 2]});
+
+  easySauceProcess
+    .on('error', (err) => done(err))
+    .on('exit', (code, signal) => {
+      if (code > 0) {
+        return done(new Error(`Process exited with code ${code}`));
+      }
+      if (signal) {
+        return done(new Error(`Process exited with signal ${signal}`));
+      }
+      done();
+    });
+}));
+
+
+gulp.task('test', gulp.series('test:e2e', 'test:unit'));
+
+
+gulp.task('watch', gulp.series('serve', () => {
+  gulp.watch('./lib/**/*.js', gulp.series('js:lib'));
+  gulp.watch(['./lib/**/*.js', './test/unit/**/*.js', '!./test/unit/index.js'],
+      gulp.series('js:test'));
+}));

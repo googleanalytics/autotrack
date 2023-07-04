@@ -15,11 +15,6 @@
  */
 
 
-// Use babel to resolve ES2015 modules and transpile functions
-// to be run in the browser into ES6.
-require('babel-register')({presets: ['es2015']});
-
-
 const getCapabilities = () => {
   // https://wiki.saucelabs.com/display/DOCS/Platform+Configurator#/
   let capabilities;
@@ -53,8 +48,8 @@ const getCapabilities = () => {
       // },
       // {
       //   browserName: 'safari',
-      //   platform: 'OS X 10.12',
-      //   version: '10.0',
+      //   platform: 'macOS 10.13',
+      //   version: '11.1',
       // },
       // {
       //   browserName: 'safari',

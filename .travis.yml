@@ -1,7 +1,7 @@
 ---
 language: node_js
 node_js:
-  - "6"
+  - "node"
 
 # If a valid commit range exits, check that it has changes to code files.
 before_install:

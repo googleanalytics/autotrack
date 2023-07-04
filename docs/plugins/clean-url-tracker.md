@@ -37,7 +37,7 @@ The `cleanUrlTracker` plugin helps you do this. It lets you specify a preference
 
 The `cleanUrlPlugin` works by intercepting each hit as it's being sent and modifying the [`page`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#page) field based on the rules specified by the configuration [options](#options). The plugin also intercepts calls to [`tracker.get()`] that reference the `page` field, so other plugins that use `page` data get the cleaned versions instead of the original versions.
 
-**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field. This allows campaign and site search data encoded in the full URL to be preserved.
+**Note:** while the `cleanUrlTracker` plugin does modify the `page` field value for each hit, it never modifies the [`location`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#location) field. This allows campaign (e.g. `utm` params) and adwords (e.g. `glclid`) data encoded in the full URL to be preserved.
 
 ## Usage
 
@@ -63,6 +63,13 @@ The following table outlines all possible configuration options for the `cleanUr
     <td>
       When <code>true</code>, the query string portion of the URL will be removed.<br>
       <strong>Default:</strong> <code>false</code>
+    </td>
+  </tr>
+  <tr valign="top">
+    <td><code>queryParamsWhitelist</code></td>
+    <td><code>Array</code></td>
+    <td>
+      An array of query params not to strip. This is most commonly used in conjunction with site search, as shown in the <a href=""><code>queryParamsWhitelist</code> example</a> below.
     </td>
   </tr>
   <tr valign="top">
@@ -92,7 +99,7 @@ The following table outlines all possible configuration options for the `cleanUr
     <td>
       <p>A function that is passed a <a href="/docs/common-options.md#fieldsobj"><code>fieldsObj</code></a> (containing the <code>location</code> and <code>page</code> fields and optionally the custom dimension field set via <code>queryDimensionIndex</code>) as its first argument and a <code>parseUrl</code> utility function (which returns a <a href="https://developer.mozilla.org/en-US/docs/Web/API/Location"><code>Location</code></a>-like object) as its second argument.</p>
       <p>The <code>urlFieldsFilter</code> function must return a <code>fieldsObj</code> (either the passed one or a new one), and the returned fields will be sent with all hits. Non-URL fields set on the <code>fieldsObj</code> are ignored.</p>
-      <p><strong>Warning:</strong> be careful when modifying the <code>location</code> field as it's used to determine many session-level dimensions in Google Analytics (e.g. utm campaign data, site search, hostname, etc.). Unless you need to update the hostname, it's usually better to only modify the <code>page</code> field.</p>
+      <p><strong>Warning:</strong> be careful when modifying the <code>location</code> field as it's used to determine many session-level dimensions in Google Analytics (e.g. utm campaign data, adwords identifiers, hostname, etc.). Unless you need to update the hostname, it's usually better to only modify the <code>page</code> field.</p>
     </td>
   </tr>
 </table>
@@ -154,9 +161,29 @@ And given those four URLs, the following fields would be sent to Google Analytic
     }
 ```
 
+### Using the `queryParamsWhitelist` option
+
+Unlike campaign (e.g. `utm` params) and adwords (e.g. `glclid`) data, [Site Search](https://support.google.com/analytics/answer/1012264) data is not inferred by Google Analytics from the `location` field when the `page` field is present, so any site search query params *must not* be stripped from the `page` field.
+
+You can preserve individual query params via the `queryParamsWhitelist` option:
+
+```js
+ga('require', 'cleanUrlTracker', {
+  stripQuery: true,
+  queryParamsWhitelist: ['q'],
+});
+```
+
+Note that *not* stripping site search params from your URLs means those params will still show up in your page reports. If you don't want this to happen you can update your view's [Site Search setup](https://support.google.com/analytics/answer/1012264) as follows:
+
+1. Specify the same parameter(s) you set in the `queryParamsWhitelist` option.
+2. Check the "Strip query parameters out of URL" box.
+
+These options combined will allow you to keep all unwanted query params out of your page reports and still use site search.
+
 ### Using the `urlFieldsFilter` option
 
-If the available configuration options are not sufficient for your needs, you can use the `urlFieldsFilter` option to arbirarily modify the URL fields sent to Google Analytics.
+If the available configuration options are not sufficient for your needs, you can use the `urlFieldsFilter` option to arbitrarily modify the URL fields sent to Google Analytics.
 
 The following example passes the same options as the basic example above, but in addition it removes user-specific IDs from the page path, e.g. `/users/18542823` becomes `/users/<user-id>`:
 

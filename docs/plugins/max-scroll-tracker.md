@@ -174,8 +174,8 @@ ga('require', 'maxScrollTracker', {
   hitFilter: function(model) {
     var scrollPercentage = model.get('eventLabel');
     if (scrollPercentage > 50) {
-      // Sets the nonInteractive field to `true` for the current hit.
-      model.set('nonInteraction', true, true);
+      // Sets the nonInteractive field to `false` for the current hit.
+      model.set('nonInteraction', false, true);
     }
   },
 });

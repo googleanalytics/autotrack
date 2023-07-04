@@ -74,7 +74,7 @@ ga('require', 'eventTracker', {
 ```js
 ga('require', 'impressionTracker', {
   elements: ['cta'],
-  attributePrefix: 'data-ga'
+  attributePrefix: 'data-ga-'
 });
 ```
 

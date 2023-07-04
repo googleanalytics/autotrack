@@ -4,21 +4,21 @@
   <script>
     window.ga=window.ga||function(){(ga.q=ga.q||[]).push(arguments)};ga.l=+new Date;
   </script>
-  <script async src="/test/analytics.js"></script>
+  <script async src="https://www.google-analytics.com/analytics.js"></script>
   <script async src="/autotrack.js"></script>
 </head>
 <body>
 
   <a
     id="outbound-link"
-    href="https://example.com/outbound-link">
+    href="https://example.com/?q=outbound-link">
     Outbound link
   </a>
 
   <a
     id="outbound-link-with-class"
     class="link"
-    href="https://example.com/outbound-link-with-class">
+    href="https://example.com/?q=outbound-link-with-class">
     Outbound link with Class
   </a>
 
@@ -38,7 +38,7 @@
 
   <a
     id="declarative-attributes"
-    href="https://example.com/declarative-attributes"
+    href="https://example.com/?q=declarative-attributes"
     ga-event-category="External Link"
     ga-dimension-1="true">
     Declarative Attributes
@@ -46,7 +46,7 @@
 
   <a
     id="declarative-attributes-prefix"
-    href="https://example.com/declarative-attributes-prefix"
+    href="https://example.com/?q=declarative-attributes-prefix"
     data-ga-event-label="example.com"
     data-ga-non-interaction="true">
     Declarative Attributes
@@ -61,8 +61,9 @@
     viewBox="0 0 100 20"
     width="100"
     height="20">
-    <a id="svg-link" xlink:href= "https://example.com/svg-link">
-      <text x="0" y="16" font-family="serif" font-size="16">
+    <a xlink:href= "https://example.com/?q=svg-link">
+      <!-- Safari driver doesn't seem to support clicking SVG links so we put the ID attribute on an element inside the link -->
+      <text id="svg-link"  x="0" y="16" font-family="serif" font-size="16">
         SVG Link
       </text>
     </a>
@@ -77,7 +78,7 @@
         id="area-link"
         shape="rect"
         coords="0,0,20,20"
-        href="https://example.com/area-link">
+        href="https://example.com/?q=area-link">
     </map>
   </div>
 
@@ -86,7 +87,7 @@
   if (shadowHost.attachShadow) {
     shadowHost.attachShadow({mode: 'open'});
     shadowHost.shadowRoot.innerHTML =
-        '<a href="https://example.com/shadow-host">Shadow Link</a>';
+        '<a href="https://example.com/?q=shadow-host">Shadow Link</a>';
   }
   </script>
 

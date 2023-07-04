@@ -50,6 +50,9 @@ const elementIdsByDomOrder = [
   'attrs',
   'attrs-1',
   'attrs-2',
+  'fixture',
+  'fixture-1',
+  'fixture-2',
 ];
 
 

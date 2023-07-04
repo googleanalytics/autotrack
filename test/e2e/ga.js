@@ -54,7 +54,7 @@ export function logHitData(testId) {
 
         oldSendHitTask(model);
 
-        if ('sendBeacon' in navigator) {
+        if (typeof navigator.sendBeacon == 'function') {
           navigator.sendBeacon(`/collect/${testId}`, hitPayload);
         } else {
           const beacon = new Image();

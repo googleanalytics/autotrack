@@ -61,7 +61,7 @@ describe('outboundLinkTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
-    assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=outbound-link');
   });
 
   it('does not send events on local link clicks', () => {
@@ -82,7 +82,7 @@ describe('outboundLinkTracker', function() {
   it('navigates to the proper location on outbound clicks', () => {
     browser.execute(ga.run, 'require', 'outboundLinkTracker');
     browser.click('#outbound-link');
-    browser.waitUntil(urlMatches('https://example.com/outbound-link'));
+    browser.waitUntil(urlMatches('https://example.com/?q=outbound-link'));
   });
 
   it('navigates to the proper location on local clicks', () => {
@@ -99,7 +99,7 @@ describe('outboundLinkTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
-    assert.strictEqual(hits[0].el, 'https://example.com/svg-link');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=svg-link');
   });
 
   it('works with <area> links', function() {
@@ -112,7 +112,7 @@ describe('outboundLinkTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
-    assert.strictEqual(hits[0].el, 'https://example.com/area-link');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=area-link');
   });
 
   it('supports events other than click', () => {
@@ -133,11 +133,11 @@ describe('outboundLinkTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'mousedown');
-    assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=outbound-link');
     if (browserSupportsRightClick()) {
       assert.strictEqual(hits[1].ec, 'Outbound Link');
       assert.strictEqual(hits[1].ea, 'contextmenu');
-      assert.strictEqual(hits[1].el, 'https://example.com/outbound-link');
+      assert.strictEqual(hits[1].el, 'https://example.com/?q=outbound-link');
     }
   });
 
@@ -164,7 +164,7 @@ describe('outboundLinkTracker', function() {
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
     assert.strictEqual(hits[0].el,
-        'https://example.com/outbound-link-with-class');
+        'https://example.com/?q=outbound-link-with-class');
   });
 
   it('supports customizing what is considered an outbound link', () => {
@@ -192,7 +192,7 @@ describe('outboundLinkTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'External Link');
     assert.strictEqual(hits[0].ea, 'tap');
-    assert.strictEqual(hits[0].el, 'https://example.com/outbound-link');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=outbound-link');
     assert.strictEqual(hits[0].ni, '1');
   });
 
@@ -242,7 +242,7 @@ describe('outboundLinkTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Link');
     assert.strictEqual(hits[0].ea, 'click');
-    assert.strictEqual(hits[0].el, 'https://example.com/shadow-host');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=shadow-host');
   });
 
   it('includes usage params with all hits', () => {
@@ -343,7 +343,7 @@ function requireOutboundLinkTracker_shouldTrackOutboundLink() {
 function requireOutboundLinkTracker_hitFilter() {
   ga('require', 'outboundLinkTracker', {
     hitFilter: (model, link, event) => {
-      if (link.href == 'https://example.com/outbound-link') {
+      if (link.href == 'https://example.com/?q=outbound-link') {
         model.set('eventLabel', '/outbound-link', true);
       }
       model.set('dimension1', event.type, true);

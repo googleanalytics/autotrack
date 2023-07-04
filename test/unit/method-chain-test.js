@@ -15,8 +15,6 @@
  */
 
 
-import assert from 'assert';
-import sinon from 'sinon';
 import MethodChain from '../../lib/method-chain';
 
 
@@ -295,10 +293,10 @@ describe('MethodChain', () => {
       assert(spy3.calledOnce);
       assert(tracker.get('page'), '/foo');
 
-      trackerSetSpy.reset();
-      spy1.reset();
-      spy2.reset();
-      spy3.reset();
+      trackerSetSpy.resetHistory();
+      spy1.resetHistory();
+      spy2.resetHistory();
+      spy3.resetHistory();
 
       MethodChain.remove(tracker, 'set', overrideMethod1);
       tracker.set('page', '/bar');
@@ -310,10 +308,10 @@ describe('MethodChain', () => {
       assert(spy3.calledOnce);
       assert(tracker.get('page'), '/bar');
 
-      trackerSetSpy.reset();
-      spy1.reset();
-      spy2.reset();
-      spy3.reset();
+      trackerSetSpy.resetHistory();
+      spy1.resetHistory();
+      spy2.resetHistory();
+      spy3.resetHistory();
 
       MethodChain.remove(tracker, 'set', overrideMethod2);
       MethodChain.remove(tracker, 'set', overrideMethod3);
@@ -363,10 +361,10 @@ describe('MethodChain', () => {
       assert(spy2.calledOnce);
       assert(spy3.calledOnce);
 
-      trackerBuildHitTaskSpy.reset();
-      spy1.reset();
-      spy2.reset();
-      spy3.reset();
+      trackerBuildHitTaskSpy.resetHistory();
+      spy1.resetHistory();
+      spy2.resetHistory();
+      spy3.resetHistory();
 
       MethodChain.remove(tracker, 'buildHitTask', overrideMethod1);
       tracker.send('pageview', '/bar');
@@ -377,10 +375,10 @@ describe('MethodChain', () => {
       assert(spy2.calledOnce);
       assert(spy3.calledOnce);
 
-      trackerBuildHitTaskSpy.reset();
-      spy1.reset();
-      spy2.reset();
-      spy3.reset();
+      trackerBuildHitTaskSpy.resetHistory();
+      spy1.resetHistory();
+      spy2.resetHistory();
+      spy3.resetHistory();
 
       MethodChain.remove(tracker, 'buildHitTask', overrideMethod2);
       MethodChain.remove(tracker, 'buildHitTask', overrideMethod3);

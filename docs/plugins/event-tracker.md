@@ -18,7 +18,7 @@ ga('require', 'eventTracker', options);
 
 ### Modifying the HTML
 
-To add declarative interaction tracking to a DOM element, you start by adding a `ga-on` attribute (assuming the default `'ga-'` attribute prefix) and setting its value to a comma-separated list of DOM events you want to track (note: all events specified in the attribute most also be present in the [`events`](#options) configuration option). When any of the specified events is detected, a hit is sent to Google Analytics with the corresponding attribute values present on the element.
+To add declarative interaction tracking to a DOM element, you start by adding a `ga-on` attribute (assuming the default `'ga-'` attribute prefix) and setting its value to a comma-separated list of DOM events you want to track (note: all events specified in the attribute must also be present in the [`events`](#options) configuration option). When any of the specified events is detected, a hit is sent to Google Analytics with the corresponding attribute values present on the element.
 
 Any valid [analytics.js field](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference) can be set declaratively as an attribute. The attribute name can be determined by combining the [`attributePrefix`](#options) option with the [kebab-cased](https://en.wikipedia.org/wiki/Letter_case#Special_case_styles) version of the field name. For example, if you want to set the [`eventCategory`](https://developers.google.com/analytics/devguides/collection/analyticsjs/field-reference#eventCategory) field and you're using the default `attributePrefix` of `'ga-'`, you would use the attribute name `ga-event-category`.
 

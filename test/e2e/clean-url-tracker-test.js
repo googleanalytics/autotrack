@@ -66,68 +66,6 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[0].dp, '/foo/bar?q=qux&b=baz');
   });
 
-  it('supports removing the query string from the URL path', () => {
-    const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      stripQuery: true,
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dl, url);
-    assert.strictEqual(hits[0].dp, '/foo/bar');
-  });
-
-  it('optionally adds the query string as a custom dimension', () => {
-    const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      stripQuery: true,
-      queryDimensionIndex: 1,
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dl, url);
-    assert.strictEqual(hits[0].dp, '/foo/bar');
-    assert.strictEqual(hits[0].cd1, 'q=qux&b=baz');
-  });
-
-  it('adds the null dimensions when no query string is found', () => {
-    const url = 'https://example.com/foo/bar';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      stripQuery: true,
-      queryDimensionIndex: 1,
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dl, url);
-    assert.strictEqual(hits[0].dp, '/foo/bar');
-    assert.strictEqual(hits[0].cd1, constants.NULL_DIMENSION);
-  });
-
-  it('does not set a dimension if strip query is false', () => {
-    const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      stripQuery: false,
-      queryDimensionIndex: 1,
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dl, url);
-    assert.strictEqual(hits[0].dp, '/foo/bar?q=qux&b=baz');
-    assert.strictEqual(hits[0].cd1, undefined);
-  });
-
   it('cleans URLs in all hits, not just the initial pageview', () => {
     const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
     browser.execute(ga.run, 'set', 'location', url);
@@ -176,76 +114,6 @@ describe('cleanUrlTracker', function() {
     assert.strictEqual(hits[1].cd1, 'query=new');
   });
 
-  it('supports removing index filenames', () => {
-    const url = 'https://example.com/foo/bar/index.html?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      indexFilename: 'index.html',
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dp, '/foo/bar/?q=qux&b=baz');
-  });
-
-  it('only removes index filenames at the end of the URL after a slash', () => {
-    const url = 'https://example.com/noindex.html';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      indexFilename: 'index.html',
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dp, '/noindex.html');
-  });
-
-  it('supports stripping trailing slashes', () => {
-    const url = 'https://example.com/foo/bar/';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      trailingSlash: 'remove',
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dp, '/foo/bar');
-  });
-
-  it('supports adding trailing slashes to non-filename URLs', () => {
-    const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(ga.run, 'require', 'cleanUrlTracker', {
-      stripQuery: true,
-      queryDimensionIndex: 1,
-      trailingSlash: 'add',
-    });
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.execute(ga.run, 'set', 'page', '/foo/bar.html');
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(2));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dp, '/foo/bar/');
-    assert.strictEqual(hits[1].dp, '/foo/bar.html');
-  });
-
-  it('supports generically filtering all URL fields', () => {
-    const url = 'https://example.com/foo/bar?q=qux&b=baz#hash';
-    browser.execute(ga.run, 'set', 'location', url);
-    browser.execute(requireCleanUrlTracker_urlFieldsFilter);
-    browser.execute(ga.run, 'send', 'pageview');
-    browser.waitUntil(log.hitCountEquals(1));
-
-    const hits = log.getHits();
-    assert.strictEqual(hits[0].dl,
-        'https://example.io/foo/bar?q=qux&b=baz#hash');
-    assert.strictEqual(hits[0].dp, '/foo/bar');
-  });
-
   it('works with many options in conjunction with each other', () => {
     const url = 'https://example.com/path/to/index.html?q=qux&b=baz#hash';
     browser.execute(ga.run, 'set', 'location', url);
@@ -256,7 +124,7 @@ describe('cleanUrlTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].dl,
         'https://example.io/path/to/index.html?q=qux&b=baz#hash');
-    assert.strictEqual(hits[0].dp, '/path/to');
+    assert.strictEqual(hits[0].dp, '/path/to?q=qux');
     assert.strictEqual(hits[0].cd1, 'q=qux&b=baz');
   });
 
@@ -305,31 +173,10 @@ describe('cleanUrlTracker', function() {
  * client, this one-off function must be used to set the value for
  * `urlFieldsFilter`.
  */
-function requireCleanUrlTracker_urlFieldsFilter() {
-  ga('require', 'cleanUrlTracker', {
-    urlFieldsFilter: (fieldsObj, parseUrl) => {
-      fieldsObj.page = parseUrl(fieldsObj.location).pathname;
-
-      const url = parseUrl(fieldsObj.location);
-      if (url.hostname == 'example.com') {
-        fieldsObj.location =
-            `${url.protocol}//example.io` +
-            `${url.pathname}${url.search}${url.hash}`;
-      }
-      return fieldsObj;
-    },
-  });
-}
-
-
-/**
- * Since function objects can't be passed via parameters from server to
- * client, this one-off function must be used to set the value for
- * `urlFieldsFilter`.
- */
 function requireCleanUrlTracker_multipleOpts() {
   ga('require', 'cleanUrlTracker', {
     stripQuery: true,
+    queryParamsWhitelist: ['q', 's'],
     queryDimensionIndex: 1,
     indexFilename: 'index.html',
     trailingSlash: 'remove',

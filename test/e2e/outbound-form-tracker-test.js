@@ -61,7 +61,7 @@ describe('outboundFormTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Form');
     assert.strictEqual(hits[0].ea, 'submit');
-    assert.strictEqual(hits[0].el, 'https://example.com/outbound-submit');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=outbound-submit');
   });
 
   it('does not send events on local form submits', () => {
@@ -74,7 +74,7 @@ describe('outboundFormTracker', function() {
   it('navigates to the proper outbound location on submit', () => {
     browser.execute(ga.run, 'require', 'outboundFormTracker');
     browser.click('#outbound-submit');
-    browser.waitUntil(urlMatches('https://example.com/outbound-submit'));
+    browser.waitUntil(urlMatches('https://example.com/?q=outbound-submit'));
   });
 
   it('navigates to the proper local location on submit', () => {
@@ -108,7 +108,7 @@ describe('outboundFormTracker', function() {
     assert.strictEqual(hits[0].ec, 'Outbound Form');
     assert.strictEqual(hits[0].ea, 'submit');
     assert.strictEqual(
-        hits[0].el, 'https://example.com/outbound-submit-with-class');
+        hits[0].el, 'https://example.com/?q=outbound-submit-with-class');
   });
 
   it('supports customizing what is considered an outbound form', () => {
@@ -136,7 +136,7 @@ describe('outboundFormTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'External Form');
     assert.strictEqual(hits[0].ea, 'send');
-    assert.strictEqual(hits[0].el, 'https://example.com/outbound-submit');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=outbound-submit');
     assert.strictEqual(hits[0].ni, '1');
   });
 
@@ -186,7 +186,7 @@ describe('outboundFormTracker', function() {
     const hits = log.getHits();
     assert.strictEqual(hits[0].ec, 'Outbound Form');
     assert.strictEqual(hits[0].ea, 'submit');
-    assert.strictEqual(hits[0].el, 'https://example.com/shadow-host');
+    assert.strictEqual(hits[0].el, 'https://example.com/?q=shadow-host');
   });
 
   it('includes usage params with all hits', () => {
@@ -261,7 +261,7 @@ function requireOutboundFormTracker_shouldTrackOutboundForm() {
 function requireOutboundFormTracker_hitFilter() {
   ga('require', 'outboundFormTracker', {
     hitFilter: (model, form, event) => {
-      if (form.action == 'https://example.com/outbound-submit') {
+      if (form.action == 'https://example.com/?q=outbound-submit') {
         model.set('eventLabel', '/outbound-submit', true);
       }
       model.set('dimension1', event.type);

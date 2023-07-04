@@ -5,10 +5,23 @@
     "node": true,
   },
   "parserOptions": {
+    "ecmaVersion": 2017,
     "sourceType": "module",
   },
   "extends": [
     "eslint:recommended",
     "google",
   ],
+  "globals": {
+    "safari": false
+  },
+  "overrides": [
+    {
+      "files": ["test/**/*"],
+      "globals": {
+        "assert": false,
+        "sinon": false
+      }
+    }
+  ]
 }
