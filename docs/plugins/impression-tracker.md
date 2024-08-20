@@ -16,37 +16,6 @@ To enable the `impressionTracker` plugin, run the [`require`](https://developers
 ga('require', 'impressionTracker', options);
 ```
 
-### Browser support
-
-The `impressionTracker` plugin takes advantage of a new browser API called [`IntersectionObserver`](https://developer.mozilla.org/en-US/docs/Web/API/Intersection_Observer_API), which allows you to register a callback that gets invoked whenever a target element is visible within the viewport.
-
-The `IntersectionObserver` API is supported natively in Chrome 51+, and with an [`IntersectionObserver` polyfill](https://github.com/WICG/IntersectionObserver/tree/gh-pages/polyfill), it can be used in all other browsers as well.
-
-To use the polyfill, add it to your page prior to requiring the `impressionTracker` plugin:
-
-The `IntersectionObsever` polyfill is available on npm, and can be installed by running the following command:
-
-```
-npm install intersection-observer
-```
-
-Then link to the `intersection-observer.js` script file in your HTML page:
-
-
-```html
-<script src="path/to/intersection-observer.js"></script>
-```
-
-The `IntersectionObsever` polyfill is also available from [polyfill.io](https://polyfill.io). An advantage of using `polyfill.io` is the service automatically detects browser support and only delivers the polyfill (and any needed dependencies) if the requesting brower lacks native support.
-
-You can link to the CDN version on `polyfill.io` with the following script:
-
-```html
-<script src="https://cdn.polyfill.io/v2/polyfill.min.js?features=IntersectionObserver"></script>
-```
-
-See the [`polyfill.io` documentation](https://polyfill.io/v2/docs/) for more information on using the service.
-
 ## Options
 
 The following table outlines all possible configuration options for the `impressionTracker` plugin. If any of the options has a default value, the default is explicitly stated:
